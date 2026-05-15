@@ -439,6 +439,111 @@ function RouteCard({route:r}) {
   );
 }
 
+// ─── Now Tab ──────────────────────────────────────────────────────────────────
+// For Gold from Bus Terminal we have verified `:00 :20 :40` departures.
+// Everywhere else we only know frequency, so fall back to `~freq÷2 min` average.
+function nextDepartureInfo(rid, stop, now) {
+  const R = ROUTES[rid];
+  if (!inService(R, now)) {
+    return { kind: "oos", route: R };
+  }
+  if (rid === "GOLD" && stop === "Bus Terminal") {
+    const targets = [0, 20, 40];
+    const m = now.getMinutes();
+    const t = targets.find(x => x > m);
+    const next = new Date(now);
+    next.setSeconds(0, 0);
+    if (t === undefined) { next.setHours(next.getHours()+1); next.setMinutes(0); }
+    else next.setMinutes(t);
+    const mins = Math.max(0, Math.round((next - now)/60000));
+    return { kind: "exact", route: R, at: next, mins };
+  }
+  return { kind: "approx", route: R, mins: Math.max(1, Math.round(R.freq/2)) };
+}
+
+function NextDepartureRow({ rid, stop, now }) {
+  const info = nextDepartureInfo(rid, stop, now);
+  const R = info.route;
+  return (
+    <div style={{background:C.bgCard,border:`1px solid ${R.color}33`,borderRadius:12,marginBottom:10,padding:"12px 14px",display:"flex",alignItems:"center",gap:12}}>
+      <div style={{width:14,height:14,borderRadius:"50%",background:R.color,boxShadow:`0 0 10px ${R.color}88`,flexShrink:0}}/>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:15,fontWeight:700,color:C.khaki}}>{R.name}</div>
+        <div style={{fontSize:11,color:C.oliveDim,marginTop:2}}>
+          every {R.freq} min · {R.days} · {R.hours}
+          {R.verified && <span style={{color:"#4dde88",marginLeft:6}}>✓</span>}
+        </div>
+      </div>
+      <div style={{textAlign:"right",flexShrink:0}}>
+        {info.kind === "exact" && <>
+          <div className="tm" style={{fontSize:18,fontWeight:600,color:C.gold,lineHeight:1}}>{fmt(info.at)}</div>
+          <div style={{fontSize:11,color:C.sage,marginTop:3}}>{info.mins===0?"now":`in ${info.mins} min`}</div>
+        </>}
+        {info.kind === "approx" && <>
+          <div className="tm" style={{fontSize:18,fontWeight:600,color:C.tan,lineHeight:1}}>~{info.mins} min</div>
+          <div style={{fontSize:10,color:C.oliveDim,marginTop:3,letterSpacing:.5}}>EST. AVG</div>
+        </>}
+        {info.kind === "oos" && <>
+          <div style={{fontSize:12,fontWeight:600,color:C.oliveDim,lineHeight:1.2}}>Out of</div>
+          <div style={{fontSize:12,fontWeight:600,color:C.oliveDim,lineHeight:1.2}}>service</div>
+        </>}
+      </div>
+    </div>
+  );
+}
+
+function NowTab() {
+  const [stop, setStop] = useState("");
+  const [stopLbl, setStopLbl] = useState("");
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(id);
+  }, []);
+
+  const routesAtStop = stop ? (STOP_ROUTES[stop] || []) : [];
+
+  return (
+    <div style={{padding:"16px 14px 32px"}}>
+      <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:14,padding:16,marginBottom:14}}>
+        <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:14}}>Where are you?</div>
+        <StopInput label="At stop" value={stopLbl} onChange={(s,l)=>{setStop(s);setStopLbl(l);}}/>
+        <div style={{fontSize:11,color:C.oliveDim,marginTop:10,display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontSize:13}}>🕒</span>
+          <span>As of <span className="tm" style={{color:C.gold}}>{fmt(now)}</span> — updates every minute</span>
+        </div>
+      </div>
+
+      {stop && routesAtStop.length > 0 && (
+        <>
+          <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:10}}>
+            Next departures from {stop}
+          </div>
+          {routesAtStop.map(rid => <NextDepartureRow key={rid} rid={rid} stop={stop} now={now}/>)}
+          <div style={{fontSize:11,color:C.oliveMute,textAlign:"center",marginTop:8,lineHeight:1.6}}>
+            Gold from Bus Terminal uses verified `:00 :20 :40` schedule. Other routes show <span style={{color:C.tan}}>~freq ÷ 2</span> averages.
+          </div>
+        </>
+      )}
+
+      {stop && routesAtStop.length === 0 && (
+        <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:14,padding:24,textAlign:"center"}}>
+          <div style={{fontSize:13,color:C.oliveDim}}>No routes serve this stop.</div>
+        </div>
+      )}
+
+      {!stop && (
+        <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"12px 14px",display:"flex",gap:10}}>
+          <span style={{fontSize:16}}>ℹ️</span>
+          <div style={{fontSize:11,color:C.oliveDim,lineHeight:1.6}}>
+            Pick a stop to see the next bus on every route that serves it. The page auto-refreshes once a minute.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 // ─── Off-Post Tab ─────────────────────────────────────────────────────────────
 function OffPostTab() {
   return (
@@ -534,7 +639,7 @@ export default function App() {
   };
   const reset=()=>{setRes(null);setSrch(false);};
   const swap=()=>{setFS(tStop);setTS(fStop);setFL(tLbl);setTL(fLbl);reset();};
-  const TABS=[["plan","🗺 Plan Trip"],["routes","🚌 Routes"],["offpost","📡 Off-Post"]];
+  const TABS=[["plan","🗺 Plan"],["now","⏱ Now"],["routes","🚌 Routes"],["offpost","📡 Off-Post"]];
 
   return (
     <div style={{fontFamily:"'Rajdhani',sans-serif",background:C.bgBase,minHeight:"100vh",color:C.tan,maxWidth:480,margin:"0 auto"}}>
@@ -651,6 +756,8 @@ export default function App() {
           )}
         </div>
       )}
+
+      {tab==="now" && <NowTab/>}
 
       {tab==="routes" && (
         <div style={{padding:"16px 14px 24px"}}>

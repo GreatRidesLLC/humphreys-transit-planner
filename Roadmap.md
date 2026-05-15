@@ -11,11 +11,9 @@ Planned improvements grouped into phases by effort and impact. Update this file 
 - Estimated-vs-verified flag — `EST.` badge on any trip card whose bus legs include a route without `verified: true`. Tooltip explains the unverified status
 - Smarter transfer selection — `findTrips` xfer loop now iterates every shared stop, scores total trip time per candidate, and picks the minimum (replaces the old `shared[0]` heuristic)
 - Keyboard navigation in StopInput dropdown — ↑/↓ moves highlight, Enter selects, Escape closes; highlight auto-scrolls into view
+- "Now" view (4th tab) — pick a stop, see the next departure on every route serving it. Gold from Bus Terminal uses verified `:00 :20 :40`; everywhere else shows `~freq ÷ 2 min` average. Out-of-service routes labeled. Auto-refreshes every minute
 
 ## Phase 2 — Big standalone wins
-
-### "Now" view (new tab)
-Probably the highest-ROI single feature on the list. Add a 4th tab between Plan and Routes. UI: single stop selector → list of routes serving that stop → next expected departure time for each. For Gold from Bus Terminal, compute exact next departure from `:00 :20 :40`. Otherwise show `~X min` using `freq ÷ 2`. Auto-refresh every minute.
 
 ### Favorites & recent trips
 Two localStorage arrays:
@@ -24,6 +22,9 @@ Two localStorage arrays:
 - `recent: [{ fStop, tStop, fLbl, tLbl }]` — last 5 searches, auto-pruned, deduped
 
 Render as chips above the From input on the Plan tab. Tap a chip to populate the form. Long-press (or a small menu) to remove.
+
+### Day of the week
+In addtion to being able to choose the dparture and arrival ties, it is necessary to be able to choose the day of the week for those who want to plan ahead, and it will also permit testing using weekly bus routes when on weekend.
 
 ## Phase 3 — Korean language toggle (own milestone)
 
