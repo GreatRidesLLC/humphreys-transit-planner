@@ -142,11 +142,19 @@ function findTrips(from, to, refTime, mode) {
     if (!inService(ROUTES[r1], checkTime) || !inService(ROUTES[r2], checkTime)) continue;
     const shared=ROUTES[r1].stops.filter(s=>ROUTES[r2].stops.includes(s)&&s!==from&&s!==to);
     if (!shared.length) continue;
-    const x=shared[0], R1=ROUTES[r1], R2=ROUTES[r2];
-    const n1=Math.abs(R1.stops.indexOf(x)-R1.stops.indexOf(from));
-    const n2=Math.abs(R2.stops.indexOf(to)-R2.stops.indexOf(x));
-    const t1=n1*2,t2=n2*2,w1=Math.round(R1.freq/2),w2=Math.round(R2.freq/2);
-    trips.push({ id:`x-${r1}-${r2}`, type:"xfer", total:t1+t2+w1+w2+8,
+    const R1=ROUTES[r1], R2=ROUTES[r2];
+    const w1=Math.round(R1.freq/2), w2=Math.round(R2.freq/2);
+    // Pick shared stop that minimizes total trip time
+    let best=null;
+    for (const x of shared) {
+      const n1=Math.abs(R1.stops.indexOf(x)-R1.stops.indexOf(from));
+      const n2=Math.abs(R2.stops.indexOf(to)-R2.stops.indexOf(x));
+      const t1=n1*2, t2=n2*2;
+      const total=t1+t2+w1+w2+8;
+      if (!best || total<best.total) best={x,n1,n2,t1,t2,total};
+    }
+    const {x,n1,n2,t1,t2,total}=best;
+    trips.push({ id:`x-${r1}-${r2}`, type:"xfer", total,
       legs:[{k:"walk",dur:3,lbl:`Walk to ${from}`},{k:"bus",rid:r1,from,to:x,n:n1,t:t1,w:w1},{k:"xfer",dur:2,at:x},{k:"bus",rid:r2,from:x,to,n:n2,t:t2,w:w2},{k:"walk",dur:3,lbl:"Walk to destination"}] });
   }
 
@@ -225,12 +233,21 @@ body{background:#0e1a08}
 function StopInput({ label, value, onChange }) {
   const [q, setQ] = useState(value||"");
   const [open, setOpen] = useState(false);
+  const [hi, setHi] = useState(0);
   const ref = useRef(null);
+  const listRef = useRef(null);
 
   // FIX: Always sync local q with parent value (not just when value is empty).
   // The old `if (!value) setQ("")` caused the swap button to silently fail —
   // inputs kept showing the old text even though fStop/tStop swapped correctly.
-  useEffect(() => { setQ(value || ""); }, [value]);
+  // Use "store previous value" pattern so the sync happens during render, not in
+  // an effect (avoids cascading renders).
+  const [prevValue, setPrevValue] = useState(value);
+  if (prevValue !== value) {
+    setPrevValue(value);
+    setQ(value || "");
+    setHi(0);
+  }
 
   const filtered = useMemo(()=>{
     if(!q.trim()) return [];
@@ -246,21 +263,40 @@ function StopInput({ label, value, onChange }) {
       return false;
     }).slice(0,9);
   },[q]);
+
+  // Scroll highlighted item into view
+  useEffect(()=>{
+    if (!open || !listRef.current) return;
+    const el = listRef.current.children[hi];
+    if (el) el.scrollIntoView({ block:"nearest" });
+  },[hi,open]);
+
   useEffect(()=>{
     const h=e=>{ if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown",h);
     return()=>document.removeEventListener("mousedown",h);
   },[]);
   const pick=item=>{ setQ(item.label); setOpen(false); onChange(item.stop,item.label); };
+  const onKey=e=>{
+    if (!open || !filtered.length) {
+      if (e.key === "Escape") setOpen(false);
+      return;
+    }
+    if (e.key === "ArrowDown") { e.preventDefault(); setHi(i => (i+1) % filtered.length); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setHi(i => (i-1+filtered.length) % filtered.length); }
+    else if (e.key === "Enter") { e.preventDefault(); pick(filtered[hi]); }
+    else if (e.key === "Escape") { e.preventDefault(); setOpen(false); }
+  };
   return (
     <div ref={ref} style={{position:"relative"}}>
       <input className="inp" placeholder={`${label} — stop name or Bldg #`} value={q}
-        onChange={e=>{setQ(e.target.value);setOpen(true);if(!e.target.value)onChange("","");}}
-        onFocus={()=>setOpen(true)} />
+        onChange={e=>{setQ(e.target.value);setHi(0);setOpen(true);if(!e.target.value)onChange("","");}}
+        onFocus={()=>setOpen(true)} onKeyDown={onKey} />
       {open && filtered.length>0 && (
-        <div className="dd">
+        <div className="dd" ref={listRef}>
           {filtered.map((x,i)=>(
-            <div key={i} className="di" onMouseDown={()=>pick(x)}>
+            <div key={i} className="di" onMouseDown={()=>pick(x)} onMouseEnter={()=>setHi(i)}
+              style={i===hi?{background:C.bgHover}:undefined}>
               <div style={{fontSize:13,fontWeight:600,color:x.isBuilding?C.gold:C.khaki}}>{x.label}</div>
               <div style={{fontSize:11,color:C.oliveDim,marginTop:1}}>{x.sub}</div>
             </div>
@@ -326,11 +362,13 @@ function Leg({leg:l, last}) {
 function TripCard({trip:t, rank:r}) {
   const [open,setOpen]=useState(r===0);
   const bl=t.legs.filter(l=>l.k==="bus");
+  const estimated=bl.some(l=>!ROUTES[l.rid].verified);
   return (
     <div style={{background:C.bgCard,border:`1px solid ${r===0?C.gold+"55":C.borderSub}`,borderRadius:14,marginBottom:12,overflow:"hidden",boxShadow:r===0?`0 0 28px rgba(255,184,28,.1)`:"none"}}>
       <div onClick={()=>setOpen(o=>!o)} style={{padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
         <div style={{display:"flex",alignItems:"center",gap:12,flex:1}}>
           {r===0 && <span style={{background:C.gold,color:C.bgDeep,fontSize:9,fontWeight:800,padding:"3px 8px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>FASTEST</span>}
+          {estimated && <span title="Times based on estimated schedule — not yet verified against an official PDF" style={{background:"transparent",color:C.sage,border:`1px solid ${C.oliveMute}`,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>EST.</span>}
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",alignItems:"baseline",gap:10,flexWrap:"wrap"}}>
               <div className="tm" style={{fontSize:22,fontWeight:600,color:C.khaki,lineHeight:1}}>

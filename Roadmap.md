@@ -8,19 +8,9 @@ Planned improvements grouped into phases by effort and impact. Update this file 
 - Departure / arrival timestamps on every leg of every trip
 - Depart-at / Arrive-by toggle with `<input type="time">` picker
 - Service-hours filtering — routes out of service at the planned trip time are excluded from results, with a count shown ("X routes out of service")
-
-## Phase 1 — Quality polish (small, bundle together)
-
-These three are individually too small to ship alone but together make a nice cleanup commit.
-
-### Estimated-vs-verified flag
-Small "estimated" badge on trip cards that include any route without `verified: true` (currently Brown and Pink). Sets honest expectations.
-
-### Smarter transfer selection
-In `findTrips`, the transfer loop currently picks `shared[0]` (the first shared stop in route 1's order) as the transfer point. Replace with iteration over all shared stops, compute total trip time per candidate, return the minimum. Can make meaningful differences (e.g., transferring at Bus Terminal vs PX between Blue and Gold).
-
-### Keyboard navigation in StopInput dropdown
-Arrow up / arrow down to move the highlight, Enter to select the highlighted item, Escape to close the dropdown. Track highlighted index in component state.
+- Estimated-vs-verified flag — `EST.` badge on any trip card whose bus legs include a route without `verified: true`. Tooltip explains the unverified status
+- Smarter transfer selection — `findTrips` xfer loop now iterates every shared stop, scores total trip time per candidate, and picks the minimum (replaces the old `shared[0]` heuristic)
+- Keyboard navigation in StopInput dropdown — ↑/↓ moves highlight, Enter selects, Escape closes; highlight auto-scrolls into view
 
 ## Phase 2 — Big standalone wins
 
