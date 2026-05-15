@@ -26,12 +26,17 @@ const pad2 = n => String(n).padStart(2, "0");
 const fmt  = d => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 const addMin = (d, m) => new Date(d.getTime() + m * 60000);
 const subMin = (d, m) => new Date(d.getTime() - m * 60000);
-const parseHM = s => {
-  const [h, m] = s.split(":").map(Number);
-  const d = new Date();
-  d.setHours(h, m, 0, 0);
-  return d;
+// Combine "YYYY-MM-DD" date string and "HH:MM" time string into a Date.
+const parseHMD = (hm, ymd) => {
+  const [h, m] = hm.split(":").map(Number);
+  const [y, mo, d] = ymd.split("-").map(Number);
+  return new Date(y, mo-1, d, h, m, 0, 0);
 };
+const todayYMD = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+};
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 // Returns true if route is running at the given Date
 const inService = (r, d) => {
   const dow = d.getDay(); // 0=Sun, 6=Sat
@@ -643,17 +648,19 @@ export default function App() {
   const [results,setRes]=useState(null), [searched,setSrch]=useState(false);
   const [tab,setTab]=useState("plan");
 
-  // Time-mode state. tMode: "now" | "depart" | "arrive". tTime is a "HH:MM" string.
+  // Time-mode state. tMode: "now" | "depart" | "arrive".
+  // tTime: "HH:MM" string. tDate: "YYYY-MM-DD" string. Both ignored when tMode === "now".
   const [tMode, setTMode] = useState("now");
   const nowHM = () => { const d=new Date(); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
   const [tTime, setTTime] = useState(nowHM);
+  const [tDate, setTDate] = useState(todayYMD);
 
   // Favorites: user-named From stops. Recent: last 5 unique From→To searches.
   const [favorites, setFavorites] = useLocalStorage("humphreys.favorites", []);
   const [recent, setRecent] = useLocalStorage("humphreys.recent", []);
 
   const search=()=>{
-    const ref = tMode === "now" ? new Date() : parseHM(tTime);
+    const ref = tMode === "now" ? new Date() : parseHMD(tTime, tDate);
     const mode = tMode === "arrive" ? "arrive" : "depart";
     setRes(findTrips(fStop, tStop, ref, mode));
     setSrch(true);
@@ -782,10 +789,27 @@ export default function App() {
                 ))}
               </div>
               {tMode !== "now" && (
-                <div style={{marginTop:10}}>
-                  <input type="time" className="timep" value={tTime}
-                    onChange={e=>{setTTime(e.target.value); reset();}}/>
-                </div>
+                <>
+                  <div style={{marginTop:10,display:"flex",gap:8}}>
+                    <input type="date" className="timep" value={tDate} min={todayYMD()}
+                      onChange={e=>{setTDate(e.target.value); reset();}} style={{flex:1.3}}/>
+                    <input type="time" className="timep" value={tTime}
+                      onChange={e=>{setTTime(e.target.value); reset();}} style={{flex:1}}/>
+                  </div>
+                  <div style={{display:"flex",gap:4,marginTop:8,flexWrap:"wrap"}}>
+                    {Array.from({length:7}).map((_,i)=>{
+                      const d=new Date(); d.setDate(d.getDate()+i);
+                      const ymd=`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+                      const lbl=i===0?"Today":i===1?"Tmrw":DOW[d.getDay()];
+                      const on=tDate===ymd;
+                      return (
+                        <button key={i} className={`segbtn ${on?"on":""}`}
+                          style={{flex:"1 1 0",minWidth:42,padding:"6px 4px",fontSize:10}}
+                          onClick={()=>{setTDate(ymd); reset();}}>{lbl}</button>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
 
