@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, createContext, useContext } from "react";
 
 // ─── Army Color Palette ───────────────────────────────────────────────────────
 const C = {
@@ -37,6 +37,134 @@ const todayYMD = () => {
   return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
 };
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DOW_KO = ["일","월","화","수","목","금","토"];
+
+// ─── i18n ─────────────────────────────────────────────────────────────────────
+// Translates UI chrome only. Stop names and route names stay English on purpose:
+// the audience already says "PX" and "Maude Hall" in English on base.
+// NOTE: Korean strings are first-draft. They need QA from a KATUSA, KSC employee,
+// or Korean civilian colleague before public release — military/transit phrasing
+// is hard to get right from machine translation alone.
+const STRINGS = {
+  en: {
+    appTitle: "Humphreys Transit",
+    appSubtitle: "Camp Humphreys · USAG Korea",
+    tabPlan: "🗺 Plan", tabNow: "⏱ Now", tabRoutes: "🚌 Routes", tabOffpost: "📡 Off-Post",
+    favorites: "★ Favorites", recent: "↺ Recent",
+    typePrompt: "Type a stop name or building number",
+    from: "From", to: "To", atStop: "At stop",
+    stopPh: l => `${l} — stop name or Bldg #`,
+    saveFav: "★ Save", saveFavTitle: "Save From as favorite",
+    saveFavPrompt: "Name this favorite (e.g. Home, Work, Gym)",
+    pickFromFirst: "Pick a From stop first, then save it as a favorite.",
+    removeFavorite: "Remove favorite", removeRecent: "Remove recent",
+    when: "When",
+    leaveNow: "Leave now", departAt: "Depart at", arriveBy: "Arrive by",
+    today: "Today", tomorrow: "Tmrw", dow: DOW,
+    findRoutes: "Find Routes →",
+    bldgsMappedTitle: "~15 building numbers mapped",
+    bldgsMappedDesc: " (e.g. 6400 → Maude Hall, 5700 → PX). Full directory pending from DPW Bldg 6140.",
+    noTrips: "No Trips Available",
+    noTripsOOS: names => `Possible routes are outside service hours at this time (${names}). Try a different time.`,
+    noTripsNoPath: "No shared or 1-transfer path exists. Try selecting the Bus Terminal as a hub, or a nearby major stop.",
+    optionsFound: n => `${n} option${n!==1?"s":""} found`,
+    routesOOS: n => `${n} route${n!==1?"s":""} out of service`,
+    direct: "Direct · no transfer", oneTransfer: "1 transfer",
+    walkTo: stop => `Walk to ${stop}`, walkDest: "Walk to destination",
+    walkMin: m => `~${m} min walk`,
+    boardAt: "Board at", alightAt: "Alight at", transferHere: "Transfer here",
+    busLegMeta: (w,t,n) => `~${w} min wait · ~${t} min ride · ${n} stop${n!==1?"s":""}`,
+    xferMeta: (at,dur) => `${at} · ~${dur} min`,
+    fastest: "FASTEST", est: "EST.",
+    estTitle: "Times based on estimated schedule — not yet verified against an official PDF",
+    everyMin: m => `every ${m} min`,
+    waitDisclaimer: "Wait times are averages (freq ÷ 2). Verify exact times at USAG Humphreys or MyArmyPost app.",
+    shuttleInfo: "Shuttles run Mon–Fri 0600–2200. Gold Route runs Mon–Sun 0900–2100. Out-of-service routes are filtered automatically. Confirm: DSN 755-0424.",
+    noMatch: "No matching stop or building",
+    whereAreYou: "Where are you?",
+    asOf: time => `As of ${time} — updates every minute`,
+    nextDeparturesFrom: stop => `Next departures from ${stop}`,
+    goldDisclaimer: "Gold from Bus Terminal uses verified `:00 :20 :40` schedule. Other routes show ~freq ÷ 2 averages.",
+    noRoutesHere: "No routes serve this stop.",
+    pickStopHint: "Pick a stop to see the next bus on every route that serves it. The page auto-refreshes once a minute.",
+    outOfService1: "Out of", outOfService2: "service",
+    inMin: m => `in ${m} min`, nowWord: "now", estAvg: "EST. AVG",
+    goldDotsInfo: "Gold dots next to stop names = transfer points served by multiple routes.",
+    routeMeta: (freq,n,days,hours) => `Every ${freq} min · ${n} stops · ${days} · ${hours}`,
+    pdfVerified: "✓ PDF-verified schedule",
+    verifiedScheduleHeader: "VERIFIED SCHEDULE (Mon–Sun)",
+    liveGps: "Live GPS Tracking",
+    futureFeatureLabel: "FUTURE FEATURE · WHAT IT REQUIRES",
+    gpsAction: "Action:",
+    gpsActionText: " Contact Transportation (DSN 755-0424) and DPW GIS/IGI&S (Bldg 6140) to explore GPS trackers or a BusWhere deployment for Humphreys.",
+    interGarrisonHeader: "Inter-Garrison Routes",
+    interGarrisonWarn1: "⚠️ Inter-garrison buses are ",
+    interGarrisonWarnStrong: "not integrated",
+    interGarrisonWarn2: " into the trip planner. Priority-based seating, fixed schedules, not connectable as transfers. Verify at:",
+    pickupLabel: "Pick-up:",
+    todoHeader: "📋 Your To-Do List",
+  },
+  ko: {
+    appTitle: "험프리스 교통",
+    appSubtitle: "캠프 험프리스 · USAG Korea",
+    tabPlan: "🗺 계획", tabNow: "⏱ 지금", tabRoutes: "🚌 노선", tabOffpost: "📡 기지 외",
+    favorites: "★ 즐겨찾기", recent: "↺ 최근",
+    typePrompt: "정류장 이름 또는 건물 번호를 입력하세요",
+    from: "출발", to: "도착", atStop: "정류장",
+    stopPh: l => `${l} — 정류장 또는 건물 번호`,
+    saveFav: "★ 저장", saveFavTitle: "출발지를 즐겨찾기에 저장",
+    saveFavPrompt: "즐겨찾기 이름 (예: 집, 직장, 체육관)",
+    pickFromFirst: "먼저 출발 정류장을 선택한 후 즐겨찾기에 저장하세요.",
+    removeFavorite: "즐겨찾기 삭제", removeRecent: "최근 기록 삭제",
+    when: "시간",
+    leaveNow: "지금 출발", departAt: "출발 시간", arriveBy: "도착 시간",
+    today: "오늘", tomorrow: "내일", dow: DOW_KO,
+    findRoutes: "노선 찾기 →",
+    bldgsMappedTitle: "건물 번호 약 15개 매핑됨",
+    bldgsMappedDesc: " (예: 6400 → Maude Hall, 5700 → PX). 전체 목록은 DPW 6140동에서 제공 예정.",
+    noTrips: "이용 가능한 노선 없음",
+    noTripsOOS: names => `현재 시간에 운행하지 않는 노선이 있습니다 (${names}). 다른 시간을 시도해 보세요.`,
+    noTripsNoPath: "공유 정류장 또는 1회 환승 경로가 없습니다. 버스 터미널이나 가까운 주요 정류장을 시도해 보세요.",
+    optionsFound: n => `${n}개 옵션`,
+    routesOOS: n => `${n}개 노선 운행 종료`,
+    direct: "직행 · 환승 없음", oneTransfer: "환승 1회",
+    walkTo: stop => `${stop}까지 도보`, walkDest: "목적지까지 도보",
+    walkMin: m => `도보 ~${m}분`,
+    boardAt: "탑승", alightAt: "하차", transferHere: "여기서 환승",
+    busLegMeta: (w,t,n) => `~${w}분 대기 · ~${t}분 승차 · ${n}개 정류장`,
+    xferMeta: (at,dur) => `${at} · ~${dur}분`,
+    fastest: "최단", est: "추정",
+    estTitle: "추정 시간표 기반 — 공식 PDF로 검증되지 않음",
+    everyMin: m => `${m}분 간격`,
+    waitDisclaimer: "대기 시간은 평균값(빈도÷2)입니다. 정확한 시간은 USAG 험프리스 또는 MyArmyPost 앱에서 확인하세요.",
+    shuttleInfo: "셔틀 운행: 월–금 06:00–22:00. Gold 노선: 일–월 09:00–21:00. 운행 종료된 노선은 자동 제외됩니다. 확인: DSN 755-0424.",
+    noMatch: "일치하는 정류장 또는 건물 없음",
+    whereAreYou: "어디에 계세요?",
+    asOf: time => `${time} 기준 — 1분마다 갱신`,
+    nextDeparturesFrom: stop => `${stop}에서 다음 출발`,
+    goldDisclaimer: "Gold 노선은 버스 터미널 기준 `:00 :20 :40` 시간표를 사용합니다. 다른 노선은 ~빈도÷2 평균값입니다.",
+    noRoutesHere: "이 정류장을 지나는 노선이 없습니다.",
+    pickStopHint: "정류장을 선택하면 해당 정류장의 모든 노선의 다음 버스를 볼 수 있습니다. 1분마다 자동 갱신됩니다.",
+    outOfService1: "운행", outOfService2: "종료",
+    inMin: m => `${m}분 후`, nowWord: "지금", estAvg: "추정 평균",
+    goldDotsInfo: "정류장 이름 옆 금색 점 = 여러 노선이 정차하는 환승 지점.",
+    routeMeta: (freq,n,days,hours) => `${freq}분 간격 · 정류장 ${n}개 · ${days} · ${hours}`,
+    pdfVerified: "✓ PDF 검증된 시간표",
+    verifiedScheduleHeader: "검증된 시간표 (월–일)",
+    liveGps: "실시간 GPS 추적",
+    futureFeatureLabel: "추후 기능 · 필요 요건",
+    gpsAction: "조치:",
+    gpsActionText: " 교통과(DSN 755-0424) 및 DPW GIS/IGI&S(6140동)에 문의하여 GPS 추적기 또는 BusWhere 도입을 검토하세요.",
+    interGarrisonHeader: "기지 간 노선",
+    interGarrisonWarn1: "⚠️ 기지 간 버스는 노선 검색에 ",
+    interGarrisonWarnStrong: "포함되지 않습니다",
+    interGarrisonWarn2: ". 우선순위 좌석, 고정 시간표, 환승 불가. 확인:",
+    pickupLabel: "탑승 지점:",
+    todoHeader: "📋 할 일 목록",
+  },
+};
+const LangContext = createContext({ lang: "en", t: STRINGS.en });
+const useT = () => useContext(LangContext);
 // Returns true if route is running at the given Date
 const inService = (r, d) => {
   const dow = d.getDay(); // 0=Sun, 6=Sat
@@ -154,7 +282,7 @@ function findTrips(from, to, refTime, mode) {
     const fi=R.stops.indexOf(from), ti=R.stops.indexOf(to);
     const n=Math.abs(ti-fi), t=n*2, w=Math.round(R.freq/2);
     trips.push({ id:`d-${rid}`, type:"direct", total:t+w+6,
-      legs:[{k:"walk",dur:3,lbl:`Walk to ${from}`},{k:"bus",rid,from,to,n,t,w},{k:"walk",dur:3,lbl:"Walk to destination"}] });
+      legs:[{k:"walk",dur:3,dest:from},{k:"bus",rid,from,to,n,t,w},{k:"walk",dur:3,dest:null}] });
   }
   for (const r1 of fr) for (const r2 of tr) {
     if (r1===r2) continue;
@@ -174,7 +302,7 @@ function findTrips(from, to, refTime, mode) {
     }
     const {x,n1,n2,t1,t2,total}=best;
     trips.push({ id:`x-${r1}-${r2}`, type:"xfer", total,
-      legs:[{k:"walk",dur:3,lbl:`Walk to ${from}`},{k:"bus",rid:r1,from,to:x,n:n1,t:t1,w:w1},{k:"xfer",dur:2,at:x},{k:"bus",rid:r2,from:x,to,n:n2,t:t2,w:w2},{k:"walk",dur:3,lbl:"Walk to destination"}] });
+      legs:[{k:"walk",dur:3,dest:from},{k:"bus",rid:r1,from,to:x,n:n1,t:t1,w:w1},{k:"xfer",dur:2,at:x},{k:"bus",rid:r2,from:x,to,n:n2,t:t2,w:w2},{k:"walk",dur:3,dest:null}] });
   }
 
   // Attach actual clock times to each leg
@@ -220,24 +348,24 @@ function findTrips(from, to, refTime, mode) {
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const CSS=`
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:#0e1a08}
-.inp{background:#1c2e14;color:#e8dca8;border:1px solid #3a5820;border-radius:8px;padding:13px 14px;width:100%;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:500;transition:border-color .2s}
+.inp{background:#1c2e14;color:#e8dca8;border:1px solid #3a5820;border-radius:8px;padding:13px 14px;width:100%;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:15px;font-weight:500;transition:border-color .2s}
 .inp:focus{outline:none;border-color:#FFB81C;box-shadow:0 0 0 2px rgba(255,184,28,.18)}
 .inp::placeholder{color:#3a5828}
 .dd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1c2e14;border:1px solid #3a5820;border-radius:8px;max-height:210px;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.7)}
 .di{padding:10px 14px;cursor:pointer;border-bottom:1px solid #182810}
 .di:last-child{border-bottom:none}
 .di:hover{background:#243a18}
-.btn{width:100%;padding:14px;background:linear-gradient(135deg,#FFB81C,#d4960e);color:#080f04;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:transform .1s,box-shadow .2s}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,#FFB81C,#d4960e);color:#080f04;border:none;border-radius:10px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:transform .1s,box-shadow .2s}
 .btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,184,28,.35)}
 .btn:disabled{background:#1c2e14;color:#3a5828;cursor:not-allowed}
 .si{animation:si .3s cubic-bezier(.22,.68,0,1.2)}
 @keyframes si{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.tab{flex:1;padding:8px 4px;border:none;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .2s}
+.tab{flex:1;padding:8px 4px;border:none;border-radius:8px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .2s}
 .seg{display:flex;gap:3px;background:#1c2e14;padding:3px;border-radius:8px;border:1px solid #3a5820}
-.segbtn{flex:1;padding:7px 6px;border:none;border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;background:transparent;color:#8aaa60;text-transform:uppercase;transition:all .15s}
+.segbtn{flex:1;padding:7px 6px;border:none;border-radius:6px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;background:transparent;color:#8aaa60;text-transform:uppercase;transition:all .15s}
 .segbtn.on{background:#FFB81C;color:#080f04}
 .timep{background:#1c2e14;color:#FFB81C;border:1px solid #3a5820;border-radius:6px;padding:9px 12px;width:100%;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;letter-spacing:1px;text-align:center}
 .timep:focus{outline:none;border-color:#FFB81C}
@@ -246,13 +374,14 @@ body{background:#0e1a08}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:#0e1a08}
 ::-webkit-scrollbar-thumb{background:#3a5820;border-radius:2px}
-.chip{display:inline-flex;align-items:center;gap:6px;background:#162210;border:1px solid #3a5820;border-radius:14px;padding:5px 4px 5px 10px;font-size:12px;color:#e8dca8;white-space:nowrap;flex-shrink:0;font-family:'Rajdhani',sans-serif}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#162210;border:1px solid #3a5820;border-radius:14px;padding:5px 4px 5px 10px;font-size:12px;color:#e8dca8;white-space:nowrap;flex-shrink:0;font-family:'Rajdhani','Noto Sans KR',sans-serif}
 .chipx{background:transparent;border:none;color:#5a7a40;font-size:14px;cursor:pointer;padding:0 6px;line-height:1;border-radius:50%}
 .chipx:hover{color:#FFB81C;background:#243a18}
 `;
 
 // ─── Searchable Input ─────────────────────────────────────────────────────────
 function StopInput({ label, value, onChange }) {
+  const { t } = useT();
   const [q, setQ] = useState(value||"");
   const [open, setOpen] = useState(false);
   const [hi, setHi] = useState(0);
@@ -311,7 +440,7 @@ function StopInput({ label, value, onChange }) {
   };
   return (
     <div ref={ref} style={{position:"relative"}}>
-      <input className="inp" placeholder={`${label} — stop name or Bldg #`} value={q}
+      <input className="inp" placeholder={t.stopPh(label)} value={q}
         onChange={e=>{setQ(e.target.value);setHi(0);setOpen(true);if(!e.target.value)onChange("","");}}
         onFocus={()=>setOpen(true)} onKeyDown={onKey} />
       {open && filtered.length>0 && (
@@ -326,7 +455,7 @@ function StopInput({ label, value, onChange }) {
         </div>
       )}
       {open&&q.trim()&&!filtered.length&&(
-        <div className="dd"><div className="di"><div style={{fontSize:12,color:C.oliveDim}}>No matching stop or building</div></div></div>
+        <div className="dd"><div className="di"><div style={{fontSize:12,color:C.oliveDim}}>{t.noMatch}</div></div></div>
       )}
     </div>
   );
@@ -334,6 +463,7 @@ function StopInput({ label, value, onChange }) {
 
 // ─── Leg Row ──────────────────────────────────────────────────────────────────
 function Leg({leg:l, last}) {
+  const { t } = useT();
   const lc = l.k==="bus" ? ROUTES[l.rid].color : C.borderMain;
   return (
     <div style={{display:"flex",gap:14,paddingBottom:last?0:6}}>
@@ -346,34 +476,34 @@ function Leg({leg:l, last}) {
       <div style={{paddingTop:6,paddingBottom:last?0:16,flex:1}}>
         {l.k==="walk" && <>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
-            <div style={{fontSize:13,color:C.tan}}>{l.lbl}</div>
+            <div style={{fontSize:13,color:C.tan}}>{l.dest ? t.walkTo(l.dest) : t.walkDest}</div>
             <div className="tm" style={{fontSize:12,color:C.sage,flexShrink:0}}>{fmt(l.startAt)}–{fmt(l.endAt)}</div>
           </div>
-          <div style={{fontSize:11,color:C.oliveDim,marginTop:2}}>~{l.dur} min walk</div>
+          <div style={{fontSize:11,color:C.oliveDim,marginTop:2}}>{t.walkMin(l.dur)}</div>
         </>}
         {l.k==="bus" && <>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
             <span style={{background:ROUTES[l.rid].color,color:"#080f04",fontSize:10,fontWeight:700,padding:"2px 9px",borderRadius:20,letterSpacing:1,fontFamily:"'JetBrains Mono',monospace"}}>
               {ROUTES[l.rid].name.replace(" Route","").toUpperCase()}
             </span>
-            <span style={{fontSize:11,color:C.sage}}>every {ROUTES[l.rid].freq} min</span>
+            <span style={{fontSize:11,color:C.sage}}>{t.everyMin(ROUTES[l.rid].freq)}</span>
           </div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
-            <div style={{fontSize:13,color:C.tan}}>Board at <strong style={{color:C.khaki}}>{l.from}</strong></div>
+            <div style={{fontSize:13,color:C.tan}}>{t.boardAt} <strong style={{color:C.khaki}}>{l.from}</strong></div>
             <div className="tm" style={{fontSize:13,color:C.gold,fontWeight:600,flexShrink:0}}>{fmt(l.boardAt)}</div>
           </div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
-            <div style={{fontSize:13,color:C.tan}}>Alight at <strong style={{color:C.khaki}}>{l.to}</strong></div>
+            <div style={{fontSize:13,color:C.tan}}>{t.alightAt} <strong style={{color:C.khaki}}>{l.to}</strong></div>
             <div className="tm" style={{fontSize:13,color:C.gold,fontWeight:600,flexShrink:0}}>{fmt(l.alightAt)}</div>
           </div>
-          <div style={{fontSize:11,color:C.oliveDim,marginTop:4}}>~{l.w} min wait · ~{l.t} min ride · {l.n} stop{l.n!==1?"s":""}</div>
+          <div style={{fontSize:11,color:C.oliveDim,marginTop:4}}>{t.busLegMeta(l.w,l.t,l.n)}</div>
         </>}
         {l.k==="xfer" && <>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
-            <div style={{fontSize:13,color:C.gold,fontWeight:600}}>Transfer here</div>
+            <div style={{fontSize:13,color:C.gold,fontWeight:600}}>{t.transferHere}</div>
             <div className="tm" style={{fontSize:12,color:C.sage,flexShrink:0}}>{fmt(l.startAt)}–{fmt(l.endAt)}</div>
           </div>
-          <div style={{fontSize:11,color:C.sage,marginTop:2}}>{l.at} · ~{l.dur} min</div>
+          <div style={{fontSize:11,color:C.sage,marginTop:2}}>{t.xferMeta(l.at,l.dur)}</div>
         </>}
       </div>
     </div>
@@ -381,25 +511,26 @@ function Leg({leg:l, last}) {
 }
 
 // ─── Trip Card ────────────────────────────────────────────────────────────────
-function TripCard({trip:t, rank:r}) {
+function TripCard({trip, rank:r}) {
+  const { t } = useT();
   const [open,setOpen]=useState(r===0);
-  const bl=t.legs.filter(l=>l.k==="bus");
+  const bl=trip.legs.filter(l=>l.k==="bus");
   const estimated=bl.some(l=>!ROUTES[l.rid].verified);
   return (
     <div style={{background:C.bgCard,border:`1px solid ${r===0?C.gold+"55":C.borderSub}`,borderRadius:14,marginBottom:12,overflow:"hidden",boxShadow:r===0?`0 0 28px rgba(255,184,28,.1)`:"none"}}>
       <div onClick={()=>setOpen(o=>!o)} style={{padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
         <div style={{display:"flex",alignItems:"center",gap:12,flex:1}}>
-          {r===0 && <span style={{background:C.gold,color:C.bgDeep,fontSize:9,fontWeight:800,padding:"3px 8px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>FASTEST</span>}
-          {estimated && <span title="Times based on estimated schedule — not yet verified against an official PDF" style={{background:"transparent",color:C.sage,border:`1px solid ${C.oliveMute}`,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>EST.</span>}
+          {r===0 && <span style={{background:C.gold,color:C.bgDeep,fontSize:9,fontWeight:800,padding:"3px 8px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>{t.fastest}</span>}
+          {estimated && <span title={t.estTitle} style={{background:"transparent",color:C.sage,border:`1px solid ${C.oliveMute}`,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>{t.est}</span>}
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",alignItems:"baseline",gap:10,flexWrap:"wrap"}}>
               <div className="tm" style={{fontSize:22,fontWeight:600,color:C.khaki,lineHeight:1}}>
-                {fmt(t.departAt)} <span style={{color:C.oliveDim,fontWeight:400}}>→</span> {fmt(t.arriveAt)}
+                {fmt(trip.departAt)} <span style={{color:C.oliveDim,fontWeight:400}}>→</span> {fmt(trip.arriveAt)}
               </div>
-              <div style={{fontSize:13,color:C.sage,lineHeight:1}}>~{t.total} min</div>
+              <div style={{fontSize:13,color:C.sage,lineHeight:1}}>~{trip.total} min</div>
             </div>
             <div style={{fontSize:12,color:C.oliveDim,marginTop:5}}>
-              {t.type==="direct"?"Direct · no transfer":"1 transfer"} ·&nbsp;
+              {trip.type==="direct"?t.direct:t.oneTransfer} ·&nbsp;
               {bl.map((l,i)=><span key={i} style={{color:ROUTES[l.rid].color}}>{ROUTES[l.rid].name.replace(" Route","")}{i<bl.length-1?" → ":""}</span>)}
             </div>
           </div>
@@ -410,7 +541,7 @@ function TripCard({trip:t, rank:r}) {
         </div>
       </div>
       {open && <div style={{padding:"4px 16px 16px",borderTop:`1px solid ${C.borderDim}`}}>
-        {t.legs.map((l,i)=><Leg key={i} leg={l} last={i===t.legs.length-1}/>)}
+        {trip.legs.map((l,i)=><Leg key={i} leg={l} last={i===trip.legs.length-1}/>)}
       </div>}
     </div>
   );
@@ -418,6 +549,7 @@ function TripCard({trip:t, rank:r}) {
 
 // ─── Route Card ───────────────────────────────────────────────────────────────
 function RouteCard({route:r}) {
+  const { t } = useT();
   const [open,setOpen]=useState(false);
   return (
     <div style={{background:C.bgCard,border:`1px solid ${r.color}33`,borderRadius:12,marginBottom:10,overflow:"hidden"}}>
@@ -426,8 +558,8 @@ function RouteCard({route:r}) {
           <div style={{width:14,height:14,borderRadius:"50%",background:r.color,boxShadow:`0 0 10px ${r.color}88`,flexShrink:0}}/>
           <div>
             <div style={{fontSize:16,fontWeight:700,color:C.khaki}}>{r.name}</div>
-            <div style={{fontSize:11,color:C.oliveDim}}>Every {r.freq} min · {r.stops.length} stops · {r.days} · {r.hours}</div>
-            {r.verified && <div style={{fontSize:10,color:"#4dde88",marginTop:2}}>✓ PDF-verified schedule</div>}
+            <div style={{fontSize:11,color:C.oliveDim}}>{t.routeMeta(r.freq, r.stops.length, r.days, r.hours)}</div>
+            {r.verified && <div style={{fontSize:10,color:"#4dde88",marginTop:2}}>{t.pdfVerified}</div>}
           </div>
         </div>
         <span style={{color:C.oliveDim,fontSize:13}}>{open?"▲":"▼"}</span>
@@ -451,7 +583,7 @@ function RouteCard({route:r}) {
           ))}
           {r.verified && (
             <div style={{background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:8,padding:"10px 12px",marginTop:4}}>
-              <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:4}}>VERIFIED SCHEDULE (Mon–Sun)</div>
+              <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:4}}>{t.verifiedScheduleHeader}</div>
               <div style={{fontSize:12,color:C.tan}}>{r.note}</div>
             </div>
           )}
@@ -484,6 +616,7 @@ function nextDepartureInfo(rid, stop, now) {
 }
 
 function NextDepartureRow({ rid, stop, now }) {
+  const { t } = useT();
   const info = nextDepartureInfo(rid, stop, now);
   const R = info.route;
   return (
@@ -492,22 +625,22 @@ function NextDepartureRow({ rid, stop, now }) {
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:15,fontWeight:700,color:C.khaki}}>{R.name}</div>
         <div style={{fontSize:11,color:C.oliveDim,marginTop:2}}>
-          every {R.freq} min · {R.days} · {R.hours}
+          {t.everyMin(R.freq)} · {R.days} · {R.hours}
           {R.verified && <span style={{color:"#4dde88",marginLeft:6}}>✓</span>}
         </div>
       </div>
       <div style={{textAlign:"right",flexShrink:0}}>
         {info.kind === "exact" && <>
           <div className="tm" style={{fontSize:18,fontWeight:600,color:C.gold,lineHeight:1}}>{fmt(info.at)}</div>
-          <div style={{fontSize:11,color:C.sage,marginTop:3}}>{info.mins===0?"now":`in ${info.mins} min`}</div>
+          <div style={{fontSize:11,color:C.sage,marginTop:3}}>{info.mins===0?t.nowWord:t.inMin(info.mins)}</div>
         </>}
         {info.kind === "approx" && <>
           <div className="tm" style={{fontSize:18,fontWeight:600,color:C.tan,lineHeight:1}}>~{info.mins} min</div>
-          <div style={{fontSize:10,color:C.oliveDim,marginTop:3,letterSpacing:.5}}>EST. AVG</div>
+          <div style={{fontSize:10,color:C.oliveDim,marginTop:3,letterSpacing:.5}}>{t.estAvg}</div>
         </>}
         {info.kind === "oos" && <>
-          <div style={{fontSize:12,fontWeight:600,color:C.oliveDim,lineHeight:1.2}}>Out of</div>
-          <div style={{fontSize:12,fontWeight:600,color:C.oliveDim,lineHeight:1.2}}>service</div>
+          <div style={{fontSize:12,fontWeight:600,color:C.oliveDim,lineHeight:1.2}}>{t.outOfService1}</div>
+          <div style={{fontSize:12,fontWeight:600,color:C.oliveDim,lineHeight:1.2}}>{t.outOfService2}</div>
         </>}
       </div>
     </div>
@@ -515,6 +648,7 @@ function NextDepartureRow({ rid, stop, now }) {
 }
 
 function NowTab() {
+  const { t } = useT();
   const [stop, setStop] = useState("");
   const [stopLbl, setStopLbl] = useState("");
   const [now, setNow] = useState(new Date());
@@ -529,29 +663,29 @@ function NowTab() {
   return (
     <div style={{padding:"16px 14px 32px"}}>
       <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:14,padding:16,marginBottom:14}}>
-        <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:14}}>Where are you?</div>
-        <StopInput label="At stop" value={stopLbl} onChange={(s,l)=>{setStop(s);setStopLbl(l);}}/>
+        <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:14}}>{t.whereAreYou}</div>
+        <StopInput label={t.atStop} value={stopLbl} onChange={(s,l)=>{setStop(s);setStopLbl(l);}}/>
         <div style={{fontSize:11,color:C.oliveDim,marginTop:10,display:"flex",alignItems:"center",gap:6}}>
           <span style={{fontSize:13}}>🕒</span>
-          <span>As of <span className="tm" style={{color:C.gold}}>{fmt(now)}</span> — updates every minute</span>
+          <span>{t.asOf(fmt(now))}</span>
         </div>
       </div>
 
       {stop && routesAtStop.length > 0 && (
         <>
           <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:10}}>
-            Next departures from {stop}
+            {t.nextDeparturesFrom(stop)}
           </div>
           {routesAtStop.map(rid => <NextDepartureRow key={rid} rid={rid} stop={stop} now={now}/>)}
           <div style={{fontSize:11,color:C.oliveMute,textAlign:"center",marginTop:8,lineHeight:1.6}}>
-            Gold from Bus Terminal uses verified `:00 :20 :40` schedule. Other routes show <span style={{color:C.tan}}>~freq ÷ 2</span> averages.
+            {t.goldDisclaimer}
           </div>
         </>
       )}
 
       {stop && routesAtStop.length === 0 && (
         <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:14,padding:24,textAlign:"center"}}>
-          <div style={{fontSize:13,color:C.oliveDim}}>No routes serve this stop.</div>
+          <div style={{fontSize:13,color:C.oliveDim}}>{t.noRoutesHere}</div>
         </div>
       )}
 
@@ -559,7 +693,7 @@ function NowTab() {
         <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"12px 14px",display:"flex",gap:10}}>
           <span style={{fontSize:16}}>ℹ️</span>
           <div style={{fontSize:11,color:C.oliveDim,lineHeight:1.6}}>
-            Pick a stop to see the next bus on every route that serves it. The page auto-refreshes once a minute.
+            {t.pickStopHint}
           </div>
         </div>
       )}
@@ -567,15 +701,19 @@ function NowTab() {
   );
 }
 // ─── Off-Post Tab ─────────────────────────────────────────────────────────────
+// Long English descriptive paragraphs here intentionally left English: MVP scope
+// for the Korean toggle is UI chrome only. Long-form reference content can be
+// translated in a follow-up with KATUSA/KSC QA.
 function OffPostTab() {
+  const { t } = useT();
   return (
     <div style={{padding:"16px 14px 32px"}}>
       <div style={{background:`linear-gradient(135deg,${C.bgCard},#162a10)`,border:`1px solid ${C.borderMain}`,borderRadius:14,padding:18,marginBottom:20}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <span style={{fontSize:22}}>📡</span>
           <div>
-            <div style={{fontFamily:"'Rajdhani',sans-serif",fontSize:17,fontWeight:700,color:C.gold,letterSpacing:1}}>Live GPS Tracking</div>
-            <div style={{fontSize:11,color:C.oliveDim,letterSpacing:.5}}>FUTURE FEATURE · WHAT IT REQUIRES</div>
+            <div style={{fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",fontSize:17,fontWeight:700,color:C.gold,letterSpacing:1}}>{t.liveGps}</div>
+            <div style={{fontSize:11,color:C.oliveDim,letterSpacing:.5}}>{t.futureFeatureLabel}</div>
           </div>
         </div>
         {[
@@ -595,15 +733,15 @@ function OffPostTab() {
         ))}
         <div style={{background:"#0a1a08",border:"1px solid #2a5a20",borderRadius:8,padding:"10px 12px"}}>
           <div style={{fontSize:11,color:"#5dde88",lineHeight:1.6}}>
-            <strong style={{color:"#4dde88"}}>Action:</strong> Contact Transportation (DSN 755-0424) and DPW GIS/IGI&S (Bldg 6140) to explore GPS trackers or a BusWhere deployment for Humphreys.
+            <strong style={{color:"#4dde88"}}>{t.gpsAction}</strong>{t.gpsActionText}
           </div>
         </div>
       </div>
 
-      <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:10}}>Inter-Garrison Routes</div>
+      <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:10}}>{t.interGarrisonHeader}</div>
       <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
         <div style={{fontSize:12,color:C.sage,lineHeight:1.7}}>
-          ⚠️ Inter-garrison buses are <strong style={{color:C.tan}}>not integrated</strong> into the trip planner. Priority-based seating, fixed schedules, not connectable as transfers. Verify at:<br/>
+          {t.interGarrisonWarn1}<strong style={{color:C.tan}}>{t.interGarrisonWarnStrong}</strong>{t.interGarrisonWarn2}<br/>
           <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.gold}}>home.army.mil/humphreys → Inter-Garrison Bus Service</span>
         </div>
       </div>
@@ -613,7 +751,7 @@ function OffPostTab() {
             <span style={{fontSize:20}}>{r.icon}</span>
             <div>
               <div style={{fontSize:15,fontWeight:700,color:C.khaki}}>{r.name}</div>
-              <div style={{fontSize:11,color:C.oliveDim}}>Pick-up: {r.pickup}</div>
+              <div style={{fontSize:11,color:C.oliveDim}}>{t.pickupLabel} {r.pickup}</div>
             </div>
           </div>
           <div style={{fontSize:12,color:C.tan,lineHeight:1.6,marginBottom:4}}>{r.desc}</div>
@@ -622,14 +760,14 @@ function OffPostTab() {
       ))}
 
       <div style={{background:"#120e04",border:`1px solid #4a3a10`,borderRadius:12,padding:"14px 16px",marginTop:12}}>
-        <div style={{fontSize:13,fontWeight:700,color:C.gold,marginBottom:10}}>📋 Your To-Do List</div>
+        <div style={{fontSize:13,fontWeight:700,color:C.gold,marginBottom:10}}>{t.todoHeader}</div>
         {[
           "Download current inter-garrison PDFs from USAG Humphreys (airport schedule updated Feb 2026)",
           "Provide Brown & Pink route PDFs to verify their stops (currently estimated)",
           "Obtain full building-number directory from DPW GIS / IGI&S office (Bldg 6140)",
           "Contact Transportation (DSN 755-0424) about GPS tracker feasibility or BusWhere deployment",
           "Confirm Blue/Black/Green/Orange/Purple schedule PDFs to replace estimated frequencies with exact timetables",
-          "Add Korean language toggle (KATUSAs, KSC, family — no existing app fills this gap)",
+          "Get KATUSA / KSC colleague to QA the Korean translation strings before public release",
         ].map((task,i)=>(
           <div key={i} style={{display:"flex",gap:8,marginBottom:10}}>
             <span style={{color:C.gold,fontWeight:700,flexShrink:0,fontFamily:"'JetBrains Mono',monospace",fontSize:13}}>{i+1}.</span>
@@ -659,6 +797,10 @@ export default function App() {
   const [favorites, setFavorites] = useLocalStorage("humphreys.favorites", []);
   const [recent, setRecent] = useLocalStorage("humphreys.recent", []);
 
+  // UI language. Persisted across reloads. Stop / route names stay English regardless.
+  const [lang, setLang] = useLocalStorage("humphreys.lang", "en");
+  const t = STRINGS[lang] || STRINGS.en;
+
   const search=()=>{
     const ref = tMode === "now" ? new Date() : parseHMD(tTime, tDate);
     const mode = tMode === "arrive" ? "arrive" : "depart";
@@ -674,8 +816,8 @@ export default function App() {
   const swap=()=>{setFS(tStop);setTS(fStop);setFL(tLbl);setTL(fLbl);reset();};
 
   const addFavorite=()=>{
-    if (!fStop) { alert("Pick a From stop first, then save it as a favorite."); return; }
-    const name = (prompt("Name this favorite (e.g. Home, Work, Gym)") || "").trim();
+    if (!fStop) { alert(t.pickFromFirst); return; }
+    const name = (prompt(t.saveFavPrompt) || "").trim();
     if (!name) return;
     setFavorites(prev => [{name, stop:fStop, label:fLbl}, ...prev.filter(f => !(f.stop===fStop && f.name===name))]);
   };
@@ -683,18 +825,25 @@ export default function App() {
   const removeRecent=idx=>setRecent(prev=>prev.filter((_,i)=>i!==idx));
   const applyFavorite=f=>{setFS(f.stop);setFL(f.label);reset();};
   const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setTS(r.tStop);setTL(r.tLbl);reset();};
-  const TABS=[["plan","🗺 Plan"],["now","⏱ Now"],["routes","🚌 Routes"],["offpost","📡 Off-Post"]];
+  const TABS=[["plan",t.tabPlan],["now",t.tabNow],["routes",t.tabRoutes],["offpost",t.tabOffpost]];
 
   return (
-    <div style={{fontFamily:"'Rajdhani',sans-serif",background:C.bgBase,minHeight:"100vh",color:C.tan,maxWidth:480,margin:"0 auto"}}>
+    <LangContext.Provider value={{ lang, t }}>
+    <div style={{fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",background:C.bgBase,minHeight:"100vh",color:C.tan,maxWidth:480,margin:"0 auto"}}>
       <style>{CSS}</style>
 
       <div style={{background:`linear-gradient(180deg,${C.bgCard} 0%,${C.bgBase} 100%)`,borderBottom:`1px solid ${C.borderSub}`,padding:"18px 16px 14px"}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <div style={{width:48,height:48,background:`linear-gradient(135deg,${C.gold},${C.goldDark})`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:`0 4px 20px rgba(255,184,28,.4)`}}>🚌</div>
-          <div>
-            <div style={{fontFamily:"'Rajdhani',sans-serif",fontSize:22,fontWeight:700,color:C.gold,letterSpacing:3,textTransform:"uppercase",lineHeight:1.1}}>Humphreys Transit</div>
-            <div style={{fontSize:11,color:C.oliveMute,letterSpacing:2,textTransform:"uppercase"}}>Camp Humphreys · USAG Korea</div>
+          <div style={{width:48,height:48,background:`linear-gradient(135deg,${C.gold},${C.goldDark})`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:`0 4px 20px rgba(255,184,28,.4)`,flexShrink:0}}>🚌</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",fontSize:lang==="ko"?20:22,fontWeight:700,color:C.gold,letterSpacing:lang==="ko"?1.5:3,textTransform:lang==="ko"?"none":"uppercase",lineHeight:1.1}}>{t.appTitle}</div>
+            <div style={{fontSize:11,color:C.oliveMute,letterSpacing:lang==="ko"?1:2,textTransform:lang==="ko"?"none":"uppercase"}}>{t.appSubtitle}</div>
+          </div>
+          <div style={{display:"flex",gap:2,background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:6,padding:2,flexShrink:0}}>
+            <button onClick={()=>setLang("en")}
+              style={{background:lang==="en"?C.gold:"transparent",color:lang==="en"?C.bgDeep:C.sage,border:"none",borderRadius:4,padding:"4px 8px",fontSize:11,fontWeight:700,fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",cursor:"pointer",letterSpacing:1}}>EN</button>
+            <button onClick={()=>setLang("ko")}
+              style={{background:lang==="ko"?C.gold:"transparent",color:lang==="ko"?C.bgDeep:C.sage,border:"none",borderRadius:4,padding:"4px 8px",fontSize:11,fontWeight:700,fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",cursor:"pointer"}}>한국어</button>
           </div>
         </div>
 
@@ -720,7 +869,7 @@ export default function App() {
             <div style={{marginBottom:12}}>
               {favorites.length>0 && (
                 <div style={{marginBottom:8}}>
-                  <div style={{fontSize:10,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>★ Favorites</div>
+                  <div style={{fontSize:10,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{t.favorites}</div>
                   <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
                     {favorites.map((f,i)=>(
                       <div key={i} className="chip" style={{borderColor:C.gold+"66",color:C.khaki}}>
@@ -729,7 +878,7 @@ export default function App() {
                           <span style={{fontWeight:600}}>{f.name}</span>
                           <span style={{color:C.oliveDim,fontSize:10}}>· {f.stop}</span>
                         </span>
-                        <button className="chipx" onClick={()=>removeFavorite(i)} aria-label="Remove favorite">×</button>
+                        <button className="chipx" onClick={()=>removeFavorite(i)} aria-label={t.removeFavorite}>×</button>
                       </div>
                     ))}
                   </div>
@@ -737,7 +886,7 @@ export default function App() {
               )}
               {recent.length>0 && (
                 <div>
-                  <div style={{fontSize:10,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>↺ Recent</div>
+                  <div style={{fontSize:10,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{t.recent}</div>
                   <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
                     {recent.map((r,i)=>(
                       <div key={i} className="chip">
@@ -746,7 +895,7 @@ export default function App() {
                           <span style={{color:C.oliveDim}}>→</span>
                           <span style={{color:C.tan}}>{r.tStop}</span>
                         </span>
-                        <button className="chipx" onClick={()=>removeRecent(i)} aria-label="Remove recent">×</button>
+                        <button className="chipx" onClick={()=>removeRecent(i)} aria-label={t.removeRecent}>×</button>
                       </div>
                     ))}
                   </div>
@@ -755,16 +904,16 @@ export default function App() {
             </div>
           )}
           <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:14,padding:16,marginBottom:14}}>
-            <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:14}}>Type a stop name or building number</div>
+            <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:14}}>{t.typePrompt}</div>
             <div style={{marginBottom:10}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,justifyContent:"space-between"}}>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <div style={{width:9,height:9,borderRadius:"50%",background:"#4dde88",boxShadow:"0 0 7px #4dde88aa"}}/>
-                  <span style={{fontSize:10,color:"#4dde88",textTransform:"uppercase",letterSpacing:1.5}}>From</span>
+                  <span style={{fontSize:10,color:"#4dde88",textTransform:"uppercase",letterSpacing:1.5}}>{t.from}</span>
                 </div>
-                {fStop && <button onClick={addFavorite} title="Save From as favorite" style={{background:"transparent",border:`1px solid ${C.gold}55`,color:C.gold,fontSize:10,padding:"2px 8px",borderRadius:10,cursor:"pointer",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>★ Save</button>}
+                {fStop && <button onClick={addFavorite} title={t.saveFavTitle} style={{background:"transparent",border:`1px solid ${C.gold}55`,color:C.gold,fontSize:10,padding:"2px 8px",borderRadius:10,cursor:"pointer",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>{t.saveFav}</button>}
               </div>
-              <StopInput label="From" value={fLbl} onChange={(s,l)=>{setFS(s);setFL(l);reset();}}/>
+              <StopInput label={t.from} value={fLbl} onChange={(s,l)=>{setFS(s);setFL(l);reset();}}/>
             </div>
             <div style={{display:"flex",justifyContent:"center",margin:"4px 0"}}>
               <button onClick={swap} style={{background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:"50%",width:32,height:32,cursor:"pointer",color:C.sage,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>⇅</button>
@@ -772,19 +921,19 @@ export default function App() {
             <div style={{marginBottom:14}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
                 <div style={{width:9,height:9,borderRadius:2,background:C.gold,boxShadow:`0 0 7px ${C.gold}aa`}}/>
-                <span style={{fontSize:10,color:C.gold,textTransform:"uppercase",letterSpacing:1.5}}>To</span>
+                <span style={{fontSize:10,color:C.gold,textTransform:"uppercase",letterSpacing:1.5}}>{t.to}</span>
               </div>
-              <StopInput label="To" value={tLbl} onChange={(s,l)=>{setTS(s);setTL(l);reset();}}/>
+              <StopInput label={t.to} value={tLbl} onChange={(s,l)=>{setTS(s);setTL(l);reset();}}/>
             </div>
 
             {/* Time mode picker */}
             <div style={{borderTop:`1px solid ${C.borderDim}`,paddingTop:12,marginBottom:14}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
                 <span style={{fontSize:14}}>⏰</span>
-                <span style={{fontSize:10,color:C.sage,textTransform:"uppercase",letterSpacing:1.5}}>When</span>
+                <span style={{fontSize:10,color:C.sage,textTransform:"uppercase",letterSpacing:1.5}}>{t.when}</span>
               </div>
               <div className="seg">
-                {[["now","Leave now"],["depart","Depart at"],["arrive","Arrive by"]].map(([k,lbl])=>(
+                {[["now",t.leaveNow],["depart",t.departAt],["arrive",t.arriveBy]].map(([k,lbl])=>(
                   <button key={k} className={`segbtn ${tMode===k?"on":""}`} onClick={()=>{setTMode(k); reset();}}>{lbl}</button>
                 ))}
               </div>
@@ -800,7 +949,7 @@ export default function App() {
                     {Array.from({length:7}).map((_,i)=>{
                       const d=new Date(); d.setDate(d.getDate()+i);
                       const ymd=`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-                      const lbl=i===0?"Today":i===1?"Tmrw":DOW[d.getDay()];
+                      const lbl=i===0?t.today:i===1?t.tomorrow:t.dow[d.getDay()];
                       const on=tDate===ymd;
                       return (
                         <button key={i} className={`segbtn ${on?"on":""}`}
@@ -813,13 +962,13 @@ export default function App() {
               )}
             </div>
 
-            <button className="btn" disabled={!fStop||!tStop} onClick={search}>Find Routes →</button>
+            <button className="btn" disabled={!fStop||!tStop} onClick={search}>{t.findRoutes}</button>
           </div>
 
           <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",gap:10}}>
             <span style={{fontSize:14}}>🏢</span>
             <div style={{fontSize:11,color:C.oliveDim,lineHeight:1.6}}>
-              <span style={{color:C.tan,fontWeight:600}}>~15 building numbers mapped</span> (e.g. 6400 → Maude Hall, 5700 → PX). Full directory pending from DPW Bldg 6140.
+              <span style={{color:C.tan,fontWeight:600}}>{t.bldgsMappedTitle}</span>{t.bldgsMappedDesc}
             </div>
           </div>
 
@@ -828,21 +977,21 @@ export default function App() {
               {!results.trips.length ? (
                 <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:14,padding:28,textAlign:"center"}}>
                   <div style={{fontSize:36,marginBottom:10}}>🔍</div>
-                  <div style={{fontSize:15,fontWeight:600,color:C.khaki,marginBottom:8}}>No Trips Available</div>
+                  <div style={{fontSize:15,fontWeight:600,color:C.khaki,marginBottom:8}}>{t.noTrips}</div>
                   <div style={{fontSize:13,color:C.oliveDim,lineHeight:1.6}}>
                     {results.filtered.length > 0
-                      ? `Possible routes are outside service hours at this time (${results.filtered.join(", ")}). Try a different time.`
-                      : "No shared or 1-transfer path exists. Try selecting the Bus Terminal as a hub, or a nearby major stop."}
+                      ? t.noTripsOOS(results.filtered.join(", "))
+                      : t.noTripsNoPath}
                   </div>
                 </div>
               ) : (
                 <>
                   <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>
-                    {results.trips.length} option{results.trips.length!==1?"s":""} found
-                    {results.filtered.length>0 && <span style={{color:C.gold,marginLeft:8,textTransform:"none",letterSpacing:0}}>· {results.filtered.length} route{results.filtered.length!==1?"s":""} out of service</span>}
+                    {t.optionsFound(results.trips.length)}
+                    {results.filtered.length>0 && <span style={{color:C.gold,marginLeft:8,textTransform:"none",letterSpacing:0}}>· {t.routesOOS(results.filtered.length)}</span>}
                   </div>
-                  {results.trips.map((t,i)=><TripCard key={t.id} trip={t} rank={i}/>)}
-                  <div style={{fontSize:11,color:C.oliveMute,textAlign:"center",marginTop:8,lineHeight:1.6}}>Wait times are averages (freq ÷ 2). Verify exact times at USAG Humphreys or MyArmyPost app.</div>
+                  {results.trips.map((trip,i)=><TripCard key={trip.id} trip={trip} rank={i}/>)}
+                  <div style={{fontSize:11,color:C.oliveMute,textAlign:"center",marginTop:8,lineHeight:1.6}}>{t.waitDisclaimer}</div>
                 </>
               )}
             </div>
@@ -852,7 +1001,7 @@ export default function App() {
             <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"12px 14px",display:"flex",gap:10}}>
               <span style={{fontSize:16}}>ℹ️</span>
               <div style={{fontSize:11,color:C.oliveDim,lineHeight:1.6}}>
-                Shuttles run Mon–Fri 0600–2200. Gold Route runs Mon–Sun 0900–2100. Out-of-service routes are filtered automatically. Confirm: DSN 755-0424.
+                {t.shuttleInfo}
               </div>
             </div>
           )}
@@ -865,7 +1014,7 @@ export default function App() {
         <div style={{padding:"16px 14px 24px"}}>
           <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"10px 14px",marginBottom:14}}>
             <div style={{fontSize:11,color:C.sage,lineHeight:1.6}}>
-              <span style={{color:C.gold}}>Gold dots</span> next to stop names = transfer points served by multiple routes.
+              {t.goldDotsInfo}
             </div>
           </div>
           {Object.values(ROUTES).map(r=><RouteCard key={r.id} route={r}/>)}
@@ -874,5 +1023,6 @@ export default function App() {
 
       {tab==="offpost" && <OffPostTab/>}
     </div>
+    </LangContext.Provider>
   );
 }

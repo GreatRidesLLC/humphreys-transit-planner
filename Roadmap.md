@@ -14,21 +14,7 @@ Planned improvements grouped into phases by effort and impact. Update this file 
 - "Now" view (4th tab) — pick a stop, see the next departure on every route serving it. Gold from Bus Terminal uses verified `:00 :20 :40`; everywhere else shows `~freq ÷ 2 min` average. Out-of-service routes labeled. Auto-refreshes every minute
 - Favorites & recent trips — `humphreys.favorites` and `humphreys.recent` in localStorage. Favorite chips populate just the From input; recent chips populate both From and To. `★ Save` button on the Plan form names the current From stop. `×` on each chip removes it. Recent is auto-pruned to 5, deduped by stop-pair
 - Day-of-week picker — when Depart-at or Arrive-by is active, the Plan form shows a 7-day chip row (Today, Tmrw, DOW…) plus a `<input type="date">` for arbitrary future dates. The chosen day is passed to `findTrips` so Mon–Fri routes are correctly filtered on weekends and vice versa. Enables both planning ahead and weekend testing of weekday-only routes
-
-## Phase 3 — Korean language toggle (own milestone)
-
-MVP scope: translate UI chrome only (tabs, labels, buttons, errors). Leave stop names and route names in English — Korean speakers on base know "PX" and "Maude Hall" in English already. Roughly 60–80 strings.
-
-Approach:
-
-- Flat `{ en: {...}, ko: {...} }` lookup object, keyed by string identifier
-- Add Noto Sans KR font alongside Rajdhani
-- Header toggle: `EN | 한국어`
-- Persist choice in localStorage
-
-Get a KATUSA or KSC colleague to QA the translation; machine translation alone produces awkward phrasing in transit/military domain language.
-
-**Strategic value:** No competing app does this. MyArmyPost is English-only. KATUSAs, KSC battalion staff, Korean civilians, and Korean spouses currently rely on printed paper schedules. This single feature turns the app from "another bus app" into "the only Korean-language Humphreys shuttle app."
+- Korean language toggle (MVP) — `EN | 한국어` toggle in the header, persisted in `humphreys.lang` localStorage. Flat `STRINGS.en` / `STRINGS.ko` lookup keyed by string identifier (~80 strings). Noto Sans KR added alongside Rajdhani in the font stack so hangul renders correctly. Stop names and route names stay English by design. Korean strings are first-draft and need KATUSA / KSC QA before public release. Long descriptive paragraphs on the Off-Post tab (GPS infrastructure bullets, inter-garrison route descriptions) remain English — out of MVP scope
 
 ## Phase 4 — Data-gated features
 
