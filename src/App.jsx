@@ -105,6 +105,20 @@ const OFFPOST = [
     pickup:"Bus Terminal" },
 ];
 
+// ─── localStorage hook ────────────────────────────────────────────────────────
+function useLocalStorage(key, initial) {
+  const [v, setV] = useState(() => {
+    try {
+      const x = typeof localStorage !== "undefined" ? localStorage.getItem(key) : null;
+      return x ? JSON.parse(x) : initial;
+    } catch { return initial; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(key, JSON.stringify(v)); } catch { /* quota / privacy mode */ }
+  }, [key, v]);
+  return [v, setV];
+}
+
 // ─── Pathfinding ──────────────────────────────────────────────────────────────
 const STOP_ROUTES = {};
 for (const [id, r] of Object.entries(ROUTES))
@@ -227,6 +241,9 @@ body{background:#0e1a08}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:#0e1a08}
 ::-webkit-scrollbar-thumb{background:#3a5820;border-radius:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#162210;border:1px solid #3a5820;border-radius:14px;padding:5px 4px 5px 10px;font-size:12px;color:#e8dca8;white-space:nowrap;flex-shrink:0;font-family:'Rajdhani',sans-serif}
+.chipx{background:transparent;border:none;color:#5a7a40;font-size:14px;cursor:pointer;padding:0 6px;line-height:1;border-radius:50%}
+.chipx:hover{color:#FFB81C;background:#243a18}
 `;
 
 // ─── Searchable Input ─────────────────────────────────────────────────────────
@@ -631,14 +648,34 @@ export default function App() {
   const nowHM = () => { const d=new Date(); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
   const [tTime, setTTime] = useState(nowHM);
 
+  // Favorites: user-named From stops. Recent: last 5 unique From→To searches.
+  const [favorites, setFavorites] = useLocalStorage("humphreys.favorites", []);
+  const [recent, setRecent] = useLocalStorage("humphreys.recent", []);
+
   const search=()=>{
     const ref = tMode === "now" ? new Date() : parseHM(tTime);
     const mode = tMode === "arrive" ? "arrive" : "depart";
     setRes(findTrips(fStop, tStop, ref, mode));
     setSrch(true);
+    setRecent(prev => {
+      const entry = { fStop, tStop, fLbl, tLbl };
+      const deduped = prev.filter(r => !(r.fStop===fStop && r.tStop===tStop));
+      return [entry, ...deduped].slice(0, 5);
+    });
   };
   const reset=()=>{setRes(null);setSrch(false);};
   const swap=()=>{setFS(tStop);setTS(fStop);setFL(tLbl);setTL(fLbl);reset();};
+
+  const addFavorite=()=>{
+    if (!fStop) { alert("Pick a From stop first, then save it as a favorite."); return; }
+    const name = (prompt("Name this favorite (e.g. Home, Work, Gym)") || "").trim();
+    if (!name) return;
+    setFavorites(prev => [{name, stop:fStop, label:fLbl}, ...prev.filter(f => !(f.stop===fStop && f.name===name))]);
+  };
+  const removeFavorite=idx=>setFavorites(prev=>prev.filter((_,i)=>i!==idx));
+  const removeRecent=idx=>setRecent(prev=>prev.filter((_,i)=>i!==idx));
+  const applyFavorite=f=>{setFS(f.stop);setFL(f.label);reset();};
+  const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setTS(r.tStop);setTL(r.tLbl);reset();};
   const TABS=[["plan","🗺 Plan"],["now","⏱ Now"],["routes","🚌 Routes"],["offpost","📡 Off-Post"]];
 
   return (
@@ -672,12 +709,53 @@ export default function App() {
 
       {tab==="plan" && (
         <div style={{padding:"16px 14px"}}>
+          {(favorites.length>0 || recent.length>0) && (
+            <div style={{marginBottom:12}}>
+              {favorites.length>0 && (
+                <div style={{marginBottom:8}}>
+                  <div style={{fontSize:10,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>★ Favorites</div>
+                  <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
+                    {favorites.map((f,i)=>(
+                      <div key={i} className="chip" style={{borderColor:C.gold+"66",color:C.khaki}}>
+                        <span onClick={()=>applyFavorite(f)} style={{cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+                          <span style={{color:C.gold}}>★</span>
+                          <span style={{fontWeight:600}}>{f.name}</span>
+                          <span style={{color:C.oliveDim,fontSize:10}}>· {f.stop}</span>
+                        </span>
+                        <button className="chipx" onClick={()=>removeFavorite(i)} aria-label="Remove favorite">×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {recent.length>0 && (
+                <div>
+                  <div style={{fontSize:10,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>↺ Recent</div>
+                  <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
+                    {recent.map((r,i)=>(
+                      <div key={i} className="chip">
+                        <span onClick={()=>applyRecent(r)} style={{cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>
+                          <span style={{color:C.tan}}>{r.fStop}</span>
+                          <span style={{color:C.oliveDim}}>→</span>
+                          <span style={{color:C.tan}}>{r.tStop}</span>
+                        </span>
+                        <button className="chipx" onClick={()=>removeRecent(i)} aria-label="Remove recent">×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:14,padding:16,marginBottom:14}}>
             <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:14}}>Type a stop name or building number</div>
             <div style={{marginBottom:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                <div style={{width:9,height:9,borderRadius:"50%",background:"#4dde88",boxShadow:"0 0 7px #4dde88aa"}}/>
-                <span style={{fontSize:10,color:"#4dde88",textTransform:"uppercase",letterSpacing:1.5}}>From</span>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,justifyContent:"space-between"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <div style={{width:9,height:9,borderRadius:"50%",background:"#4dde88",boxShadow:"0 0 7px #4dde88aa"}}/>
+                  <span style={{fontSize:10,color:"#4dde88",textTransform:"uppercase",letterSpacing:1.5}}>From</span>
+                </div>
+                {fStop && <button onClick={addFavorite} title="Save From as favorite" style={{background:"transparent",border:`1px solid ${C.gold}55`,color:C.gold,fontSize:10,padding:"2px 8px",borderRadius:10,cursor:"pointer",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>★ Save</button>}
               </div>
               <StopInput label="From" value={fLbl} onChange={(s,l)=>{setFS(s);setFL(l);reset();}}/>
             </div>
