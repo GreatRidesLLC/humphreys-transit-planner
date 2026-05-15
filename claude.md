@@ -51,6 +51,7 @@ Building-number directory: ~15 mapped of an unknown total. Full directory pendin
 
 ## Reference contacts
 
+- USAG Humphreys Public Affairs Office: Manages MyArmyPost App (MAPA)
 - Transportation Office: DSN 755-0424
 - DPW GIS / IGI&S: Bldg 6140
 - USAG Humphreys website: home.army.mil/humphreys
@@ -61,4 +62,4 @@ Building-number directory: ~15 mapped of an unknown total. Full directory pendin
 - Keep the single-component structure until it actually hurts; do not pre-split into many files
 - The `findTrips` function is the heart of routing logic — read it carefully before touching
 - Wait/ride time heuristics will get replaced once real schedule PDFs arrive; do not over-engineer them now
-- See `ROADMAP.md` for the planned improvement queue and rationale
+- See `Roadmap.md` for the planned improvement queue and rationale
