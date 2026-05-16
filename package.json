@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sbom": "npx --yes @cyclonedx/cyclonedx-npm --output-format json --output-file sbom.json --spec-version 1.6"
   },
   "dependencies": {
     "react": "^19.2.6",
