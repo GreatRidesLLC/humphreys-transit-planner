@@ -90,6 +90,18 @@ The project may ship as a MyArmyPost App (MAPA) integration, a standalone PWA, a
 - ATO / RMF / STIG paperwork — only relevant for MAPA integration
 - Pen test engagement — timed to whichever path goes live
 
+## Controls deferred until a remote repository exists
+
+The repo is currently local-only. The following controls require a hosted git remote with CI (GitHub Actions, GitLab CI, or equivalent) and will be enabled after the project is pushed:
+
+- `gitleaks` job on every PR and on `main`
+- `npm audit --audit-level=high` gate in CI
+- SBOM regeneration on each build, uploaded as a CI artifact
+- Dependabot or Renovate weekly dependency updates (auto-merge for patch-level only)
+- Branch protection: required reviews, required status checks, no force-push to `main`
+- OIDC federation to the hosting provider for deploys (replace any static deploy token)
+- Run `gitleaks detect --log-opts="--all"` against full history on first push, before the repo is made public or shared
+
 ## Out-of-scope security findings
 
 The following are not considered security vulnerabilities and will not be triaged as such:
