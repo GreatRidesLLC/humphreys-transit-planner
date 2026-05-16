@@ -1,0 +1,16 @@
+# Gitleaks config for humphreys-transit.
+# Extends the upstream default ruleset; add project-specific allowlist below.
+# Upstream defaults: https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Project-specific allowlist"
+paths = [
+  '''node_modules/''',
+  '''dist/''',
+  '''package-lock\.json''',
+  '''sbom\.json''',
+  '''public/fonts/''',
+]

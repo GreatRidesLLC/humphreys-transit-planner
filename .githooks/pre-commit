@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Pre-commit hook: scan staged changes for secrets with gitleaks.
+# Install with: scripts/setup-hooks.sh
+
+set -euo pipefail
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  cat >&2 <<'EOF'
+gitleaks not found in PATH. Pre-commit secret scan skipped.
+
+Install one of:
+  - macOS:   brew install gitleaks
+  - Linux:   download from https://github.com/gitleaks/gitleaks/releases
+             and place the binary on your PATH (e.g. ~/.local/bin)
+  - Docker:  alias gitleaks="docker run --rm -v $(pwd):/repo zricethezav/gitleaks:latest"
+
+Re-run `git commit` after installing. To bypass intentionally for one commit:
+  SKIP_GITLEAKS=1 git commit ...
+EOF
+  exit 0
+fi
+
+if [[ "${SKIP_GITLEAKS:-0}" == "1" ]]; then
+  echo "gitleaks: bypassed via SKIP_GITLEAKS=1" >&2
+  exit 0
+fi
+
+gitleaks protect --staged --redact --no-banner --verbose
