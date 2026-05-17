@@ -36,6 +36,27 @@ Base map (Leaflet or MapLibre), stop markers, route polylines, optional fit-to-r
 ### Loop directionality
 Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes you can travel either direction. Correcting this requires authoritative direction data from the schedule PDFs, and the payoff is low (edge cases only). Park until someone reports a wrong-direction bug.
 
+### Schedule data structure (replaces `freq ÷ 2` wait math)
+Blocked on PDFs for Blue / Black / Green / Orange / Purple / Brown / Pink. Once authoritative timetables exist, add a per-route schedule lookup (departure times by stop, by day-of-week) and extend `nextDepartureInfo` (`App.jsx:598`) plus the wait math in `findTrips` (`App.jsx:283`, `:293`) to consult it before falling back to `Math.round(R.freq/2)`. Existing Gold + Bus Terminal branch (`App.jsx:603–612`) is the template. Drop `goldDisclaimer` string once all routes verified.
+
+### Test framework + findTrips coverage
+No tests yet. `findTrips` is the heart of routing logic and refactor risk grows as schedule data lands. Add Vitest, write a fixture-driven suite covering: direct routes, transfer routes (validate the score-min transfer selection), service-hours filtering, day-of-week filtering, Gold verified-departure path, edge cases (same from/to stop, no path). Run on pre-commit and in CI once remote is set up.
+
+### Privacy-respecting telemetry
+Currently zero signal on actual usage — roadmap priorities are guesses. Self-hosted Plausible or Umami → track route searches, stop usage, language split, tab activity. No PII, no third-party trackers (CSP already locks down `connect-src` and `script-src`). Required CSP update when added. Informs Phase 4 prioritization (nearest stop vs map view).
+
+### User feedback channel
+No way for users to report wrong stops, missed buses, or "this route also stops at X". MVP: footer link to email or a hosted form (Tally / Formspree). Lower-effort than GitHub issues since most users aren't on GitHub. KATUSA / KSC feedback especially valuable for Korean string QA already flagged in shipped Korean MVP.
+
+### Legal / branding verification
+Uses "Humphreys" name + Army olive palette. DoD brand regs unknown — verify with PAO at the meeting (see [[distribution-options]]). Add explicit "Unofficial, not endorsed by USAG Humphreys" disclaimer in footer if PAO confirms standalone path. ATO/RMF paperwork only triggers if MAPA path is chosen.
+
+### iOS-compatible PWA icons (PNG raster set)
+PWA manifest currently uses `public/icon.svg` for all icon entries. Chrome / Firefox / Edge render SVG icons fine. iOS Safari ignores SVG manifest icons and falls back to a generic glyph on home-screen install. Adding `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, and `apple-touch-icon.png` (180×180) would close the gap. Blocked locally because `sharp` segfaults on this WSL2 kernel (bus error on library load). Options when revisiting: generate icons on a non-WSL machine, install `@resvg/resvg-js` and retry, or use ImageMagick/Inkscape via shell.
+
+### Semantic landmark refactor
+A11y pass added aria roles + states. Skipped: wrapping the header / nav / main / tab-panel regions in proper semantic elements (`<header>`, `<nav>`, `<main>`, `role="tabpanel"`). Requires touching the top-level layout in `App.jsx` and is best done as a separate commit to keep the diff reviewable.
+
 ## Known data gaps
 
 - Brown, Pink: stops estimated, no PDFs verified
