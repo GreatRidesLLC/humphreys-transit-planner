@@ -16,8 +16,8 @@ const C = {
   khaki:     "#e8dca8",
   tan:       "#c8b878",
   sage:      "#8aaa60",
-  oliveDim:  "#5a7a40",
-  oliveMute: "#3a5828",
+  oliveDim:  "#7a9a58",
+  oliveMute: "#6a8a48",
   oliveFaint:"#263c18",
 };
 
@@ -58,6 +58,9 @@ const STRINGS = {
     saveFavPrompt: "Name this favorite (e.g. Home, Work, Gym)",
     pickFromFirst: "Pick a From stop first, then save it as a favorite.",
     removeFavorite: "Remove favorite", removeRecent: "Remove recent",
+    swapStops: "Swap from and to",
+    expandTrip: "Show trip details", collapseTrip: "Hide trip details",
+    expandRoute: "Show route stops", collapseRoute: "Hide route stops",
     when: "When",
     leaveNow: "Leave now", departAt: "Depart at", arriveBy: "Arrive by",
     today: "Today", tomorrow: "Tmrw", dow: DOW,
@@ -116,6 +119,9 @@ const STRINGS = {
     saveFavPrompt: "즐겨찾기 이름 (예: 집, 직장, 체육관)",
     pickFromFirst: "먼저 출발 정류장을 선택한 후 즐겨찾기에 저장하세요.",
     removeFavorite: "즐겨찾기 삭제", removeRecent: "최근 기록 삭제",
+    swapStops: "출발/도착 바꾸기",
+    expandTrip: "경로 상세 보기", collapseTrip: "경로 상세 숨기기",
+    expandRoute: "노선 정류장 보기", collapseRoute: "노선 정류장 숨기기",
     when: "시간",
     leaveNow: "지금 출발", departAt: "출발 시간", arriveBy: "도착 시간",
     today: "오늘", tomorrow: "내일", dow: DOW_KO,
@@ -517,7 +523,10 @@ function TripCard({trip, rank:r}) {
   const estimated=bl.some(l=>!ROUTES[l.rid].verified);
   return (
     <div style={{background:C.bgCard,border:`1px solid ${r===0?C.gold+"55":C.borderSub}`,borderRadius:14,marginBottom:12,overflow:"hidden",boxShadow:r===0?`0 0 28px rgba(255,184,28,.1)`:"none"}}>
-      <div onClick={()=>setOpen(o=>!o)} style={{padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
+      <div role="button" tabIndex={0} aria-expanded={open} aria-label={open?t.collapseTrip:t.expandTrip}
+        onClick={()=>setOpen(o=>!o)}
+        onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(o=>!o);}}}
+        style={{padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
         <div style={{display:"flex",alignItems:"center",gap:12,flex:1}}>
           {r===0 && <span style={{background:C.gold,color:C.bgDeep,fontSize:9,fontWeight:800,padding:"3px 8px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>{t.fastest}</span>}
           {estimated && <span title={t.estTitle} style={{background:"transparent",color:C.sage,border:`1px solid ${C.oliveMute}`,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>{t.est}</span>}
@@ -536,7 +545,7 @@ function TripCard({trip, rank:r}) {
         </div>
         <div style={{display:"flex",gap:5,alignItems:"center"}}>
           {bl.map(l=><div key={l.rid} style={{width:12,height:12,borderRadius:"50%",background:ROUTES[l.rid].color}}/>)}
-          <span style={{color:C.oliveDim,marginLeft:6,fontSize:12}}>{open?"▲":"▼"}</span>
+          <span aria-hidden="true" style={{color:C.oliveDim,marginLeft:6,fontSize:12}}>{open?"▲":"▼"}</span>
         </div>
       </div>
       {open && <div style={{padding:"4px 16px 16px",borderTop:`1px solid ${C.borderDim}`}}>
@@ -552,7 +561,10 @@ function RouteCard({route:r}) {
   const [open,setOpen]=useState(false);
   return (
     <div style={{background:C.bgCard,border:`1px solid ${r.color}33`,borderRadius:12,marginBottom:10,overflow:"hidden"}}>
-      <div onClick={()=>setOpen(o=>!o)} style={{padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
+      <div role="button" tabIndex={0} aria-expanded={open} aria-label={open?t.collapseRoute:t.expandRoute}
+        onClick={()=>setOpen(o=>!o)}
+        onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(o=>!o);}}}
+        style={{padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{width:14,height:14,borderRadius:"50%",background:r.color,boxShadow:`0 0 10px ${r.color}88`,flexShrink:0}}/>
           <div>
@@ -561,7 +573,7 @@ function RouteCard({route:r}) {
             {r.verified && <div style={{fontSize:10,color:"#4dde88",marginTop:2}}>{t.pdfVerified}</div>}
           </div>
         </div>
-        <span style={{color:C.oliveDim,fontSize:13}}>{open?"▲":"▼"}</span>
+        <span aria-hidden="true" style={{color:C.oliveDim,fontSize:13}}>{open?"▲":"▼"}</span>
       </div>
       {open && (
         <div style={{padding:"0 16px 14px",borderTop:`1px solid ${r.color}22`}}>
@@ -838,10 +850,10 @@ export default function App() {
             <div style={{fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",fontSize:lang==="ko"?20:22,fontWeight:700,color:C.gold,letterSpacing:lang==="ko"?1.5:3,textTransform:lang==="ko"?"none":"uppercase",lineHeight:1.1}}>{t.appTitle}</div>
             <div style={{fontSize:11,color:C.oliveMute,letterSpacing:lang==="ko"?1:2,textTransform:lang==="ko"?"none":"uppercase"}}>{t.appSubtitle}</div>
           </div>
-          <div style={{display:"flex",gap:2,background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:6,padding:2,flexShrink:0}}>
-            <button onClick={()=>setLang("en")}
+          <div role="group" aria-label="Language" style={{display:"flex",gap:2,background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:6,padding:2,flexShrink:0}}>
+            <button onClick={()=>setLang("en")} aria-pressed={lang==="en"}
               style={{background:lang==="en"?C.gold:"transparent",color:lang==="en"?C.bgDeep:C.sage,border:"none",borderRadius:4,padding:"4px 8px",fontSize:11,fontWeight:700,fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",cursor:"pointer",letterSpacing:1}}>EN</button>
-            <button onClick={()=>setLang("ko")}
+            <button onClick={()=>setLang("ko")} aria-pressed={lang==="ko"}
               style={{background:lang==="ko"?C.gold:"transparent",color:lang==="ko"?C.bgDeep:C.sage,border:"none",borderRadius:4,padding:"4px 8px",fontSize:11,fontWeight:700,fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",cursor:"pointer"}}>한국어</button>
           </div>
         </div>
@@ -852,9 +864,9 @@ export default function App() {
           ))}
         </div>
 
-        <div style={{display:"flex",gap:6}}>
+        <div role="tablist" style={{display:"flex",gap:6}}>
           {TABS.map(([id,lbl])=>(
-            <button key={id} className="tab" onClick={()=>{setTab(id);reset();}}
+            <button key={id} className="tab" role="tab" aria-selected={tab===id} onClick={()=>{setTab(id);reset();}}
               style={{background:tab===id?C.gold:C.bgSurface, color:tab===id?C.bgDeep:C.sage, border:`1px solid ${tab===id?C.gold:C.borderMain}`}}>
               {lbl}
             </button>
@@ -915,7 +927,7 @@ export default function App() {
               <StopInput label={t.from} value={fLbl} onChange={(s,l)=>{setFS(s);setFL(l);reset();}}/>
             </div>
             <div style={{display:"flex",justifyContent:"center",margin:"4px 0"}}>
-              <button onClick={swap} style={{background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:"50%",width:32,height:32,cursor:"pointer",color:C.sage,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>⇅</button>
+              <button onClick={swap} aria-label={t.swapStops} title={t.swapStops} style={{background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:"50%",width:32,height:32,cursor:"pointer",color:C.sage,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>⇅</button>
             </div>
             <div style={{marginBottom:14}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
@@ -931,9 +943,9 @@ export default function App() {
                 <span style={{fontSize:14}}>⏰</span>
                 <span style={{fontSize:10,color:C.sage,textTransform:"uppercase",letterSpacing:1.5}}>{t.when}</span>
               </div>
-              <div className="seg">
+              <div className="seg" role="group" aria-label={t.when}>
                 {[["now",t.leaveNow],["depart",t.departAt],["arrive",t.arriveBy]].map(([k,lbl])=>(
-                  <button key={k} className={`segbtn ${tMode===k?"on":""}`} onClick={()=>{setTMode(k); reset();}}>{lbl}</button>
+                  <button key={k} className={`segbtn ${tMode===k?"on":""}`} aria-pressed={tMode===k} onClick={()=>{setTMode(k); reset();}}>{lbl}</button>
                 ))}
               </div>
               {tMode !== "now" && (
@@ -944,14 +956,14 @@ export default function App() {
                     <input type="time" className="timep" value={tTime}
                       onChange={e=>{setTTime(e.target.value); reset();}} style={{flex:1}}/>
                   </div>
-                  <div style={{display:"flex",gap:4,marginTop:8,flexWrap:"wrap"}}>
+                  <div role="group" aria-label="Date" style={{display:"flex",gap:4,marginTop:8,flexWrap:"wrap"}}>
                     {Array.from({length:7}).map((_,i)=>{
                       const d=new Date(); d.setDate(d.getDate()+i);
                       const ymd=`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
                       const lbl=i===0?t.today:i===1?t.tomorrow:t.dow[d.getDay()];
                       const on=tDate===ymd;
                       return (
-                        <button key={i} className={`segbtn ${on?"on":""}`}
+                        <button key={i} className={`segbtn ${on?"on":""}`} aria-pressed={on}
                           style={{flex:"1 1 0",minWidth:42,padding:"6px 4px",fontSize:10}}
                           onClick={()=>{setTDate(ymd); reset();}}>{lbl}</button>
                       );
