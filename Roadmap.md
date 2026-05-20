@@ -20,16 +20,12 @@ Planned improvements grouped into phases by effort and impact. Update this file 
 - Brown/Pink stops + freq + days/hours — replaced the placeholder 5-stop guess in each with the real 15- and 6-stop PDF data. Pink freq corrected 30 → 15. Both marked `verified: true` and Fri–Sat (Brown 1600–2200; Pink 1700–2300). `inService` handles the Fri–Sat day filter
 - Blue/Green/Purple headway correction — OCR-confirmed 15-min on exclusive stops. ROUTES `freq` updated from 20/20/25 → 15
 - Palette refresh ("tactical night + signal cyan") — dropped olive-as-chrome in favor of charcoal `#0a0e12` backgrounds with a cyan `#22D3EE` primary-action accent. Gold (now `#FFC83D`) is reserved for verified-PDF / Gold Route trust marks plus the logo / brand mark. Black Route's badge colour changed from whitish `#c0cfc0` to cool gunmetal `#8090a0` so it reads "dark" rather than washed-out. Olive-named keys in `C` retained as aliases for the new cool blue-grey text ramp to avoid touching every callsite. Every text/icon contrast pair still clears WCAG AA
-- Building-number directory expansion — `scripts/fetch_osm_buildings.py` queries the Overpass API for every building inside the USAG Humphreys polygon (OSM way 245548245). 380 numbered buildings found; 17 with names matching a known bus stop were merged into `BUILDINGS` in `App.jsx` (15 → 32). Full dataset cached at `src/data/buildings_osm.json` for future use once bus-stop coordinates land
+- Building-number directory expansion — `scripts/fetch_osm_buildings.py` queries the Overpass API for every building inside the USAG Humphreys polygon (OSM way 245548245). 380 numbered buildings found; 17 with names matching a known bus stop were merged into `BUILDINGS` in `App.jsx` (15 → 32). Full dataset cached at `src/data/buildings_osm.json` for future use
+- Bus-stop coordinates — `scripts/fetch_stop_coords.py` reads OSM `highway=bus_stop` nodes tagged `operator=USAG Humphreys`. 43 of 44 ROUTES stops matched to a tagged node (only `Family Housing Towers (15th Street)`, the newest Pink trial-route stop, is missing from OSM). Output: `src/data/stop_coords.json`. Phase 4 dependency now satisfied
 
 ## Phase 4 — Data-gated features
 
-Both blocked by the same dependency: lat/long coordinates for every bus stop. Source candidates:
-
-- DPW GIS office (Bldg 6140) likely has them already in their installation GIS
-- Otherwise, pin ~80 stops manually on a satellite map in an afternoon
-
-Once coordinates exist, build in this order:
+Coordinate dependency satisfied by `src/data/stop_coords.json` (OSM-sourced). Build in this order:
 
 ### Nearest stop from current location
 Browser geolocation API → haversine distance → auto-fill From with nearest stop. Permission UX matters (don't ask on first load).
@@ -72,6 +68,6 @@ A11y pass added aria roles + states. Skipped: wrapping the header / nav / main /
 - Blue / Green / Purple: headway confirmed 15 min, but service-hour bounds still placeholder `0600–2200`
 - Inter-garrison routes: PDFs need re-download (Incheon Airport schedule updated Feb 2026)
 - Building directory: 32 mapped in `BUILDINGS` (high-confidence stop assignments). 380 known to exist on-post per OSM; remaining ~350 are blocked on stop coordinates for a "nearest stop" heuristic. Many of those have OSM `name` tags (e.g. "Zoeckler Fitness Center", "Heartbreak Ridge Tower") that could be hand-assigned to a stop, but doing so without coordinates risks systematic errors
-- Stop coordinates: none yet (blocks Phase 4)
+- Stop coordinates: 43 of 44 ROUTES stops have OSM-sourced lat/lon in `src/data/stop_coords.json`. Family Housing Towers (15th Street) — the newest Pink-route stop — is the lone gap; needs hand-pinning on a satellite map
 - Holiday / training-holiday schedule variations: Brown/Pink panels capture them; other routes still treat training holidays as ordinary weekdays
 - New stops not yet in `BUILDINGS`: Downtown Plaza, Family Mini Mall / Gas Station, Family Housing Towers (15th Street) — building numbers unknown

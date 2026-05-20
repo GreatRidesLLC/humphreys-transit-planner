@@ -35,7 +35,9 @@ Verification status:
 - **Black, Orange**: 15-min headway unconfirmed — no stops served *exclusively* by either route in the per-stop image directory. ROUTES still carries the old estimates (25 / 30).
 - **Inter-garrison routes**: not integrated into trip planner; shown as info only.
 
-Building-number directory: 32 mapped (15 hand-curated + 17 OSM-sourced via `scripts/fetch_osm_buildings.py`). OSM has 380 numbered buildings inside the installation polygon; only those whose `name` tag unambiguously matches a known bus stop are merged into the `BUILDINGS` const. Full per-building stop assignment is blocked on bus-stop lat/long (DPW GIS / IGI&S office, Bldg 6140); raw OSM dataset lives in `src/data/buildings_osm.json`.
+Building-number directory: 32 mapped (15 hand-curated + 17 OSM-sourced via `scripts/fetch_osm_buildings.py`). OSM has 380 numbered buildings inside the installation polygon; only those whose `name` tag unambiguously matches a known bus stop are merged into the `BUILDINGS` const. Raw OSM dataset lives in `src/data/buildings_osm.json`.
+
+Bus-stop coordinates: 43 of 44 ROUTES stops have lat/lon in `src/data/stop_coords.json` (OSM `highway=bus_stop` nodes tagged `operator=USAG Humphreys`, fetched via `scripts/fetch_stop_coords.py`). Only the new Pink-route stop "Family Housing Towers (15th Street)" is missing.
 
 ## Conventions
 

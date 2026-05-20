@@ -1,0 +1,273 @@
+{
+  "_meta": {
+    "source": "OpenStreetMap via Overpass API (highway=bus_stop, operator=USAG Humphreys)",
+    "polygon_osm_way": 245548245,
+    "fetched_at": "2026-05-20T03:03:59.966122+00:00",
+    "license": "ODbL 1.0 — © OpenStreetMap contributors",
+    "matched": 43,
+    "unmatched": [
+      "Family Housing Towers (15th Street)"
+    ],
+    "total_routes_stops": 44
+  },
+  "stops": {
+    "2ID Sustainment": {
+      "lat": 36.9772926,
+      "lon": 126.9872118,
+      "source": "osm bus_stop 5772401672",
+      "name_ko": "2사단 지원여단"
+    },
+    "Airfield Operations": {
+      "lat": 36.9647228,
+      "lon": 127.0206103,
+      "source": "osm bus_stop 13837939352",
+      "name_ko": null
+    },
+    "Balboni Sports Field (5th St)": {
+      "lat": 36.9707625,
+      "lon": 126.9949451,
+      "source": "osm bus_stop 12077044064",
+      "name_ko": "발보니 필드"
+    },
+    "Balboni Sports Field (Marne Ave)": {
+      "lat": 36.9693829,
+      "lon": 126.9951126,
+      "source": "osm bus_stop 13837939365",
+      "name_ko": null
+    },
+    "Barracks (6000s Block)": {
+      "lat": 36.9625196,
+      "lon": 127.0154585,
+      "source": "osm bus_stop 5772456068",
+      "name_ko": "6000번대 배럭"
+    },
+    "Barracks (6800s & 6900s Block)": {
+      "lat": 36.9745135,
+      "lon": 126.9910596,
+      "source": "osm bus_stop 9288307022",
+      "name_ko": null
+    },
+    "Barracks (6800s Block)": {
+      "lat": 36.9745135,
+      "lon": 126.9910596,
+      "source": "osm bus_stop 9288307022",
+      "name_ko": null
+    },
+    "Barracks (700s Block)": {
+      "lat": 36.9505124,
+      "lon": 127.0307134,
+      "source": "osm bus_stop 13837939364",
+      "name_ko": null
+    },
+    "Brian D. Allgood Hospital": {
+      "lat": 36.9524442,
+      "lon": 127.0290494,
+      "source": "osm bus_stop 12299158203",
+      "name_ko": "브라이언 D. 올굿 육군 병원"
+    },
+    "Bus Terminal": {
+      "lat": 36.9514517,
+      "lon": 127.0300112,
+      "source": "osm bus_stop 9248355468",
+      "name_ko": "버스터미널"
+    },
+    "Central Issue Facility": {
+      "lat": 36.9720841,
+      "lon": 126.9868916,
+      "source": "osm bus_stop 12299158207",
+      "name_ko": "중앙보급소"
+    },
+    "Collier Fitness Center": {
+      "lat": 36.9535172,
+      "lon": 127.0219206,
+      "source": "osm bus_stop 5771934012",
+      "name_ko": "슈퍼짐"
+    },
+    "Commissary": {
+      "lat": 36.9637688,
+      "lon": 127.0029878,
+      "source": "osm bus_stop 12299158206",
+      "name_ko": "커미서리"
+    },
+    "Corps of Engineers": {
+      "lat": 36.9728069,
+      "lon": 127.0216655,
+      "source": "osm bus_stop 3604207823",
+      "name_ko": "공병대"
+    },
+    "Desiderio ATC Tower": {
+      "lat": 36.9625392,
+      "lon": 127.0365578,
+      "source": "osm bus_stop 13837939362",
+      "name_ko": null
+    },
+    "Downtown Plaza": {
+      "lat": 36.9675446,
+      "lon": 127.0007983,
+      "source": "osm bus_stop 4428426454",
+      "name_ko": "원스탑"
+    },
+    "Eighth Army HQ": {
+      "lat": 36.9656413,
+      "lon": 127.0313897,
+      "source": "osm bus_stop 13837939361",
+      "name_ko": "미8군"
+    },
+    "Family Housing Towers (Taro Ave)": {
+      "lat": 36.9571955,
+      "lon": 127.0125036,
+      "source": "osm bus_stop 13837939360",
+      "name_ko": null
+    },
+    "Family Housing Towers (Tropic Lightning Ave)": {
+      "lat": 36.9583476,
+      "lon": 127.0184078,
+      "source": "osm bus_stop 5772401657",
+      "name_ko": "패밀리 하우징"
+    },
+    "Family Mini Mall / Gas Station": {
+      "lat": 36.9634949,
+      "lon": 127.0086078,
+      "source": "osm bus_stop 13837939359",
+      "name_ko": null
+    },
+    "Freedom Chapel": {
+      "lat": 36.9504239,
+      "lon": 127.0230921,
+      "source": "osm bus_stop 8049299841",
+      "name_ko": null
+    },
+    "KTO Museum": {
+      "lat": 36.9488266,
+      "lon": 127.0251443,
+      "source": "osm bus_stop 13837939351",
+      "name_ko": null
+    },
+    "LTG Maude Hall (9th St)": {
+      "lat": 36.9673308,
+      "lon": 127.0048077,
+      "source": "osm bus_stop 12299158205",
+      "name_ko": "원스탑"
+    },
+    "Law Enforcement Center (DES)": {
+      "lat": 36.9528985,
+      "lon": 127.0344394,
+      "source": "osm bus_stop 13837939358",
+      "name_ko": null
+    },
+    "Lodging": {
+      "lat": 36.948719,
+      "lon": 127.0269693,
+      "source": "osm bus_stop 12299158204",
+      "name_ko": "랏지"
+    },
+    "MSG Jenkins Medical Clinic": {
+      "lat": 36.9490373,
+      "lon": 127.0235001,
+      "source": "osm bus_stop 5618074580",
+      "name_ko": null
+    },
+    "Main Exchange (PX)": {
+      "lat": 36.9656365,
+      "lon": 126.9981293,
+      "source": "osm bus_stop 5772456066",
+      "name_ko": "메인PX"
+    },
+    "Main Post Office": {
+      "lat": 36.9629891,
+      "lon": 127.0003183,
+      "source": "osm bus_stop 13837939357",
+      "name_ko": null
+    },
+    "Morning Calm Center": {
+      "lat": 36.9488792,
+      "lon": 127.0292532,
+      "source": "osm bus_stop 13837939356",
+      "name_ko": null
+    },
+    "Pacific Victors Chapel": {
+      "lat": 36.9663592,
+      "lon": 127.0101238,
+      "source": "osm bus_stop 5772401668",
+      "name_ko": null
+    },
+    "Pedestrian Gate": {
+      "lat": 36.9583413,
+      "lon": 127.0431565,
+      "source": "osm bus_stop 5772401450",
+      "name_ko": "도보게이트"
+    },
+    "Pittman DFAC": {
+      "lat": 36.9732779,
+      "lon": 126.9993472,
+      "source": "osm bus_stop 5772401670",
+      "name_ko": "핏맨 식당"
+    },
+    "Provider Grill DFAC": {
+      "lat": 36.9646041,
+      "lon": 127.0401703,
+      "source": "osm bus_stop 5772401447",
+      "name_ko": "프로바이더 그릴 식당"
+    },
+    "Red Cloud Circle": {
+      "lat": 36.9630181,
+      "lon": 127.0052838,
+      "source": "osm bus_stop 13837939355",
+      "name_ko": null
+    },
+    "River Bend Golf Course": {
+      "lat": 36.971477,
+      "lon": 126.9863931,
+      "source": "building #5904 (River Bend Golf Club House)",
+      "name_ko": null
+    },
+    "SLQs (12200s Block)": {
+      "lat": 36.9652782,
+      "lon": 127.0368688,
+      "source": "osm bus_stop 13837939345",
+      "name_ko": null
+    },
+    "Sentry Village Burger King": {
+      "lat": 36.9480302,
+      "lon": 127.025401,
+      "source": "osm bus_stop 13837939342",
+      "name_ko": null
+    },
+    "Sentry Village Mini Mall": {
+      "lat": 36.9477931,
+      "lon": 127.0242417,
+      "source": "osm bus_stop 13837939341",
+      "name_ko": null
+    },
+    "Sitman Fitness Center": {
+      "lat": 36.9747695,
+      "lon": 126.9948794,
+      "source": "osm bus_stop 5772401671",
+      "name_ko": "싯맨 피트니스 센터"
+    },
+    "Spartan DFAC": {
+      "lat": 36.9703399,
+      "lon": 127.0082272,
+      "source": "osm bus_stop 5772401669",
+      "name_ko": "스파르탄 식당"
+    },
+    "TMP / Driver's Licensing": {
+      "lat": 36.9676159,
+      "lon": 127.0164145,
+      "source": "osm bus_stop 5772401665",
+      "name_ko": "TMP (운전면허시험장)"
+    },
+    "Talon Cafe DFAC": {
+      "lat": 36.9613025,
+      "lon": 127.0201838,
+      "source": "osm bus_stop 5607470704",
+      "name_ko": "탈론 식당"
+    },
+    "Turner Fitness Center": {
+      "lat": 36.9610149,
+      "lon": 127.0243022,
+      "source": "osm bus_stop 13837939353",
+      "name_ko": null
+    }
+  }
+}
