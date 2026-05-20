@@ -81,13 +81,13 @@ const STRINGS = {
     fastest: "FASTEST", est: "EST.",
     estTitle: "Times based on estimated schedule — not yet verified against an official PDF",
     everyMin: m => `every ${m} min`,
-    waitDisclaimer: "Wait times are averages (freq ÷ 2). Verify exact times at USAG Humphreys or MyArmyPost app.",
+    waitDisclaimer: "Wait times estimate the next scheduled bus assuming each route starts its cycle at :00 from its first stop. Real PDFs may differ. Verify at USAG Humphreys or MyArmyPost app.",
     shuttleInfo: "Shuttles run Mon–Fri 0600–2200. Gold Route runs Mon–Sun 0900–2100. Out-of-service routes are filtered automatically. Confirm: DSN 755-0424.",
     noMatch: "No matching stop or building",
     whereAreYou: "Where are you?",
     asOf: time => `As of ${time} — updates every minute`,
     nextDeparturesFrom: stop => `Next departures from ${stop}`,
-    goldDisclaimer: "Gold from Bus Terminal uses verified `:00 :20 :40` schedule. Other routes show ~freq ÷ 2 averages.",
+    goldDisclaimer: "Gold uses verified `:00 :20 :40` schedule. Other routes estimate next departure assuming a :00 cycle anchor — real timetables may shift the times.",
     noRoutesHere: "No routes serve this stop.",
     pickStopHint: "Pick a stop to see the next bus on every route that serves it. The page auto-refreshes once a minute.",
     outOfService1: "Out of", outOfService2: "service",
@@ -142,13 +142,13 @@ const STRINGS = {
     fastest: "최단", est: "추정",
     estTitle: "추정 시간표 기반 — 공식 PDF로 검증되지 않음",
     everyMin: m => `${m}분 간격`,
-    waitDisclaimer: "대기 시간은 평균값(빈도÷2)입니다. 정확한 시간은 USAG 험프리스 또는 MyArmyPost 앱에서 확인하세요.",
+    waitDisclaimer: "대기 시간은 각 노선이 첫 정류장에서 :00에 출발한다고 가정한 추정치입니다. 실제 시간표는 다를 수 있습니다. USAG 험프리스 또는 MyArmyPost 앱에서 확인하세요.",
     shuttleInfo: "셔틀 운행: 월–금 06:00–22:00. Gold 노선: 일–월 09:00–21:00. 운행 종료된 노선은 자동 제외됩니다. 확인: DSN 755-0424.",
     noMatch: "일치하는 정류장 또는 건물 없음",
     whereAreYou: "어디에 계세요?",
     asOf: time => `${time} 기준 — 1분마다 갱신`,
     nextDeparturesFrom: stop => `${stop}에서 다음 출발`,
-    goldDisclaimer: "Gold 노선은 버스 터미널 기준 `:00 :20 :40` 시간표를 사용합니다. 다른 노선은 ~빈도÷2 평균값입니다.",
+    goldDisclaimer: "Gold 노선은 검증된 `:00 :20 :40` 시간표를 사용합니다. 다른 노선은 :00 정시 기준 주기로 다음 출발을 추정하며, 실제 시간표와 다를 수 있습니다.",
     noRoutesHere: "이 정류장을 지나는 노선이 없습니다.",
     pickStopHint: "정류장을 선택하면 해당 정류장의 모든 노선의 다음 버스를 볼 수 있습니다. 1분마다 자동 갱신됩니다.",
     outOfService1: "운행", outOfService2: "종료",
@@ -272,11 +272,62 @@ const SEARCH_INDEX = [
   })),
 ];
 
+// Next scheduled departure of route R at `stop` that is >= `after`.
+// Heuristic: assume each route's cycle is anchored at :00 from its first stop,
+// with a +2 min/stop offset matching our ride-time heuristic. The verified
+// Gold-from-Bus-Terminal `:00 :20 :40` pattern falls out of this naturally
+// (offset 0, freq 20). Returns null if stop is not on route.
+function nextScheduledDeparture(R, stop, after) {
+  const idx = R.stops.indexOf(stop);
+  if (idx < 0) return null;
+  const offsetMin = idx * 2;
+  let probe = new Date(after);
+  // Walk forward through scheduled slots until one falls within service hours.
+  // Cap iterations to avoid runaway when route never runs in window.
+  for (let i = 0; i < 200; i++) {
+    const anchor = new Date(probe);
+    anchor.setHours(0, 0, 0, 0);
+    const diffMin = (probe - anchor) / 60000;
+    const k = Math.max(0, Math.ceil((diffMin - offsetMin) / R.freq));
+    const cand = new Date(anchor);
+    cand.setMinutes(offsetMin + k * R.freq);
+    cand.setSeconds(0, 0);
+    if (inService(R, cand)) return cand;
+    probe = new Date(cand.getTime() + 60000); // try next slot
+  }
+  return null;
+}
+
+// Last scheduled departure of route R at `stop` that is <= `before`.
+function prevScheduledDeparture(R, stop, before) {
+  const idx = R.stops.indexOf(stop);
+  if (idx < 0) return null;
+  const offsetMin = idx * 2;
+  let probe = new Date(before);
+  for (let i = 0; i < 200; i++) {
+    const anchor = new Date(probe);
+    anchor.setHours(0, 0, 0, 0);
+    const diffMin = (probe - anchor) / 60000;
+    const k = Math.floor((diffMin - offsetMin) / R.freq);
+    if (k >= 0) {
+      const cand = new Date(anchor);
+      cand.setMinutes(offsetMin + k * R.freq);
+      cand.setSeconds(0, 0);
+      if (inService(R, cand)) return cand;
+      probe = new Date(cand.getTime() - 60000); // try previous slot
+    } else {
+      // No slot today; jump to end of previous day.
+      probe = new Date(anchor.getTime() - 60000);
+    }
+  }
+  return null;
+}
+
 // Now accepts refTime (Date) and mode ("depart" or "arrive")
 function findTrips(from, to, refTime, mode) {
   if (!from||!to||from===to) return { trips:[], filtered:[] };
   const fr=STOP_ROUTES[from]||[], tr=STOP_ROUTES[to]||[];
-  const trips=[];
+  const candidates=[];
   const filtered=[]; // routes excluded for being out-of-service
 
   // For service-hour check: in "arrive" mode the trip starts roughly earlier
@@ -286,50 +337,72 @@ function findTrips(from, to, refTime, mode) {
     const R=ROUTES[rid];
     if (!inService(R, checkTime)) { filtered.push(R.name); continue; }
     const fi=R.stops.indexOf(from), ti=R.stops.indexOf(to);
-    const n=Math.abs(ti-fi), t=n*2, w=Math.round(R.freq/2);
-    trips.push({ id:`d-${rid}`, type:"direct", total:t+w+6,
-      legs:[{k:"walk",dur:3,dest:from},{k:"bus",rid,from,to,n,t,w},{k:"walk",dur:3,dest:null}] });
+    const n=Math.abs(ti-fi), t=n*2;
+    candidates.push({ id:`d-${rid}`, type:"direct",
+      legs:[{k:"walk",dur:3,dest:from},{k:"bus",rid,from,to,n,t},{k:"walk",dur:3,dest:null}] });
   }
   for (const r1 of fr) for (const r2 of tr) {
     if (r1===r2) continue;
     if (!inService(ROUTES[r1], checkTime) || !inService(ROUTES[r2], checkTime)) continue;
-    const shared=ROUTES[r1].stops.filter(s=>ROUTES[r2].stops.includes(s)&&s!==from&&s!==to);
-    if (!shared.length) continue;
     const R1=ROUTES[r1], R2=ROUTES[r2];
-    const w1=Math.round(R1.freq/2), w2=Math.round(R2.freq/2);
-    // Pick shared stop that minimizes total trip time
+    const shared=R1.stops.filter(s=>R2.stops.includes(s)&&s!==from&&s!==to);
+    if (!shared.length) continue;
+    // Pick shared stop minimizing heuristic total (real total computed in scheduling pass)
     let best=null;
     for (const x of shared) {
       const n1=Math.abs(R1.stops.indexOf(x)-R1.stops.indexOf(from));
       const n2=Math.abs(R2.stops.indexOf(to)-R2.stops.indexOf(x));
       const t1=n1*2, t2=n2*2;
-      const total=t1+t2+w1+w2+8;
-      if (!best || total<best.total) best={x,n1,n2,t1,t2,total};
+      const h=t1+t2+Math.round(R1.freq/2)+Math.round(R2.freq/2)+8;
+      if (!best || h<best.h) best={x,n1,n2,t1,t2,h};
     }
-    const {x,n1,n2,t1,t2,total}=best;
-    trips.push({ id:`x-${r1}-${r2}`, type:"xfer", total,
-      legs:[{k:"walk",dur:3,dest:from},{k:"bus",rid:r1,from,to:x,n:n1,t:t1,w:w1},{k:"xfer",dur:2,at:x},{k:"bus",rid:r2,from:x,to,n:n2,t:t2,w:w2},{k:"walk",dur:3,dest:null}] });
+    const {x,n1,n2,t1,t2}=best;
+    candidates.push({ id:`x-${r1}-${r2}`, type:"xfer",
+      legs:[
+        {k:"walk",dur:3,dest:from},
+        {k:"bus",rid:r1,from,to:x,n:n1,t:t1},
+        {k:"xfer",dur:2,at:x},
+        {k:"bus",rid:r2,from:x,to,n:n2,t:t2},
+        {k:"walk",dur:3,dest:null}
+      ] });
   }
 
-  // Attach actual clock times to each leg
-  for (const trip of trips) {
+  // Attach actual clock times and compute real waits from scheduled departures
+  const trips=[];
+  for (const trip of candidates) {
     if (mode === "arrive") {
+      // Pass 1: walk backward from deadline to find latest viable departAt
       let t = new Date(refTime);
-      trip.arriveAt = new Date(t);
+      let ok = true;
       for (let i = trip.legs.length - 1; i >= 0; i--) {
         const leg = trip.legs[i];
-        if (leg.k === "walk") {
-          leg.endAt = new Date(t); t = subMin(t, leg.dur); leg.startAt = new Date(t);
+        if (leg.k === "walk" || leg.k === "xfer") {
+          t = subMin(t, leg.dur);
         } else if (leg.k === "bus") {
-          leg.alightAt = new Date(t);
-          t = subMin(t, leg.t);
-          leg.boardAt = new Date(t);
-          t = subMin(t, leg.w);
-        } else if (leg.k === "xfer") {
-          leg.endAt = new Date(t); t = subMin(t, leg.dur); leg.startAt = new Date(t);
+          const latestBoard = subMin(t, leg.t);
+          const sched = prevScheduledDeparture(ROUTES[leg.rid], leg.from, latestBoard);
+          if (!sched) { ok = false; break; }
+          t = sched;
         }
       }
+      if (!ok) continue;
       trip.departAt = new Date(t);
+      // Pass 2: replay forward from departAt to fill in real timestamps
+      let f = new Date(trip.departAt);
+      for (const leg of trip.legs) {
+        if (leg.k === "walk") {
+          leg.startAt = new Date(f); f = addMin(f, leg.dur); leg.endAt = new Date(f);
+        } else if (leg.k === "bus") {
+          const sched = nextScheduledDeparture(ROUTES[leg.rid], leg.from, f);
+          leg.w = Math.max(0, Math.round((sched - f) / 60000));
+          leg.boardAt = sched;
+          f = addMin(sched, leg.t);
+          leg.alightAt = new Date(f);
+        } else if (leg.k === "xfer") {
+          leg.startAt = new Date(f); f = addMin(f, leg.dur); leg.endAt = new Date(f);
+        }
+      }
+      trip.arriveAt = new Date(f);
     } else {
       let t = new Date(refTime);
       trip.departAt = new Date(t);
@@ -337,9 +410,11 @@ function findTrips(from, to, refTime, mode) {
         if (leg.k === "walk") {
           leg.startAt = new Date(t); t = addMin(t, leg.dur); leg.endAt = new Date(t);
         } else if (leg.k === "bus") {
-          t = addMin(t, leg.w);
-          leg.boardAt = new Date(t);
-          t = addMin(t, leg.t);
+          // t = moment user arrives at stop. Wait until next scheduled bus.
+          const sched = nextScheduledDeparture(ROUTES[leg.rid], leg.from, t);
+          leg.w = Math.max(0, Math.round((sched - t) / 60000));
+          leg.boardAt = sched;
+          t = addMin(sched, leg.t);
           leg.alightAt = new Date(t);
         } else if (leg.k === "xfer") {
           leg.startAt = new Date(t); t = addMin(t, leg.dur); leg.endAt = new Date(t);
@@ -347,6 +422,8 @@ function findTrips(from, to, refTime, mode) {
       }
       trip.arriveAt = new Date(t);
     }
+    trip.total = Math.max(1, Math.round((trip.arriveAt - trip.departAt) / 60000));
+    trips.push(trip);
   }
 
   return { trips: trips.sort((a,b)=>a.total-b.total).slice(0,3), filtered: [...new Set(filtered)] };
@@ -605,25 +682,18 @@ function RouteCard({route:r}) {
 }
 
 // ─── Now Tab ──────────────────────────────────────────────────────────────────
-// For Gold from Bus Terminal we have verified `:00 :20 :40` departures.
-// Everywhere else we only know frequency, so fall back to `~freq÷2 min` average.
+// Verified routes (only Gold, currently) show exact clock times.
+// Unverified routes use the same scheduled-departure heuristic that findTrips
+// uses (anchor :00, +2 min/stop offset) but are shown as estimates.
 function nextDepartureInfo(rid, stop, now) {
   const R = ROUTES[rid];
   if (!inService(R, now)) {
     return { kind: "oos", route: R };
   }
-  if (rid === "GOLD" && stop === "Bus Terminal") {
-    const targets = [0, 20, 40];
-    const m = now.getMinutes();
-    const t = targets.find(x => x > m);
-    const next = new Date(now);
-    next.setSeconds(0, 0);
-    if (t === undefined) { next.setHours(next.getHours()+1); next.setMinutes(0); }
-    else next.setMinutes(t);
-    const mins = Math.max(0, Math.round((next - now)/60000));
-    return { kind: "exact", route: R, at: next, mins };
-  }
-  return { kind: "approx", route: R, mins: Math.max(1, Math.round(R.freq/2)) };
+  const next = nextScheduledDeparture(R, stop, now);
+  if (!next) return { kind: "oos", route: R };
+  const mins = Math.max(0, Math.round((next - now) / 60000));
+  return { kind: R.verified ? "exact" : "approx", route: R, at: next, mins };
 }
 
 function NextDepartureRow({ rid, stop, now }) {
@@ -646,8 +716,8 @@ function NextDepartureRow({ rid, stop, now }) {
           <div style={{fontSize:11,color:C.sage,marginTop:3}}>{info.mins===0?t.nowWord:t.inMin(info.mins)}</div>
         </>}
         {info.kind === "approx" && <>
-          <div className="tm" style={{fontSize:18,fontWeight:600,color:C.tan,lineHeight:1}}>~{info.mins} min</div>
-          <div style={{fontSize:10,color:C.oliveDim,marginTop:3,letterSpacing:.5}}>{t.estAvg}</div>
+          <div className="tm" style={{fontSize:18,fontWeight:600,color:C.tan,lineHeight:1}}>~{fmt(info.at)}</div>
+          <div style={{fontSize:10,color:C.oliveDim,marginTop:3,letterSpacing:.5}}>{info.mins===0?t.nowWord:t.inMin(info.mins)} · {t.estAvg}</div>
         </>}
         {info.kind === "oos" && <>
           <div style={{fontSize:12,fontWeight:600,color:C.oliveDim,lineHeight:1.2}}>{t.outOfService1}</div>
