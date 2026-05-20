@@ -1,50 +1,41 @@
 # Schedule diff — official vs ROUTES const
 
-Scraped: 2026-05-20T00:50:14.252370+00:00
+Scraped: 2026-05-20T01:34:46.032657+00:00
 Source: https://home.army.mil/humphreys/my-usag-humphreys/post-shuttle-bus-service
 
 ## Stop coverage
 
-- Stops only on official site (missing from ROUTES): 0
+- Stops only on official site (missing from ROUTES): 3
+  - Downtown Plaza
+  - Family Housing Towers (15th Street)
+  - Family Mini Mall / Gas Station
 
-- Stops only in ROUTES (not on per-stop directory): 0
-  (these likely need name-alias updates in NAME_ALIASES, or are genuinely missing)
-
-- Stops only in ROUTES, but belong to Gold/Brown/Pink (route-level PDFs, no per-stop images): 18
-  - Balboni Sports Field (Marne Ave)
-  - Barracks (6800s Block)
-  - Barracks (700s Block)
+- Stops only in ROUTES (no official-site coverage from PNGs or PDFs): 8
+  (these likely need name-alias updates in NAME_ALIASES, or are genuinely stale guesses in ROUTES)
   - Elementary School
   - Family Housing (North)
   - Family Housing (Palmer)
   - Family Housing (South)
   - Family Housing (Stanton)
-  - Family Housing Towers (Taro Ave)
-  - Freedom Chapel
   - Hospital Annex
   - Middle/High School
-  - Morning Calm Center
   - Park Area
-  - Red Cloud Circle
-  - River Bend Golf Course
-  - Sentry Village Burger King
-  - Sentry Village Mini Mall
 
 ## Inferred headways (vs current `freq`)
 
 Mode delta is the most common gap (minutes) between consecutive
 departures at stops served *exclusively* by that route.
 
-| Route | current freq | observed mode(s) | samples | exclusive stops |
+| Route | current freq | observed mode(s) | samples | source |
 |---|---|---|---|---|
-| BLACK | 25 | — | 0 | (none — all stops shared) |
-| BLUE | 20 | 15m×11 | 11 | 2ID Sustainment, Central Issue Facility |
-| BROWN | 30 | — | 0 | Family Housing (Stanton), Elementary School, Middle/High School, Family Housing (Palmer) |
-| GOLD | 20 | — | 0 | Barracks (700s Block), Morning Calm Center, Sentry Village Burger King, Sentry Village Mini Mall, Freedom Chapel, Family Housing Towers (Taro Ave), Red Cloud Circle, Balboni Sports Field (Marne Ave), Barracks (6800s Block), River Bend Golf Course |
-| GREEN | 20 | 15m×50, 2m×15, 13m×13 | 126 | Desiderio ATC Tower, Law Enforcement Center (DES), Lodging, KTO Museum |
-| ORANGE | 30 | — | 0 | (none — all stops shared) |
-| PINK | 30 | — | 0 | Family Housing (North), Park Area, Family Housing (South), Hospital Annex |
-| PURPLE | 25 | 15m×54, 8m×8, 7m×7 | 75 | Brian D. Allgood Hospital, Turner Fitness Center, Barracks (6800s & 6900s Block) |
+| BLACK | 25 | — | 0 | no data |
+| BLUE | 15 | 15m×11 | 11 | PNG (exclusive stops: 2ID Sustainment, Central Issue Facility) |
+| BROWN | 30 | 30m×195 | 195 | PDF (FRIDAY, SATURDAY / TRAINING HOLIDAY) |
+| GOLD | 20 | 20m×865, 30m×8, 34m×7 | 880 | PDF (MONDAY-SATURDAY, SATURDAY, SUNDAY) |
+| GREEN | 15 | 15m×50, 2m×15, 13m×13 | 126 | PNG (exclusive stops: Desiderio ATC Tower, Law Enforcement Center (DES), Lodging, KTO Museum) |
+| ORANGE | 30 | — | 0 | no data |
+| PINK | 30 | 15m×222, 14m×21, 16m×21 | 264 | PDF (FRIDAY / TRAINING HOLIDAY, SATURDAY) |
+| PURPLE | 15 | 15m×54, 8m×8, 7m×7 | 75 | PNG (exclusive stops: Brian D. Allgood Hospital, Turner Fitness Center, Barracks (6800s & 6900s Block)) |
 
 ## Service hours
 
@@ -53,7 +44,7 @@ departures at stops served *exclusively* by that route.
 | BLACK | 0600–2200 | 04:03 | 23:53 |
 | BLUE | 0600–2200 | 04:03 | 23:53 |
 | BROWN | 0600–2200 | 05:30 | 23:48 |
-| GOLD | 0900–2100 | 04:19 | 23:48 |
+| GOLD | 0900–2100 | 04:04 | 23:48 |
 | GREEN | 0600–2200 | 04:02 | 23:53 |
 | ORANGE | 0600–2200 | 04:03 | 22:52 |
 | PINK | 0600–2200 | 05:30 | 23:48 |

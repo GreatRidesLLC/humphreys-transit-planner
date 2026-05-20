@@ -109,18 +109,34 @@ def main() -> int:
         for s in meta["stops"]:
             stop_to_routes[s].append(rid)
 
-    # For each route, take only the stops served exclusively by it
-    # (cleanest signal — multi-route stops mix departures).
+    # Prefer PDF data when present (clean per-route, per-day timetable);
+    # fall back to PNG headway inference for routes without PDF coverage.
     headways: dict[str, dict] = {}
     for rid in routes:
+        pdf_deltas: list[int] = []
+        pdf_days = set()
+        for stop_blob in stops_data.values():
+            by_pdf = stop_blob.get("by_route_pdf", {}).get(rid)
+            if not by_pdf:
+                continue
+            for day, times in by_pdf.items():
+                pdf_days.add(day)
+                _, ds = infer_headway(times)
+                pdf_deltas.extend(ds)
+        if pdf_deltas:
+            common = Counter(pdf_deltas).most_common(3)
+            headways[rid] = {
+                "current_freq": routes[rid]["freq"],
+                "observed_modes": common,
+                "n_samples": len(pdf_deltas),
+                "source": f"PDF ({', '.join(sorted(pdf_days))})",
+            }
+            continue
+        # PNG fallback
         exclusive = [s for s, rs in stop_to_routes.items() if rs == [rid]]
         sample_deltas: list[int] = []
         for s in exclusive:
-            # Find official-site name for s.
-            official = next(
-                (k for k, v in NAME_ALIASES.items() if v == s),
-                s,
-            )
+            official = next((k for k, v in NAME_ALIASES.items() if v == s), s)
             stop_blob = stops_data.get(official)
             if not stop_blob:
                 continue
@@ -130,16 +146,16 @@ def main() -> int:
             common = Counter(sample_deltas).most_common(3)
             headways[rid] = {
                 "current_freq": routes[rid]["freq"],
-                "observed_modes": common,  # [(delta, count), ...]
+                "observed_modes": common,
                 "n_samples": len(sample_deltas),
-                "exclusive_stops_used": exclusive,
+                "source": f"PNG (exclusive stops: {', '.join(exclusive) or 'none'})",
             }
         else:
             headways[rid] = {
                 "current_freq": routes[rid]["freq"],
                 "observed_modes": [],
                 "n_samples": 0,
-                "exclusive_stops_used": exclusive,
+                "source": "no data",
             }
 
     # ---- Service hours per route ----
@@ -168,32 +184,20 @@ def main() -> int:
     lines.append(f"- Stops only on official site (missing from ROUTES): {len(only_official)}")
     for s in sorted(only_official):
         lines.append(f"  - {s}")
-    # Partition "only in ROUTES" stops by whether they belong to a route
-    # that publishes a route-PDF instead of per-stop images.
-    pdf_route_stops = set()
-    for rid in ROUTES_WITHOUT_PER_STOP_IMAGES:
-        pdf_route_stops.update(routes.get(rid, {}).get("stops", []))
-    only_routes_with_images = sorted(only_routes - pdf_route_stops)
-    only_routes_pdf = sorted(only_routes & pdf_route_stops)
-
-    lines.append(f"\n- Stops only in ROUTES (not on per-stop directory): {len(only_routes_with_images)}")
-    lines.append("  (these likely need name-alias updates in NAME_ALIASES, or are genuinely missing)")
-    for s in only_routes_with_images:
-        lines.append(f"  - {s}")
-    lines.append(f"\n- Stops only in ROUTES, but belong to Gold/Brown/Pink (route-level PDFs, no per-stop images): {len(only_routes_pdf)}")
-    for s in only_routes_pdf:
+    lines.append(f"\n- Stops only in ROUTES (no official-site coverage from PNGs or PDFs): {len(only_routes)}")
+    lines.append("  (these likely need name-alias updates in NAME_ALIASES, or are genuinely stale guesses in ROUTES)")
+    for s in sorted(only_routes):
         lines.append(f"  - {s}")
 
     lines.append("\n## Inferred headways (vs current `freq`)\n")
     lines.append("Mode delta is the most common gap (minutes) between consecutive")
     lines.append("departures at stops served *exclusively* by that route.\n")
-    lines.append("| Route | current freq | observed mode(s) | samples | exclusive stops |")
+    lines.append("| Route | current freq | observed mode(s) | samples | source |")
     lines.append("|---|---|---|---|---|")
     for rid in sorted(headways):
         h = headways[rid]
         modes = ", ".join(f"{d}m×{c}" for d, c in h["observed_modes"]) or "—"
-        excl = ", ".join(h["exclusive_stops_used"]) or "(none — all stops shared)"
-        lines.append(f"| {rid} | {h['current_freq']} | {modes} | {h['n_samples']} | {excl} |")
+        lines.append(f"| {rid} | {h['current_freq']} | {modes} | {h['n_samples']} | {h['source']} |")
 
     lines.append("\n## Service hours\n")
     lines.append("| Route | current hours | OCR earliest | OCR latest |")
