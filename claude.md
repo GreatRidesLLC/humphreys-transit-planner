@@ -14,12 +14,14 @@ Soldiers, family members, civilian employees, and Korean nationals (KATUSAs, KSC
 
 ## Aesthetic
 
-Army olive + gold. Two fonts:
+Tactical night: charcoal-blue backgrounds, signal cyan (`#22D3EE`) for primary-action chrome (buttons, focus rings, active tab, "FASTEST" badge, "To" indicator), saffron gold (`#FFC83D`) reserved as a verified-PDF / Gold-Route trust marker and the brand-mark logo. Earlier "olive on olive" identity was dropped after a bold repalette; olive-named keys in the `C` palette object still exist as aliases for the new cool blue-grey text ramp to avoid touching every callsite.
+
+Two fonts:
 
 - **Rajdhani** (display + UI) — military feel, tall caps
 - **JetBrains Mono** (times, route badges) — distinguishes clock data from prose
 
-Dark theme by default (olive on near-black). No light mode planned.
+Dark theme by default. No light mode planned.
 
 ## Data sources
 
@@ -27,10 +29,11 @@ Dark theme by default (olive on near-black). No light mode planned.
 
 Verification status:
 
-- **Gold Route**: verified from official July 2023 PDF (`:00 :20 :40` departures from Bus Terminal)
-- **Brown, Pink**: stops estimated — real PDFs still needed
-- **Blue, Black, Green, Orange, Purple**: stops listed, frequencies estimated (every 20–30 min)
-- **Inter-garrison routes**: not integrated into trip planner; shown as info only
+- **Gold Route**: verified from official 15 July 2023 PDF (`:00 :20 :40` departures from Bus Terminal). Full per-stop timetable in `src/data/schedules.json`.
+- **Brown, Pink**: stops + frequencies + days/hours verified from official 15 July 2023 PDFs (Brown 30-min Fri–Sat 1600–2200; Pink 15-min Fri–Sat 1700–2300, trial route).
+- **Blue, Green, Purple**: 15-min headway confirmed via OCR of the per-stop schedule images (`scripts/scrape_schedules.py`). Service hours still listed as `0600–2200` placeholder.
+- **Black, Orange**: 15-min headway unconfirmed — no stops served *exclusively* by either route in the per-stop image directory. ROUTES still carries the old estimates (25 / 30).
+- **Inter-garrison routes**: not integrated into trip planner; shown as info only.
 
 Building-number directory: ~15 mapped of an unknown total. Full directory pending from DPW GIS / IGI&S office (Bldg 6140).
 
