@@ -1,5 +1,7 @@
 import { useState, useMemo, useRef, useEffect, createContext, useContext } from "react";
 import SCHEDULES_JSON from "./data/schedules.json";
+import STOP_COORDS_JSON from "./data/stop_coords.json";
+import BUILDINGS_OSM_JSON from "./data/buildings_osm.json";
 
 // ─── Tactical Night Palette ───────────────────────────────────────────────────
 // Charcoal bg + signal cyan accent for primary actions; gold reserved as a
@@ -48,6 +50,38 @@ const todayYMD = () => {
   return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
 };
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+// ─── Geo helpers ──────────────────────────────────────────────────────────────
+// Use OSM-sourced coordinates from src/data/{stop_coords,buildings_osm}.json
+// to derive a real walk leg when the trip starts/ends at a building whose
+// coords we know. Falls back to a 3-minute mock when either side is missing,
+// and floors at 3 minutes even for very short walks — that's the "find the
+// stop, board the bus" buffer the user expects.
+const STOP_COORDS = STOP_COORDS_JSON.stops || {};
+const BUILDING_COORDS = BUILDINGS_OSM_JSON.buildings || {};
+const WALK_FLOOR_MIN = 3;
+const WALK_SPEED_M_PER_MIN = 83; // ≈ 5 km/h average
+
+function haversineMeters(lat1, lon1, lat2, lon2) {
+  const toRad = d => d * Math.PI / 180;
+  const R = 6371000;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2
+          + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Returns the walking time (whole minutes) from a building to a stop, or
+// the WALK_FLOOR_MIN default when either coordinate is unknown.
+function walkMinutes(bldgNum, stopName) {
+  if (!bldgNum) return WALK_FLOOR_MIN;
+  const b = BUILDING_COORDS[bldgNum];
+  const s = STOP_COORDS[stopName];
+  if (!b || !s || b.lat == null || s.lat == null) return WALK_FLOOR_MIN;
+  const meters = haversineMeters(b.lat, b.lon, s.lat, s.lon);
+  return Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
+}
 const DOW_KO = ["일","월","화","수","목","금","토"];
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
@@ -306,7 +340,7 @@ const ALL_STOPS = [...new Set(Object.values(ROUTES).flatMap(r=>r.stops))].sort()
 const SEARCH_INDEX = [
   ...ALL_STOPS.map(s => ({ label:s, stop:s, sub:"Bus stop" })),
   ...Object.entries(BUILDINGS).map(([num,b]) => ({
-    label:`Bldg ${num} – ${b.name}`, stop:b.stop, sub:`Nearest stop: ${b.stop}`, isBuilding:true
+    label:`Bldg ${num} – ${b.name}`, stop:b.stop, sub:`Nearest stop: ${b.stop}`, isBuilding:true, bldg:num
   })),
 ];
 
@@ -433,12 +467,17 @@ function prevScheduledDeparture(R, stop, before) {
   return anchoredHeuristic(R, stop, before, -1);
 }
 
-// Now accepts refTime (Date) and mode ("depart" or "arrive")
-function findTrips(from, to, refTime, mode) {
+// `fBldg` / `tBldg` are optional building numbers picked by the user; when
+// present, the walk leg uses haversine(from-stop, building) instead of the
+// 3-min mock. Floor stays at 3 min for the "find the stop, board" buffer.
+function findTrips(from, to, refTime, mode, fBldg, tBldg) {
   if (!from||!to||from===to) return { trips:[], filtered:[] };
   const fr=STOP_ROUTES[from]||[], tr=STOP_ROUTES[to]||[];
   const candidates=[];
   const filtered=[]; // routes excluded for being out-of-service
+
+  const originWalk = walkMinutes(fBldg, from);
+  const destWalk = walkMinutes(tBldg, to);
 
   // For service-hour check: in "arrive" mode the trip starts roughly earlier
   const checkTime = mode === "depart" ? refTime : subMin(refTime, 60);
@@ -449,7 +488,7 @@ function findTrips(from, to, refTime, mode) {
     const fi=R.stops.indexOf(from), ti=R.stops.indexOf(to);
     const n=Math.abs(ti-fi), t=n*2;
     candidates.push({ id:`d-${rid}`, type:"direct",
-      legs:[{k:"walk",dur:3,dest:from},{k:"bus",rid,from,to,n,t},{k:"walk",dur:3,dest:null}] });
+      legs:[{k:"walk",dur:originWalk,dest:from},{k:"bus",rid,from,to,n,t},{k:"walk",dur:destWalk,dest:null}] });
   }
   for (const r1 of fr) for (const r2 of tr) {
     if (r1===r2) continue;
@@ -469,11 +508,11 @@ function findTrips(from, to, refTime, mode) {
     const {x,n1,n2,t1,t2}=best;
     candidates.push({ id:`x-${r1}-${r2}`, type:"xfer",
       legs:[
-        {k:"walk",dur:3,dest:from},
+        {k:"walk",dur:originWalk,dest:from},
         {k:"bus",rid:r1,from,to:x,n:n1,t:t1},
         {k:"xfer",dur:2,at:x},
         {k:"bus",rid:r2,from:x,to,n:n2,t:t2},
-        {k:"walk",dur:3,dest:null}
+        {k:"walk",dur:destWalk,dest:null}
       ] });
   }
 
@@ -619,7 +658,7 @@ function StopInput({ label, value, onChange }) {
     document.addEventListener("mousedown",h);
     return()=>document.removeEventListener("mousedown",h);
   },[]);
-  const pick=item=>{ setQ(item.label); setOpen(false); onChange(item.stop,item.label); };
+  const pick=item=>{ setQ(item.label); setOpen(false); onChange(item.stop,item.label,item.bldg||null); };
   const onKey=e=>{
     if (!open || !filtered.length) {
       if (e.key === "Escape") setOpen(false);
@@ -633,7 +672,7 @@ function StopInput({ label, value, onChange }) {
   return (
     <div ref={ref} style={{position:"relative"}}>
       <input className="inp" placeholder={t.stopPh(label)} value={q}
-        onChange={e=>{setQ(e.target.value);setHi(0);setOpen(true);if(!e.target.value)onChange("","");}}
+        onChange={e=>{setQ(e.target.value);setHi(0);setOpen(true);if(!e.target.value)onChange("","",null);}}
         onFocus={()=>setOpen(true)} onKeyDown={onKey} />
       {open && filtered.length>0 && (
         <div className="dd" ref={listRef}>
@@ -974,6 +1013,9 @@ function OffPostTab() {
 export default function App() {
   const [fStop,setFS]=useState(""), [tStop,setTS]=useState("");
   const [fLbl,setFL]=useState(""),  [tLbl,setTL]=useState("");
+  // Building numbers if the user picked a "Bldg N – Name" entry — used to
+  // compute a real haversine walk leg in findTrips.
+  const [fBldg,setFB]=useState(null), [tBldg,setTB]=useState(null);
   const [results,setRes]=useState(null), [searched,setSrch]=useState(false);
   const [tab,setTab]=useState("plan");
 
@@ -995,27 +1037,31 @@ export default function App() {
   const search=()=>{
     const ref = tMode === "now" ? new Date() : parseHMD(tTime, tDate);
     const mode = tMode === "arrive" ? "arrive" : "depart";
-    setRes(findTrips(fStop, tStop, ref, mode));
+    setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg));
     setSrch(true);
     setRecent(prev => {
-      const entry = { fStop, tStop, fLbl, tLbl };
+      const entry = { fStop, tStop, fLbl, tLbl, fBldg, tBldg };
       const deduped = prev.filter(r => !(r.fStop===fStop && r.tStop===tStop));
       return [entry, ...deduped].slice(0, 5);
     });
   };
   const reset=()=>{setRes(null);setSrch(false);};
-  const swap=()=>{setFS(tStop);setTS(fStop);setFL(tLbl);setTL(fLbl);reset();};
+  const swap=()=>{
+    setFS(tStop);setTS(fStop);setFL(tLbl);setTL(fLbl);
+    setFB(tBldg);setTB(fBldg);
+    reset();
+  };
 
   const addFavorite=()=>{
     if (!fStop) { alert(t.pickFromFirst); return; }
     const name = (prompt(t.saveFavPrompt) || "").trim();
     if (!name) return;
-    setFavorites(prev => [{name, stop:fStop, label:fLbl}, ...prev.filter(f => !(f.stop===fStop && f.name===name))]);
+    setFavorites(prev => [{name, stop:fStop, label:fLbl, bldg:fBldg||null}, ...prev.filter(f => !(f.stop===fStop && f.name===name))]);
   };
   const removeFavorite=idx=>setFavorites(prev=>prev.filter((_,i)=>i!==idx));
   const removeRecent=idx=>setRecent(prev=>prev.filter((_,i)=>i!==idx));
-  const applyFavorite=f=>{setFS(f.stop);setFL(f.label);reset();};
-  const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setTS(r.tStop);setTL(r.tLbl);reset();};
+  const applyFavorite=f=>{setFS(f.stop);setFL(f.label);setFB(f.bldg||null);reset();};
+  const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setFB(r.fBldg||null);setTS(r.tStop);setTL(r.tLbl);setTB(r.tBldg||null);reset();};
   const TABS=[["plan",t.tabPlan],["now",t.tabNow],["routes",t.tabRoutes],["offpost",t.tabOffpost]];
 
   return (
@@ -1104,7 +1150,7 @@ export default function App() {
                 </div>
                 {fStop && <button onClick={addFavorite} title={t.saveFavTitle} style={{background:"transparent",border:`1px solid ${C.gold}55`,color:C.gold,fontSize:10,padding:"2px 8px",borderRadius:10,cursor:"pointer",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>{t.saveFav}</button>}
               </div>
-              <StopInput label={t.from} value={fLbl} onChange={(s,l)=>{setFS(s);setFL(l);reset();}}/>
+              <StopInput label={t.from} value={fLbl} onChange={(s,l,b)=>{setFS(s);setFL(l);setFB(b);reset();}}/>
             </div>
             <div style={{display:"flex",justifyContent:"center",margin:"4px 0"}}>
               <button onClick={swap} aria-label={t.swapStops} title={t.swapStops} style={{background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:"50%",width:32,height:32,cursor:"pointer",color:C.sage,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>⇅</button>
@@ -1114,7 +1160,7 @@ export default function App() {
                 <div style={{width:9,height:9,borderRadius:2,background:C.accent,boxShadow:`0 0 7px ${C.accent}aa`}}/>
                 <span style={{fontSize:10,color:C.accent,textTransform:"uppercase",letterSpacing:1.5}}>{t.to}</span>
               </div>
-              <StopInput label={t.to} value={tLbl} onChange={(s,l)=>{setTS(s);setTL(l);reset();}}/>
+              <StopInput label={t.to} value={tLbl} onChange={(s,l,b)=>{setTS(s);setTL(l);setTB(b);reset();}}/>
             </div>
 
             {/* Time mode picker */}
