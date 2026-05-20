@@ -19,6 +19,7 @@ Planned improvements grouped into phases by effort and impact. Update this file 
 - Schedule-aware wait time — `findTrips` now computes wait = `nextScheduledDeparture − userArrivalAtStop` instead of `freq ÷ 2`. For Gold/Brown/Pink the next departure comes from `schedules.json`; for other routes it falls back to a `:00`-anchor + `2 min/stop` heuristic, which still varies 0…freq instead of being a flat average
 - Brown/Pink stops + freq + days/hours — replaced the placeholder 5-stop guess in each with the real 15- and 6-stop PDF data. Pink freq corrected 30 → 15. Both marked `verified: true` and Fri–Sat (Brown 1600–2200; Pink 1700–2300). `inService` handles the Fri–Sat day filter
 - Blue/Green/Purple headway correction — OCR-confirmed 15-min on exclusive stops. ROUTES `freq` updated from 20/20/25 → 15
+- Palette refresh ("tactical night + signal cyan") — dropped olive-as-chrome in favor of charcoal `#0a0e12` backgrounds with a cyan `#22D3EE` primary-action accent. Gold (now `#FFC83D`) is reserved for verified-PDF / Gold Route trust marks plus the logo / brand mark. Black Route's badge colour changed from whitish `#c0cfc0` to cool gunmetal `#8090a0` so it reads "dark" rather than washed-out. Olive-named keys in `C` retained as aliases for the new cool blue-grey text ramp to avoid touching every callsite. Every text/icon contrast pair still clears WCAG AA
 
 ## Phase 4 — Data-gated features
 
@@ -40,8 +41,8 @@ Base map (Leaflet or MapLibre), stop markers, route polylines, optional fit-to-r
 ### Loop directionality
 Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes you can travel either direction. Correcting this requires authoritative direction data from the schedule PDFs, and the payoff is low (edge cases only). Park until someone reports a wrong-direction bug.
 
-### Bold repalette
-Cheap colour tweaks shipped (saffron gold, cooled olive bg, tightened mid-tone ramp) but identity is still "ROTC olive + gold". A bolder direction would lean closer to "ranger green + flat gold" (think REI / Filson) or to a high-contrast "tactical night + signal blue" scheme, dropping olive entirely. Risk: military audience may find the new look unfamiliar; needs PAO buy-in before public release. Skip unless feedback explicitly asks for it.
+### Brand verification with PAO
+Tactical-night + signal-cyan palette shipped. Needs PAO buy-in before public release — confirm the new look doesn't run afoul of DoD brand regs alongside the existing "Humphreys" name + Army identity disclaimer in [[distribution-options]].
 
 ### Per-route schedule lookup for Blue / Black / Green / Orange / Purple
 Mostly done: Gold/Brown/Pink consult `src/data/schedules.json` directly in `findTrips`. The remaining five routes still use the `:00`-anchor + 2-min/stop heuristic because the per-stop PNG schedules can't be reliably split per-route by tesseract (panels are colour-coded, not labelled with the route name in OCR'd text). Options to close the gap: (a) request per-route PDFs from the Transportation Office, (b) use a per-panel image-crop pipeline (needs OpenCV / Pillow), or (c) manual transcription from the official site. Drop `goldDisclaimer` string once all eight routes are verified.

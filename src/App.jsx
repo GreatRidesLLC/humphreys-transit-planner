@@ -1,27 +1,35 @@
 import { useState, useMemo, useRef, useEffect, createContext, useContext } from "react";
 import SCHEDULES_JSON from "./data/schedules.json";
 
-// ─── Army Color Palette ───────────────────────────────────────────────────────
-// Cooled olive ("tactical night") + muted military gold. Contrast against
-// every text colour exceeds WCAG AA 4.5:1.
+// ─── Tactical Night Palette ───────────────────────────────────────────────────
+// Charcoal bg + signal cyan accent for primary actions; gold reserved as a
+// "verified PDF schedule" trust marker. Every text colour exceeds WCAG AA
+// 4.5:1 against bgBase.
 const C = {
-  bgDeep:    "#070f0a",
-  bgBase:    "#0c1612",
-  bgCard:    "#14211a",
-  bgSurface: "#1c2b22",
-  bgHover:   "#243826",
-  borderMain:"#3d5a3a",
-  borderSub: "#293f2b",
-  borderDim: "#1a2519",
-  gold:      "#E5BB39",
+  bgDeep:    "#06080c",
+  bgBase:    "#0a0e12",
+  bgCard:    "#111820",
+  bgSurface: "#1a2530",
+  bgHover:   "#243040",
+  borderMain:"#2a3a50",
+  borderSub: "#1f2c3a",
+  borderDim: "#141c25",
+  // Primary action accent — replaces what used to be gold-as-primary.
+  accent:    "#22D3EE",
+  accentDark:"#0EA5B7",
+  accentAlpha:"rgba(34,211,238,0.15)",
+  // Gold is now only used for the verified-schedule / Gold-route trust marker.
+  gold:      "#FFC83D",
   goldDark:  "#b8941e",
-  goldAlpha: "rgba(229,187,57,0.15)",
-  khaki:     "#e8dca8",
-  tan:       "#c8b878",
-  sage:      "#8aaa60",
-  oliveDim:  "#7a9a58",
-  oliveMute: "#6a8a48",
-  oliveFaint:"#293f2b",
+  goldAlpha: "rgba(255,200,61,0.15)",
+  khaki:     "#dde3ee",
+  tan:       "#aab8cc",
+  // Olive-named keys retained to avoid touching every callsite; values are
+  // now cool blue-greys to match the tactical theme.
+  sage:      "#8aa0bc",
+  oliveDim:  "#7a90ac",
+  oliveMute: "#6a809c",
+  oliveFaint:"#1f2c3a",
 };
 
 // ─── Time Helpers ─────────────────────────────────────────────────────────────
@@ -191,7 +199,7 @@ const inService = (r, d) => {
 const ROUTES = {
   BLUE:  { id:"BLUE",  name:"Blue Route",   color:"#5bb8ff", freq:15, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","TMP / Driver's Licensing","Airfield Operations","Talon Cafe DFAC","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Post Office","Main Exchange (PX)","Pittman DFAC","Sitman Fitness Center","2ID Sustainment","Central Issue Facility"] },
-  BLACK: { id:"BLACK", name:"Black Route",  color:"#c0cfc0", freq:25, hours:"0600–2200", days:"Mon–Fri",
+  BLACK: { id:"BLACK", name:"Black Route",  color:"#8090a0", freq:25, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","Pacific Victors Chapel","Commissary","LTG Maude Hall (9th St)","Spartan DFAC"] },
   GREEN: { id:"GREEN", name:"Green Route",  color:"#4dde88", freq:15, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","Desiderio ATC Tower","Law Enforcement Center (DES)","Bus Terminal","Lodging","KTO Museum","MSG Jenkins Medical Clinic","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Talon Cafe DFAC","Airfield Operations","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Exchange (PX)","Balboni Sports Field (5th St)"] },
@@ -511,33 +519,33 @@ function findTrips(from, to, refTime, mode) {
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const CSS=`
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:#0c1612}
-.inp{background:#1c2b22;color:#e8dca8;border:1px solid #3d5a3a;border-radius:8px;padding:13px 14px;width:100%;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:15px;font-weight:500;transition:border-color .2s}
-.inp:focus{outline:none;border-color:#E5BB39;box-shadow:0 0 0 2px rgba(229,187,57,.18)}
-.inp::placeholder{color:#3d5a3a}
-.dd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1c2b22;border:1px solid #3d5a3a;border-radius:8px;max-height:210px;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.7)}
-.di{padding:10px 14px;cursor:pointer;border-bottom:1px solid #1a2519}
+body{background:#0a0e12}
+.inp{background:#1a2530;color:#dde3ee;border:1px solid #2a3a50;border-radius:8px;padding:13px 14px;width:100%;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:15px;font-weight:500;transition:border-color .2s}
+.inp:focus{outline:none;border-color:#22D3EE;box-shadow:0 0 0 2px rgba(34,211,238,.18)}
+.inp::placeholder{color:#3a4a60}
+.dd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1a2530;border:1px solid #2a3a50;border-radius:8px;max-height:210px;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.7)}
+.di{padding:10px 14px;cursor:pointer;border-bottom:1px solid #141c25}
 .di:last-child{border-bottom:none}
-.di:hover{background:#243826}
-.btn{width:100%;padding:14px;background:linear-gradient(135deg,#E5BB39,#b8941e);color:#070f0a;border:none;border-radius:10px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:transform .1s,box-shadow .2s}
-.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(229,187,57,.35)}
-.btn:disabled{background:#1c2b22;color:#3d5a3a;cursor:not-allowed}
+.di:hover{background:#243040}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,#22D3EE,#0EA5B7);color:#06080c;border:none;border-radius:10px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:transform .1s,box-shadow .2s}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(34,211,238,.35)}
+.btn:disabled{background:#1a2530;color:#3a4a60;cursor:not-allowed}
 .si{animation:si .3s cubic-bezier(.22,.68,0,1.2)}
 @keyframes si{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .tab{flex:1;padding:8px 4px;border:none;border-radius:8px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .2s}
-.seg{display:flex;gap:3px;background:#1c2b22;padding:3px;border-radius:8px;border:1px solid #3d5a3a}
-.segbtn{flex:1;padding:7px 6px;border:none;border-radius:6px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;background:transparent;color:#8aaa60;text-transform:uppercase;transition:all .15s}
-.segbtn.on{background:#E5BB39;color:#070f0a}
-.timep{background:#1c2b22;color:#E5BB39;border:1px solid #3d5a3a;border-radius:6px;padding:9px 12px;width:100%;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;letter-spacing:1px;text-align:center}
-.timep:focus{outline:none;border-color:#E5BB39}
-.timep::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(1) saturate(4) hue-rotate(2deg);cursor:pointer}
+.seg{display:flex;gap:3px;background:#1a2530;padding:3px;border-radius:8px;border:1px solid #2a3a50}
+.segbtn{flex:1;padding:7px 6px;border:none;border-radius:6px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;background:transparent;color:#8aa0bc;text-transform:uppercase;transition:all .15s}
+.segbtn.on{background:#22D3EE;color:#06080c}
+.timep{background:#1a2530;color:#22D3EE;border:1px solid #2a3a50;border-radius:6px;padding:9px 12px;width:100%;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;letter-spacing:1px;text-align:center}
+.timep:focus{outline:none;border-color:#22D3EE}
+.timep::-webkit-calendar-picker-indicator{filter:invert(.85) sepia(.4) saturate(5) hue-rotate(140deg);cursor:pointer}
 .tm{font-family:'JetBrains Mono',monospace;font-weight:500}
 ::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:#0c1612}
-::-webkit-scrollbar-thumb{background:#3d5a3a;border-radius:2px}
-.chip{display:inline-flex;align-items:center;gap:6px;background:#14211a;border:1px solid #3d5a3a;border-radius:14px;padding:5px 4px 5px 10px;font-size:12px;color:#e8dca8;white-space:nowrap;flex-shrink:0;font-family:'Rajdhani','Noto Sans KR',sans-serif}
-.chipx{background:transparent;border:none;color:#5a7a40;font-size:14px;cursor:pointer;padding:0 6px;line-height:1;border-radius:50%}
-.chipx:hover{color:#E5BB39;background:#243826}
+::-webkit-scrollbar-track{background:#0a0e12}
+::-webkit-scrollbar-thumb{background:#2a3a50;border-radius:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#111820;border:1px solid #2a3a50;border-radius:14px;padding:5px 4px 5px 10px;font-size:12px;color:#dde3ee;white-space:nowrap;flex-shrink:0;font-family:'Rajdhani','Noto Sans KR',sans-serif}
+.chipx{background:transparent;border:none;color:#5a708c;font-size:14px;cursor:pointer;padding:0 6px;line-height:1;border-radius:50%}
+.chipx:hover{color:#22D3EE;background:#243040}
 `;
 
 // ─── Searchable Input ─────────────────────────────────────────────────────────
@@ -631,7 +639,7 @@ function Leg({leg:l, last}) {
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:34,flexShrink:0}}>
         {l.k==="walk" && <div style={{width:34,height:34,borderRadius:"50%",background:C.bgSurface,border:`2px solid ${C.borderMain}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🚶</div>}
         {l.k==="bus"  && <div style={{width:34,height:34,borderRadius:"50%",background:ROUTES[l.rid].color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>🚌</div>}
-        {l.k==="xfer" && <div style={{width:34,height:34,borderRadius:"50%",background:C.bgSurface,border:`2px dashed ${C.gold}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:C.gold}}>⇄</div>}
+        {l.k==="xfer" && <div style={{width:34,height:34,borderRadius:"50%",background:C.bgSurface,border:`2px dashed ${C.accent}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:C.accent}}>⇄</div>}
         {!last && <div style={{width:2,flex:1,background:lc+"66",minHeight:20,marginTop:4,borderRadius:2}}/>}
       </div>
       <div style={{paddingTop:6,paddingBottom:last?0:16,flex:1}}>
@@ -651,17 +659,17 @@ function Leg({leg:l, last}) {
           </div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
             <div style={{fontSize:13,color:C.tan}}>{t.boardAt} <strong style={{color:C.khaki}}>{l.from}</strong></div>
-            <div className="tm" style={{fontSize:13,color:C.gold,fontWeight:600,flexShrink:0}}>{fmt(l.boardAt)}</div>
+            <div className="tm" style={{fontSize:13,color:C.accent,fontWeight:600,flexShrink:0}}>{fmt(l.boardAt)}</div>
           </div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
             <div style={{fontSize:13,color:C.tan}}>{t.alightAt} <strong style={{color:C.khaki}}>{l.to}</strong></div>
-            <div className="tm" style={{fontSize:13,color:C.gold,fontWeight:600,flexShrink:0}}>{fmt(l.alightAt)}</div>
+            <div className="tm" style={{fontSize:13,color:C.accent,fontWeight:600,flexShrink:0}}>{fmt(l.alightAt)}</div>
           </div>
           <div style={{fontSize:11,color:C.oliveDim,marginTop:4}}>{t.busLegMeta(l.w,l.t,l.n)}</div>
         </>}
         {l.k==="xfer" && <>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
-            <div style={{fontSize:13,color:C.gold,fontWeight:600}}>{t.transferHere}</div>
+            <div style={{fontSize:13,color:C.accent,fontWeight:600}}>{t.transferHere}</div>
             <div className="tm" style={{fontSize:12,color:C.sage,flexShrink:0}}>{fmt(l.startAt)}–{fmt(l.endAt)}</div>
           </div>
           <div style={{fontSize:11,color:C.sage,marginTop:2}}>{t.xferMeta(l.at,l.dur)}</div>
@@ -678,13 +686,13 @@ function TripCard({trip, rank:r}) {
   const bl=trip.legs.filter(l=>l.k==="bus");
   const estimated=bl.some(l=>!ROUTES[l.rid].verified);
   return (
-    <div style={{background:C.bgCard,border:`1px solid ${r===0?C.gold+"55":C.borderSub}`,borderRadius:14,marginBottom:12,overflow:"hidden",boxShadow:r===0?`0 0 28px rgba(229,187,57,.1)`:"none"}}>
+    <div style={{background:C.bgCard,border:`1px solid ${r===0?C.accent+"55":C.borderSub}`,borderRadius:14,marginBottom:12,overflow:"hidden",boxShadow:r===0?`0 0 28px rgba(34,211,238,.12)`:"none"}}>
       <div role="button" tabIndex={0} aria-expanded={open} aria-label={open?t.collapseTrip:t.expandTrip}
         onClick={()=>setOpen(o=>!o)}
         onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(o=>!o);}}}
         style={{padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
         <div style={{display:"flex",alignItems:"center",gap:12,flex:1}}>
-          {r===0 && <span style={{background:C.gold,color:C.bgDeep,fontSize:9,fontWeight:800,padding:"3px 8px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>{t.fastest}</span>}
+          {r===0 && <span style={{background:C.accent,color:C.bgDeep,fontSize:9,fontWeight:800,padding:"3px 8px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>{t.fastest}</span>}
           {estimated && <span title={t.estTitle} style={{background:"transparent",color:C.sage,border:`1px solid ${C.oliveMute}`,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:6,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>{t.est}</span>}
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",alignItems:"baseline",gap:10,flexWrap:"wrap"}}>
@@ -742,7 +750,7 @@ function RouteCard({route:r}) {
               <div style={{padding:"4px 0 14px",fontSize:13,color:i===0||i===r.stops.length-1?C.khaki:C.tan,fontWeight:i===0||i===r.stops.length-1?600:400}}>
                 {s}
                 {(STOP_ROUTES[s]||[]).length>1 &&
-                  <span style={{marginLeft:6,fontSize:10,color:C.gold}}>
+                  <span style={{marginLeft:6,fontSize:10,color:C.accent}}>
                     {(STOP_ROUTES[s]||[]).filter(x=>x!==r.id).map(x=>ROUTES[x].name.split(" ")[0]).join(" +")}
                   </span>}
               </div>
@@ -872,7 +880,7 @@ function OffPostTab() {
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <span style={{fontSize:22}}>📡</span>
           <div>
-            <div style={{fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",fontSize:17,fontWeight:700,color:C.gold,letterSpacing:1}}>{t.liveGps}</div>
+            <div style={{fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",fontSize:17,fontWeight:700,color:C.accent,letterSpacing:1}}>{t.liveGps}</div>
             <div style={{fontSize:11,color:C.oliveDim,letterSpacing:.5}}>{t.futureFeatureLabel}</div>
           </div>
         </div>
@@ -902,7 +910,7 @@ function OffPostTab() {
       <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
         <div style={{fontSize:12,color:C.sage,lineHeight:1.7}}>
           {t.interGarrisonWarn1}<strong style={{color:C.tan}}>{t.interGarrisonWarnStrong}</strong>{t.interGarrisonWarn2}<br/>
-          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.gold}}>home.army.mil/humphreys → Inter-Garrison Bus Service</span>
+          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.accent}}>home.army.mil/humphreys → Inter-Garrison Bus Service</span>
         </div>
       </div>
       {OFFPOST.map(r=>(
@@ -920,7 +928,7 @@ function OffPostTab() {
       ))}
 
       <div style={{background:"#11100a",border:`1px solid #4a3e1a`,borderRadius:12,padding:"14px 16px",marginTop:12}}>
-        <div style={{fontSize:13,fontWeight:700,color:C.gold,marginBottom:10}}>{t.todoHeader}</div>
+        <div style={{fontSize:13,fontWeight:700,color:C.accent,marginBottom:10}}>{t.todoHeader}</div>
         {[
           "Download current inter-garrison PDFs from USAG Humphreys (airport schedule updated Feb 2026)",
           "Provide Brown & Pink route PDFs to verify their stops (currently estimated)",
@@ -930,7 +938,7 @@ function OffPostTab() {
           "Get KATUSA / KSC colleague to QA the Korean translation strings before public release",
         ].map((task,i)=>(
           <div key={i} style={{display:"flex",gap:8,marginBottom:10}}>
-            <span style={{color:C.gold,fontWeight:700,flexShrink:0,fontFamily:"'JetBrains Mono',monospace",fontSize:13}}>{i+1}.</span>
+            <span style={{color:C.accent,fontWeight:700,flexShrink:0,fontFamily:"'JetBrains Mono',monospace",fontSize:13}}>{i+1}.</span>
             <div style={{fontSize:12,color:C.tan,lineHeight:1.6}}>{task}</div>
           </div>
         ))}
@@ -1001,9 +1009,9 @@ export default function App() {
           </div>
           <div role="group" aria-label="Language" style={{display:"flex",gap:2,background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:6,padding:2,flexShrink:0}}>
             <button onClick={()=>setLang("en")} aria-pressed={lang==="en"}
-              style={{background:lang==="en"?C.gold:"transparent",color:lang==="en"?C.bgDeep:C.sage,border:"none",borderRadius:4,padding:"4px 8px",fontSize:11,fontWeight:700,fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",cursor:"pointer",letterSpacing:1}}>EN</button>
+              style={{background:lang==="en"?C.accent:"transparent",color:lang==="en"?C.bgDeep:C.sage,border:"none",borderRadius:4,padding:"4px 8px",fontSize:11,fontWeight:700,fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",cursor:"pointer",letterSpacing:1}}>EN</button>
             <button onClick={()=>setLang("ko")} aria-pressed={lang==="ko"}
-              style={{background:lang==="ko"?C.gold:"transparent",color:lang==="ko"?C.bgDeep:C.sage,border:"none",borderRadius:4,padding:"4px 8px",fontSize:11,fontWeight:700,fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",cursor:"pointer"}}>한국어</button>
+              style={{background:lang==="ko"?C.accent:"transparent",color:lang==="ko"?C.bgDeep:C.sage,border:"none",borderRadius:4,padding:"4px 8px",fontSize:11,fontWeight:700,fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",cursor:"pointer"}}>한국어</button>
           </div>
         </div>
 
@@ -1016,7 +1024,7 @@ export default function App() {
         <div role="tablist" style={{display:"flex",gap:6}}>
           {TABS.map(([id,lbl])=>(
             <button key={id} className="tab" role="tab" aria-selected={tab===id} onClick={()=>{setTab(id);reset();}}
-              style={{background:tab===id?C.gold:C.bgSurface, color:tab===id?C.bgDeep:C.sage, border:`1px solid ${tab===id?C.gold:C.borderMain}`}}>
+              style={{background:tab===id?C.accent:C.bgSurface, color:tab===id?C.bgDeep:C.sage, border:`1px solid ${tab===id?C.accent:C.borderMain}`}}>
               {lbl}
             </button>
           ))}
@@ -1080,8 +1088,8 @@ export default function App() {
             </div>
             <div style={{marginBottom:14}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                <div style={{width:9,height:9,borderRadius:2,background:C.gold,boxShadow:`0 0 7px ${C.gold}aa`}}/>
-                <span style={{fontSize:10,color:C.gold,textTransform:"uppercase",letterSpacing:1.5}}>{t.to}</span>
+                <div style={{width:9,height:9,borderRadius:2,background:C.accent,boxShadow:`0 0 7px ${C.accent}aa`}}/>
+                <span style={{fontSize:10,color:C.accent,textTransform:"uppercase",letterSpacing:1.5}}>{t.to}</span>
               </div>
               <StopInput label={t.to} value={tLbl} onChange={(s,l)=>{setTS(s);setTL(l);reset();}}/>
             </div>
