@@ -173,8 +173,10 @@ const LangContext = createContext({ lang: "en", t: STRINGS.en });
 const useT = () => useContext(LangContext);
 // Returns true if route is running at the given Date
 const inService = (r, d) => {
-  const dow = d.getDay(); // 0=Sun, 6=Sat
+  const dow = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
   if (r.days === "Mon–Fri" && (dow === 0 || dow === 6)) return false;
+  if (r.days === "Fri–Sat" && !(dow === 5 || dow === 6)) return false;
+  // "Mon–Sun" runs every day → no day filter.
   const [s, e] = r.hours.split("–");
   const mins = d.getHours() * 60 + d.getMinutes();
   const sm = parseInt(s.slice(0,2))*60 + parseInt(s.slice(2));
@@ -197,10 +199,12 @@ const ROUTES = {
   GOLD:  { id:"GOLD",  name:"Gold Route",   color:"#FFD040", freq:20, hours:"0900–2100", days:"Mon–Sun",
     verified:true, note:"Departs Bus Terminal :00 :20 :40 each hour (from official July 2023 PDF)",
     stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course"] },
-  BROWN: { id:"BROWN", name:"Brown Route",  color:"#e8944a", freq:30, hours:"0600–2200", days:"Mon–Fri",
-    stops:["Bus Terminal","Family Housing (Stanton)","Elementary School","Middle/High School","Family Housing (Palmer)"] },
-  PINK:  { id:"PINK",  name:"Pink Route",   color:"#ff6bb5", freq:30, hours:"0600–2200", days:"Mon–Fri",
-    stops:["Bus Terminal","Family Housing (North)","Park Area","Family Housing (South)","Hospital Annex"] },
+  BROWN: { id:"BROWN", name:"Brown Route",  color:"#e8944a", freq:30, hours:"1600–2200", days:"Fri–Sat",
+    verified:true, note:"From official PDF (15 July 2023). Friday evening + Saturday/Training Holiday only.",
+    stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Pacific Victors Chapel","Downtown Plaza","Balboni Sports Field (Marne Ave)","Balboni Sports Field (5th St)","Pittman DFAC","Spartan DFAC","TMP / Driver's Licensing","Airfield Operations","Family Housing Towers (Tropic Lightning Ave)","Collier Fitness Center","Bus Terminal"] },
+  PINK:  { id:"PINK",  name:"Pink Route",   color:"#ff6bb5", freq:15, hours:"1700–2300", days:"Fri–Sat",
+    verified:true, note:"From official PDF (15 July 2023). Trial-run route; Friday/Training Holiday + Saturday only.",
+    stops:["Pacific Victors Chapel","Family Mini Mall / Gas Station","Family Housing Towers (Taro Ave)","Family Housing Towers (15th Street)","Talon Cafe DFAC","TMP / Driver's Licensing"] },
 };
 
 const BUILDINGS = {
