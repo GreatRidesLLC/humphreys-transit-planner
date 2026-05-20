@@ -184,15 +184,15 @@ const inService = (r, d) => {
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 const ROUTES = {
-  BLUE:  { id:"BLUE",  name:"Blue Route",   color:"#5bb8ff", freq:20, hours:"0600–2200", days:"Mon–Fri",
+  BLUE:  { id:"BLUE",  name:"Blue Route",   color:"#5bb8ff", freq:15, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","TMP / Driver's Licensing","Airfield Operations","Talon Cafe DFAC","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Post Office","Main Exchange (PX)","Pittman DFAC","Sitman Fitness Center","2ID Sustainment","Central Issue Facility"] },
   BLACK: { id:"BLACK", name:"Black Route",  color:"#c0cfc0", freq:25, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","Pacific Victors Chapel","Commissary","LTG Maude Hall (9th St)","Spartan DFAC"] },
-  GREEN: { id:"GREEN", name:"Green Route",  color:"#4dde88", freq:20, hours:"0600–2200", days:"Mon–Fri",
+  GREEN: { id:"GREEN", name:"Green Route",  color:"#4dde88", freq:15, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","Desiderio ATC Tower","Law Enforcement Center (DES)","Bus Terminal","Lodging","KTO Museum","MSG Jenkins Medical Clinic","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Talon Cafe DFAC","Airfield Operations","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Exchange (PX)","Balboni Sports Field (5th St)"] },
   ORANGE:{ id:"ORANGE",name:"Orange Route", color:"#ff8c3a", freq:30, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","TMP / Driver's Licensing","Eighth Army HQ"] },
-  PURPLE:{ id:"PURPLE",name:"Purple Route", color:"#c47aff", freq:25, hours:"0600–2200", days:"Mon–Fri",
+  PURPLE:{ id:"PURPLE",name:"Purple Route", color:"#c47aff", freq:15, hours:"0600–2200", days:"Mon–Fri",
     stops:["Brian D. Allgood Hospital","Bus Terminal","Collier Fitness Center","Turner Fitness Center","TMP / Driver's Licensing","Spartan DFAC","Sitman Fitness Center","Barracks (6800s & 6900s Block)","Balboni Sports Field (5th St)","Pittman DFAC"] },
   GOLD:  { id:"GOLD",  name:"Gold Route",   color:"#FFD040", freq:20, hours:"0900–2100", days:"Mon–Sun",
     verified:true, note:"Departs Bus Terminal :00 :20 :40 each hour (from official July 2023 PDF)",
