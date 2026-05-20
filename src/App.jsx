@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, createContext, useContext } from "react";
+import SCHEDULES_JSON from "./data/schedules.json";
 
 // ─── Army Color Palette ───────────────────────────────────────────────────────
 const C = {
@@ -276,55 +277,127 @@ const SEARCH_INDEX = [
   })),
 ];
 
-// Next scheduled departure of route R at `stop` that is >= `after`.
-// Heuristic: assume each route's cycle is anchored at :00 from its first stop,
-// with a +2 min/stop offset matching our ride-time heuristic. The verified
-// Gold-from-Bus-Terminal `:00 :20 :40` pattern falls out of this naturally
-// (offset 0, freq 20). Returns null if stop is not on route.
-function nextScheduledDeparture(R, stop, after) {
-  const idx = R.stops.indexOf(stop);
-  if (idx < 0) return null;
-  const offsetMin = idx * 2;
-  let probe = new Date(after);
-  // Walk forward through scheduled slots until one falls within service hours.
-  // Cap iterations to avoid runaway when route never runs in window.
-  for (let i = 0; i < 200; i++) {
-    const anchor = new Date(probe);
-    anchor.setHours(0, 0, 0, 0);
-    const diffMin = (probe - anchor) / 60000;
-    const k = Math.max(0, Math.ceil((diffMin - offsetMin) / R.freq));
-    const cand = new Date(anchor);
-    cand.setMinutes(offsetMin + k * R.freq);
-    cand.setSeconds(0, 0);
-    if (inService(R, cand)) return cand;
-    probe = new Date(cand.getTime() + 60000); // try next slot
+// ─── Scheduled-departure lookup ───────────────────────────────────────────────
+// Build a runtime index: route_id → stop_name → day_type → [minutes-since-midnight]
+// from src/data/schedules.json (`by_route_pdf` blocks scraped from official PDFs).
+const ROUTE_SCHEDULE_INDEX = (() => {
+  const idx = {};
+  for (const [stop, blob] of Object.entries(SCHEDULES_JSON.stops || {})) {
+    for (const [rid, byDay] of Object.entries(blob.by_route_pdf || {})) {
+      const stopMap = (idx[rid] ||= {});
+      const dayMap = (stopMap[stop] ||= {});
+      for (const [day, times] of Object.entries(byDay)) {
+        dayMap[day] = times
+          .map(t => parseInt(t.slice(0,2),10)*60 + parseInt(t.slice(3,5),10))
+          .sort((a,b)=>a-b);
+      }
+    }
+  }
+  return idx;
+})();
+
+// Day-type labels in schedules.json → which days-of-week they apply to.
+// dow: 0=Sun, 1=Mon, ..., 6=Sat.
+const DAY_TYPE_DOWS = {
+  "MONDAY-FRIDAY":             [1,2,3,4,5],
+  "MONDAY-SATURDAY":           [1,2,3,4,5,6],
+  "MONDAY-THURSDAY":           [1,2,3,4],
+  "FRIDAY":                    [5],
+  "FRIDAY / TRAINING HOLIDAY": [5],
+  "FRIDAY & SATURDAY":         [5,6],
+  "SATURDAY":                  [6],
+  "SATURDAY / TRAINING HOLIDAY":[6],
+  "SUNDAY-THURSDAY":           [0,1,2,3,4],
+  "SUNDAY":                    [0],
+};
+
+// Pick the most-specific matching day-type label for a given dow.
+function pickDayType(dow, available) {
+  let best = null, bestSize = Infinity;
+  for (const key of available) {
+    const days = DAY_TYPE_DOWS[key];
+    if (!days || !days.includes(dow)) continue;
+    if (days.length < bestSize) { best = key; bestSize = days.length; }
+  }
+  return best;
+}
+
+// Return a Date at the given dow date with the given minutes-of-day.
+function dateAtMinutes(ref, dayOffset, mins) {
+  const d = new Date(ref);
+  d.setDate(d.getDate() + dayOffset);
+  d.setHours(0, 0, 0, 0);
+  d.setMinutes(mins);
+  d.setSeconds(0, 0);
+  return d;
+}
+
+// Walk up to 7 days forward/backward looking for the first/last scheduled
+// departure relative to `ref`. step=+1 for next, step=-1 for prev.
+function searchSchedule(stopSched, ref, step) {
+  const refMin = ref.getHours() * 60 + ref.getMinutes();
+  for (let dayOffset = 0; dayOffset < 8; dayOffset++) {
+    const probeDate = new Date(ref);
+    probeDate.setDate(probeDate.getDate() + step * dayOffset);
+    const dayType = pickDayType(probeDate.getDay(), Object.keys(stopSched));
+    if (!dayType) continue;
+    const times = stopSched[dayType];
+    if (!times.length) continue;
+    if (step > 0) {
+      for (const m of times) {
+        if (dayOffset > 0 || m >= refMin) return dateAtMinutes(ref, dayOffset, m);
+      }
+    } else {
+      for (let i = times.length - 1; i >= 0; i--) {
+        const m = times[i];
+        if (dayOffset > 0 || m <= refMin) return dateAtMinutes(ref, -dayOffset, m);
+      }
+    }
   }
   return null;
 }
 
-// Last scheduled departure of route R at `stop` that is <= `before`.
-function prevScheduledDeparture(R, stop, before) {
+// Heuristic anchor: each route's cycle assumed to start at :00 from its
+// first stop, +2 min/stop offset. Used when no PDF-sourced data exists.
+function anchoredHeuristic(R, stop, ref, step) {
   const idx = R.stops.indexOf(stop);
   if (idx < 0) return null;
   const offsetMin = idx * 2;
-  let probe = new Date(before);
+  let probe = new Date(ref);
   for (let i = 0; i < 200; i++) {
     const anchor = new Date(probe);
     anchor.setHours(0, 0, 0, 0);
     const diffMin = (probe - anchor) / 60000;
-    const k = Math.floor((diffMin - offsetMin) / R.freq);
-    if (k >= 0) {
-      const cand = new Date(anchor);
-      cand.setMinutes(offsetMin + k * R.freq);
-      cand.setSeconds(0, 0);
-      if (inService(R, cand)) return cand;
-      probe = new Date(cand.getTime() - 60000); // try previous slot
-    } else {
-      // No slot today; jump to end of previous day.
+    const k = step > 0
+      ? Math.max(0, Math.ceil((diffMin - offsetMin) / R.freq))
+      : Math.floor((diffMin - offsetMin) / R.freq);
+    if (step < 0 && k < 0) {
       probe = new Date(anchor.getTime() - 60000);
+      continue;
     }
+    const cand = new Date(anchor);
+    cand.setMinutes(offsetMin + k * R.freq);
+    cand.setSeconds(0, 0);
+    if (inService(R, cand)) return cand;
+    probe = new Date(cand.getTime() + step * 60000);
   }
   return null;
+}
+
+// Next scheduled departure of route R at `stop` that is >= `after`.
+// Prefer PDF-sourced timetable when available; else use the cycle-anchor
+// heuristic.
+function nextScheduledDeparture(R, stop, after) {
+  const stopSched = ROUTE_SCHEDULE_INDEX[R.id]?.[stop];
+  if (stopSched) return searchSchedule(stopSched, after, +1);
+  return anchoredHeuristic(R, stop, after, +1);
+}
+
+// Last scheduled departure of route R at `stop` that is <= `before`.
+function prevScheduledDeparture(R, stop, before) {
+  const stopSched = ROUTE_SCHEDULE_INDEX[R.id]?.[stop];
+  if (stopSched) return searchSchedule(stopSched, before, -1);
+  return anchoredHeuristic(R, stop, before, -1);
 }
 
 // Now accepts refTime (Date) and mode ("depart" or "arrive")
