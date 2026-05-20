@@ -88,7 +88,7 @@ const STRINGS = {
     whereAreYou: "Where are you?",
     asOf: time => `As of ${time} — updates every minute`,
     nextDeparturesFrom: stop => `Next departures from ${stop}`,
-    goldDisclaimer: "Gold uses verified `:00 :20 :40` schedule. Other routes estimate next departure assuming a :00 cycle anchor — real timetables may shift the times.",
+    goldDisclaimer: "Gold, Brown, and Pink use PDF-verified schedules. Other routes estimate next departure assuming a :00 cycle anchor — real timetables may shift the times.",
     noRoutesHere: "No routes serve this stop.",
     pickStopHint: "Pick a stop to see the next bus on every route that serves it. The page auto-refreshes once a minute.",
     outOfService1: "Out of", outOfService2: "service",
@@ -96,7 +96,7 @@ const STRINGS = {
     goldDotsInfo: "Gold dots next to stop names = transfer points served by multiple routes.",
     routeMeta: (freq,n,days,hours) => `Every ${freq} min · ${n} stops · ${days} · ${hours}`,
     pdfVerified: "✓ PDF-verified schedule",
-    verifiedScheduleHeader: "VERIFIED SCHEDULE (Mon–Sun)",
+    verifiedScheduleHeader: "PDF-VERIFIED SCHEDULE",
     liveGps: "Live GPS Tracking",
     futureFeatureLabel: "FUTURE FEATURE · WHAT IT REQUIRES",
     gpsAction: "Action:",
@@ -149,7 +149,7 @@ const STRINGS = {
     whereAreYou: "어디에 계세요?",
     asOf: time => `${time} 기준 — 1분마다 갱신`,
     nextDeparturesFrom: stop => `${stop}에서 다음 출발`,
-    goldDisclaimer: "Gold 노선은 검증된 `:00 :20 :40` 시간표를 사용합니다. 다른 노선은 :00 정시 기준 주기로 다음 출발을 추정하며, 실제 시간표와 다를 수 있습니다.",
+    goldDisclaimer: "Gold, Brown, Pink 노선은 PDF 검증된 시간표를 사용합니다. 다른 노선은 :00 정시 기준 주기로 다음 출발을 추정하며, 실제 시간표와 다를 수 있습니다.",
     noRoutesHere: "이 정류장을 지나는 노선이 없습니다.",
     pickStopHint: "정류장을 선택하면 해당 정류장의 모든 노선의 다음 버스를 볼 수 있습니다. 1분마다 자동 갱신됩니다.",
     outOfService1: "운행", outOfService2: "종료",
@@ -157,7 +157,7 @@ const STRINGS = {
     goldDotsInfo: "정류장 이름 옆 금색 점 = 여러 노선이 정차하는 환승 지점.",
     routeMeta: (freq,n,days,hours) => `${freq}분 간격 · 정류장 ${n}개 · ${days} · ${hours}`,
     pdfVerified: "✓ PDF 검증된 시간표",
-    verifiedScheduleHeader: "검증된 시간표 (월–일)",
+    verifiedScheduleHeader: "PDF 검증된 시간표",
     liveGps: "실시간 GPS 추적",
     futureFeatureLabel: "추후 기능 · 필요 요건",
     gpsAction: "조치:",
@@ -759,8 +759,8 @@ function RouteCard({route:r}) {
 }
 
 // ─── Now Tab ──────────────────────────────────────────────────────────────────
-// Verified routes (only Gold, currently) show exact clock times.
-// Unverified routes use the same scheduled-departure heuristic that findTrips
+// Verified routes (Gold/Brown/Pink) show exact PDF clock times.
+// Unverified routes use the same scheduled-departure heuristic findTrips
 // uses (anchor :00, +2 min/stop offset) but are shown as estimates.
 function nextDepartureInfo(rid, stop, now) {
   const R = ROUTES[rid];
