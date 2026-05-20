@@ -218,22 +218,45 @@ const ROUTES = {
     stops:["Pacific Victors Chapel","Family Mini Mall / Gas Station","Family Housing Towers (Taro Ave)","Family Housing Towers (15th Street)","Talon Cafe DFAC","TMP / Driver's Licensing"] },
 };
 
+// Building-number → nearest-stop directory. Hand-curated entries first
+// established the dataset; OSM-sourced entries (via scripts/fetch_osm_buildings.py
+// + src/data/buildings_osm.json) added the rest. Only buildings whose OSM
+// name unambiguously matches a known bus stop are included here. The full
+// 380-building dump lives in src/data/buildings_osm.json for later use once
+// stop coordinates exist.
 const BUILDINGS = {
-  "400":  { name:"Sentry Village Mini Mall",      stop:"Sentry Village Mini Mall" },
-  "500":  { name:"Sentry Village Burger King",    stop:"Sentry Village Burger King" },
-  "501":  { name:"Humphreys Hub",                 stop:"Bus Terminal" },
-  "695":  { name:"Freedom Chapel",                stop:"Freedom Chapel" },
-  "700":  { name:"Barracks (700s Block)",         stop:"Barracks (700s Block)" },
-  "5410": { name:"Child Development Center",      stop:"Family Housing Towers (Tropic Lightning Ave)" },
-  "5700": { name:"Main Exchange (PX)",            stop:"Main Exchange (PX)" },
-  "6120": { name:"8A NCO Academy",               stop:"Law Enforcement Center (DES)" },
-  "6140": { name:"DPW / Corps of Engineers HQ",  stop:"Corps of Engineers" },
-  "6360": { name:"Pacific Victors Chapel",        stop:"Pacific Victors Chapel" },
-  "6400": { name:"LTG Maude Hall / One Stop",     stop:"LTG Maude Hall (9th St)" },
-  "6420": { name:"Civilian Personnel Center",     stop:"LTG Maude Hall (9th St)" },
-  "6430": { name:"Community Banking Center",      stop:"LTG Maude Hall (9th St)" },
-  "6800": { name:"Warrior Chapel / Barracks",     stop:"Barracks (6800s & 6900s Block)" },
-  "9600": { name:"Brian D. Allgood Hospital",     stop:"Brian D. Allgood Hospital" },
+  "125":   { name:"Morning Calm Conference Center",            stop:"Morning Calm Center" },
+  "400":   { name:"Sentry Village Mini Mall",                  stop:"Sentry Village Mini Mall" },
+  "500":   { name:"Sentry Village Burger King",                stop:"Sentry Village Burger King" },
+  "501":   { name:"Humphreys Hub",                             stop:"Bus Terminal" },
+  "555":   { name:"Jenkins Clinic",                            stop:"MSG Jenkins Medical Clinic" },
+  "695":   { name:"Freedom Chapel",                            stop:"Freedom Chapel" },
+  "700":   { name:"Barracks (700s Block)",                     stop:"Barracks (700s Block)" },
+  "727":   { name:"Morning Calm Post Office",                  stop:"Main Post Office" },
+  "859":   { name:"Law Enforcement Center",                    stop:"Law Enforcement Center (DES)" },
+  "1291":  { name:"Provider Grill Dining Facility",            stop:"Provider Grill DFAC" },
+  "1949":  { name:"Collier Community Fitness Center",          stop:"Collier Fitness Center" },
+  "2063":  { name:"Turner Fitness Center",                     stop:"Turner Fitness Center" },
+  "2097":  { name:"Talon Café Dining Facility",                stop:"Talon Cafe DFAC" },
+  "2270":  { name:"Family Mini Mall Express",                  stop:"Family Mini Mall / Gas Station" },
+  "5410":  { name:"Child Development Center",                  stop:"Family Housing Towers (Tropic Lightning Ave)" },
+  "5700":  { name:"Main Exchange (PX)",                        stop:"Main Exchange (PX)" },
+  "5725":  { name:"Commissary",                                stop:"Commissary" },
+  "5730":  { name:"Main Post Office",                          stop:"Main Post Office" },
+  "5904":  { name:"River Bend Golf Club House",                stop:"River Bend Golf Course" },
+  "6120":  { name:"8A NCO Academy",                            stop:"Law Enforcement Center (DES)" },
+  "6140":  { name:"DPW / Corps of Engineers HQ",               stop:"Corps of Engineers" },
+  "6321":  { name:"Spartan Dining Facility",                   stop:"Spartan DFAC" },
+  "6360":  { name:"Pacific Victors Chapel",                    stop:"Pacific Victors Chapel" },
+  "6400":  { name:"LTG Maude Hall / One Stop",                 stop:"LTG Maude Hall (9th St)" },
+  "6420":  { name:"Civilian Personnel Center",                 stop:"LTG Maude Hall (9th St)" },
+  "6430":  { name:"Community Banking Center",                  stop:"LTG Maude Hall (9th St)" },
+  "6702":  { name:"Pittman Dining Facility",                   stop:"Pittman DFAC" },
+  "6800":  { name:"Warrior Chapel / Barracks",                 stop:"Barracks (6800s & 6900s Block)" },
+  "6809":  { name:"Cowan Post Office",                         stop:"Main Post Office" },
+  "6815":  { name:"Sitman Fitness Center",                     stop:"Sitman Fitness Center" },
+  "9600":  { name:"Brian D. Allgood Hospital",                 stop:"Brian D. Allgood Hospital" },
+  "12600": { name:"US Army Corps of Engineers Far East District", stop:"Corps of Engineers" },
 };
 
 const OFFPOST = [

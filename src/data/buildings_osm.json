@@ -1,0 +1,3433 @@
+{
+  "_meta": {
+    "source": "OpenStreetMap via Overpass API",
+    "polygon_osm_way": 245548245,
+    "fetched_at": "2026-05-20T02:49:58.816920+00:00",
+    "license": "ODbL 1.0 — © OpenStreetMap contributors",
+    "elements_total": 922,
+    "buildings_with_number": 380,
+    "name_matched_to_stop": 23
+  },
+  "buildings": {
+    "101": {
+      "name": "Humphreys Museum",
+      "stop": null,
+      "lat": 36.9492311,
+      "lon": 127.0258108,
+      "osm_id": "way/588172371",
+      "amenity": null,
+      "operator": "USAG Humphreys"
+    },
+    "110": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9479878,
+      "lon": 127.0271926,
+      "osm_id": "way/588172369",
+      "amenity": null,
+      "operator": null
+    },
+    "111": {
+      "name": "ROC Drill Center",
+      "stop": null,
+      "lat": 36.94834,
+      "lon": 127.0265844,
+      "osm_id": "way/588172368",
+      "amenity": null,
+      "operator": null
+    },
+    "112": {
+      "name": "Burger King",
+      "stop": null,
+      "lat": 36.9481688,
+      "lon": 127.0254563,
+      "osm_id": "way/588172366",
+      "amenity": "fast_food",
+      "operator": null
+    },
+    "113": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9488048,
+      "lon": 127.0264899,
+      "osm_id": "way/588172370",
+      "amenity": null,
+      "operator": null
+    },
+    "118": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9480788,
+      "lon": 127.0261557,
+      "osm_id": "way/588172367",
+      "amenity": null,
+      "operator": null
+    },
+    "123": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9492033,
+      "lon": 127.027839,
+      "osm_id": "way/588172392",
+      "amenity": null,
+      "operator": null
+    },
+    "125": {
+      "name": "Morning Calm Conference Center",
+      "stop": "Morning Calm Center",
+      "lat": 36.9487858,
+      "lon": 127.0283488,
+      "osm_id": "way/588172393",
+      "amenity": "conference_centre",
+      "operator": null
+    },
+    "204": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9498498,
+      "lon": 127.0269616,
+      "osm_id": "way/588172383",
+      "amenity": null,
+      "operator": null
+    },
+    "208": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9503124,
+      "lon": 127.0279089,
+      "osm_id": "way/984720138",
+      "amenity": null,
+      "operator": null
+    },
+    "244": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9502439,
+      "lon": 127.026837,
+      "osm_id": "way/984720137",
+      "amenity": null,
+      "operator": null
+    },
+    "300": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9496307,
+      "lon": 127.0253104,
+      "osm_id": "way/988812287",
+      "amenity": null,
+      "operator": null
+    },
+    "301": {
+      "name": "USO Sentry Village",
+      "stop": null,
+      "lat": 36.9493211,
+      "lon": 127.0251725,
+      "osm_id": "way/588172375",
+      "amenity": null,
+      "operator": null
+    },
+    "302": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9493556,
+      "lon": 127.0249446,
+      "osm_id": "way/588172374",
+      "amenity": null,
+      "operator": null
+    },
+    "360": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9496662,
+      "lon": 127.0238401,
+      "osm_id": "way/587316817",
+      "amenity": null,
+      "operator": null
+    },
+    "362": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9484944,
+      "lon": 127.0243703,
+      "osm_id": "way/587316822",
+      "amenity": null,
+      "operator": null
+    },
+    "363": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9484754,
+      "lon": 127.0241214,
+      "osm_id": "way/988812276",
+      "amenity": null,
+      "operator": null
+    },
+    "364": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9484476,
+      "lon": 127.0238451,
+      "osm_id": "way/988812274",
+      "amenity": null,
+      "operator": null
+    },
+    "365": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9481207,
+      "lon": 127.0238884,
+      "osm_id": "way/988812273",
+      "amenity": null,
+      "operator": null
+    },
+    "366": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9481486,
+      "lon": 127.0241647,
+      "osm_id": "way/988812275",
+      "amenity": null,
+      "operator": null
+    },
+    "367": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9481676,
+      "lon": 127.0244135,
+      "osm_id": "way/988812277",
+      "amenity": null,
+      "operator": null
+    },
+    "370": {
+      "name": "Keumkang KATUSA Snack Bar",
+      "stop": null,
+      "lat": 36.948344,
+      "lon": 127.0300024,
+      "osm_id": "way/588172350",
+      "amenity": "restaurant",
+      "operator": null
+    },
+    "371": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9492659,
+      "lon": 127.0239415,
+      "osm_id": "way/587316818",
+      "amenity": null,
+      "operator": null
+    },
+    "375": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9483455,
+      "lon": 127.0248177,
+      "osm_id": "way/588172373",
+      "amenity": null,
+      "operator": null
+    },
+    "400": {
+      "name": "Sentry Mini Mall",
+      "stop": null,
+      "lat": 36.9476499,
+      "lon": 127.0252081,
+      "osm_id": "way/587316824",
+      "amenity": null,
+      "operator": "AAFES"
+    },
+    "421": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9472507,
+      "lon": 127.0236198,
+      "osm_id": "way/587316812",
+      "amenity": null,
+      "operator": null
+    },
+    "424": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9455853,
+      "lon": 127.0206389,
+      "osm_id": "way/587309811",
+      "amenity": null,
+      "operator": null
+    },
+    "427": {
+      "name": "Girl Scouts",
+      "stop": null,
+      "lat": 36.946882,
+      "lon": 127.0225527,
+      "osm_id": "way/1000291640",
+      "amenity": null,
+      "operator": "USA Girl Scouts Overseas Camp Humphreys"
+    },
+    "449": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9474294,
+      "lon": 127.0272811,
+      "osm_id": "way/588172364",
+      "amenity": null,
+      "operator": null
+    },
+    "481": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9473785,
+      "lon": 127.0284626,
+      "osm_id": "way/588172362",
+      "amenity": null,
+      "operator": null
+    },
+    "483": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9472278,
+      "lon": 127.0279888,
+      "osm_id": "way/588172363",
+      "amenity": null,
+      "operator": null
+    },
+    "484": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9473852,
+      "lon": 127.0290302,
+      "osm_id": "way/588172361",
+      "amenity": null,
+      "operator": null
+    },
+    "501": {
+      "name": "The HUB (Religious Activities Center)",
+      "stop": null,
+      "lat": 36.9492024,
+      "lon": 127.0222758,
+      "osm_id": "way/587316801",
+      "amenity": null,
+      "operator": null
+    },
+    "510": {
+      "name": "Heartbreak Ridge Tower",
+      "stop": null,
+      "lat": 36.9476083,
+      "lon": 127.0213132,
+      "osm_id": "way/587316800",
+      "amenity": null,
+      "operator": null
+    },
+    "511": {
+      "name": "Bunker Hill Tower",
+      "stop": null,
+      "lat": 36.9483123,
+      "lon": 127.0207001,
+      "osm_id": "way/587309806",
+      "amenity": null,
+      "operator": null
+    },
+    "512": {
+      "name": "Punch Bowl Tower",
+      "stop": null,
+      "lat": 36.9468226,
+      "lon": 127.0210179,
+      "osm_id": "way/587309808",
+      "amenity": null,
+      "operator": null
+    },
+    "514": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9459194,
+      "lon": 127.0210293,
+      "osm_id": "way/587309809",
+      "amenity": null,
+      "operator": null
+    },
+    "534": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9471529,
+      "lon": 127.0219899,
+      "osm_id": "way/587316809",
+      "amenity": null,
+      "operator": null
+    },
+    "535": {
+      "name": null,
+      "stop": null,
+      "lat": 36.947478,
+      "lon": 127.0220701,
+      "osm_id": "way/587316810",
+      "amenity": null,
+      "operator": null
+    },
+    "537": {
+      "name": "Boy Scouts",
+      "stop": null,
+      "lat": 36.9472614,
+      "lon": 127.0224539,
+      "osm_id": "way/1000291638",
+      "amenity": null,
+      "operator": "Boy Scouts of America Asia West District"
+    },
+    "542": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9486895,
+      "lon": 127.0219303,
+      "osm_id": "way/587316797",
+      "amenity": null,
+      "operator": null
+    },
+    "544": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9484411,
+      "lon": 127.0221539,
+      "osm_id": "way/587316802",
+      "amenity": null,
+      "operator": null
+    },
+    "550": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9492819,
+      "lon": 127.0208862,
+      "osm_id": "way/587309803",
+      "amenity": null,
+      "operator": null
+    },
+    "555": {
+      "name": "Jenkins Clinic",
+      "stop": "MSG Jenkins Medical Clinic",
+      "lat": 36.9489229,
+      "lon": 127.0231017,
+      "osm_id": "way/587316816",
+      "amenity": "clinic",
+      "operator": null
+    },
+    "557": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9489654,
+      "lon": 127.0201743,
+      "osm_id": "way/587309802",
+      "amenity": null,
+      "operator": null
+    },
+    "558": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9490452,
+      "lon": 127.0208295,
+      "osm_id": "way/587309805",
+      "amenity": null,
+      "operator": null
+    },
+    "570": {
+      "name": "Gilliand Youth Center",
+      "stop": null,
+      "lat": 36.9473747,
+      "lon": 127.0228444,
+      "osm_id": "way/587316813",
+      "amenity": "community_centre",
+      "operator": null
+    },
+    "571": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9483291,
+      "lon": 127.0231627,
+      "osm_id": "way/587316805",
+      "amenity": null,
+      "operator": null
+    },
+    "572": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9478518,
+      "lon": 127.0232238,
+      "osm_id": "way/587316806",
+      "amenity": null,
+      "operator": null
+    },
+    "573": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9482037,
+      "lon": 127.0223647,
+      "osm_id": "way/587316804",
+      "amenity": null,
+      "operator": null
+    },
+    "574": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9478396,
+      "lon": 127.022386,
+      "osm_id": "way/587316807",
+      "amenity": null,
+      "operator": null
+    },
+    "575": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9481654,
+      "lon": 127.0218143,
+      "osm_id": "way/587316803",
+      "amenity": null,
+      "operator": null
+    },
+    "576": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9477838,
+      "lon": 127.0218505,
+      "osm_id": "way/587316808",
+      "amenity": null,
+      "operator": null
+    },
+    "577": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9488116,
+      "lon": 127.0216408,
+      "osm_id": "way/587316799",
+      "amenity": null,
+      "operator": null
+    },
+    "579": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9492068,
+      "lon": 127.0193309,
+      "osm_id": "way/587296092",
+      "amenity": null,
+      "operator": null
+    },
+    "581": {
+      "name": null,
+      "stop": null,
+      "lat": 36.949274,
+      "lon": 127.0183654,
+      "osm_id": "way/587296055",
+      "amenity": null,
+      "operator": null
+    },
+    "582": {
+      "name": null,
+      "stop": null,
+      "lat": 36.948913,
+      "lon": 127.0191379,
+      "osm_id": "way/587296062",
+      "amenity": null,
+      "operator": null
+    },
+    "583": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9489475,
+      "lon": 127.0182442,
+      "osm_id": "way/587296056",
+      "amenity": null,
+      "operator": null
+    },
+    "584": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9488593,
+      "lon": 127.0186303,
+      "osm_id": "way/587296059",
+      "amenity": null,
+      "operator": null
+    },
+    "590": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9492353,
+      "lon": 127.0188336,
+      "osm_id": "way/587296064",
+      "amenity": null,
+      "operator": null
+    },
+    "616": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9502999,
+      "lon": 127.0240524,
+      "osm_id": "way/587302606",
+      "amenity": null,
+      "operator": null
+    },
+    "627": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9508633,
+      "lon": 127.0281329,
+      "osm_id": "way/587302618",
+      "amenity": null,
+      "operator": null
+    },
+    "637": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9503194,
+      "lon": 127.0234185,
+      "osm_id": "way/587302594",
+      "amenity": null,
+      "operator": null
+    },
+    "644": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9506023,
+      "lon": 127.0238538,
+      "osm_id": "way/587302602",
+      "amenity": null,
+      "operator": null
+    },
+    "657": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9500802,
+      "lon": 127.0207037,
+      "osm_id": "way/587302574",
+      "amenity": null,
+      "operator": null
+    },
+    "666": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9506195,
+      "lon": 127.0251732,
+      "osm_id": "way/587302609",
+      "amenity": null,
+      "operator": null
+    },
+    "695": {
+      "name": "Freedom Chapel",
+      "stop": "Freedom Chapel",
+      "lat": 36.9503695,
+      "lon": 127.0225028,
+      "osm_id": "way/587302577",
+      "amenity": "place_of_worship",
+      "operator": null
+    },
+    "696": {
+      "name": null,
+      "stop": null,
+      "lat": 36.950881,
+      "lon": 127.0224497,
+      "osm_id": "way/587302578",
+      "amenity": null,
+      "operator": null
+    },
+    "714": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9509303,
+      "lon": 127.0327928,
+      "osm_id": "way/984426610",
+      "amenity": null,
+      "operator": null
+    },
+    "725": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9500562,
+      "lon": 127.0322818,
+      "osm_id": "way/588172341",
+      "amenity": null,
+      "operator": null
+    },
+    "726": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9501128,
+      "lon": 127.0312823,
+      "osm_id": "way/588172342",
+      "amenity": null,
+      "operator": null
+    },
+    "727": {
+      "name": "Morning Calm Post Office",
+      "stop": "Main Post Office",
+      "lat": 36.9484058,
+      "lon": 127.0305309,
+      "osm_id": "way/588172349",
+      "amenity": "post_office",
+      "operator": "United States Postal Service"
+    },
+    "731": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9490955,
+      "lon": 127.0302091,
+      "osm_id": "way/588172347",
+      "amenity": null,
+      "operator": null
+    },
+    "732": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9498144,
+      "lon": 127.0300882,
+      "osm_id": "way/588172339",
+      "amenity": "parking",
+      "operator": null
+    },
+    "737": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9490448,
+      "lon": 127.0327899,
+      "osm_id": "way/588172348",
+      "amenity": null,
+      "operator": null
+    },
+    "739": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9473462,
+      "lon": 127.032436,
+      "osm_id": "way/588172357",
+      "amenity": null,
+      "operator": null
+    },
+    "740": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9473373,
+      "lon": 127.0313341,
+      "osm_id": "way/588172356",
+      "amenity": null,
+      "operator": null
+    },
+    "753": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9497828,
+      "lon": 127.0312672,
+      "osm_id": "way/588172343",
+      "amenity": null,
+      "operator": null
+    },
+    "754": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9497722,
+      "lon": 127.0321349,
+      "osm_id": "way/588172344",
+      "amenity": null,
+      "operator": null
+    },
+    "755": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9493552,
+      "lon": 127.0314458,
+      "osm_id": "way/588172345",
+      "amenity": null,
+      "operator": null
+    },
+    "775": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9516011,
+      "lon": 127.0359162,
+      "osm_id": "way/587309784",
+      "amenity": null,
+      "operator": null
+    },
+    "776": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9512935,
+      "lon": 127.036077,
+      "osm_id": "way/587309783",
+      "amenity": null,
+      "operator": null
+    },
+    "859": {
+      "name": "Law Enforcement Center",
+      "stop": "Law Enforcement Center (DES)",
+      "lat": 36.9537902,
+      "lon": 127.0346603,
+      "osm_id": "way/587273676",
+      "amenity": "police",
+      "operator": null
+    },
+    "860": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9553278,
+      "lon": 127.0341618,
+      "osm_id": "way/587264484",
+      "amenity": null,
+      "operator": null
+    },
+    "868": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9551813,
+      "lon": 127.0326614,
+      "osm_id": "way/587264478",
+      "amenity": null,
+      "operator": null
+    },
+    "880": {
+      "name": "Base Operations",
+      "stop": null,
+      "lat": 36.9651922,
+      "lon": 127.0211553,
+      "osm_id": "way/587035324",
+      "amenity": null,
+      "operator": null
+    },
+    "882": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9587669,
+      "lon": 127.0276161,
+      "osm_id": "way/587264453",
+      "amenity": null,
+      "operator": null
+    },
+    "889": {
+      "name": "US Army Garrison Humphreys Fire Department",
+      "stop": null,
+      "lat": 36.9546663,
+      "lon": 127.035207,
+      "osm_id": "way/587264485",
+      "amenity": "fire_station",
+      "operator": null
+    },
+    "895": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9562363,
+      "lon": 127.0281463,
+      "osm_id": "way/587264460",
+      "amenity": null,
+      "operator": null
+    },
+    "1013": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9592093,
+      "lon": 127.0207216,
+      "osm_id": "way/587264417",
+      "amenity": null,
+      "operator": null
+    },
+    "1030": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9527194,
+      "lon": 127.0202144,
+      "osm_id": "way/587279052",
+      "amenity": null,
+      "operator": null
+    },
+    "1032": {
+      "name": null,
+      "stop": null,
+      "lat": 36.952898,
+      "lon": 127.0207138,
+      "osm_id": "way/587279047",
+      "amenity": null,
+      "operator": null
+    },
+    "1033": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9529422,
+      "lon": 127.02053,
+      "osm_id": "way/587279050",
+      "amenity": null,
+      "operator": null
+    },
+    "1034": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9529959,
+      "lon": 127.0203133,
+      "osm_id": "way/587279053",
+      "amenity": null,
+      "operator": null
+    },
+    "1039": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9522687,
+      "lon": 127.0201671,
+      "osm_id": "way/977366923",
+      "amenity": null,
+      "operator": null
+    },
+    "1044": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9536142,
+      "lon": 127.0214828,
+      "osm_id": "way/587273710",
+      "amenity": null,
+      "operator": null
+    },
+    "1057": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9599998,
+      "lon": 127.0211858,
+      "osm_id": "way/587264410",
+      "amenity": null,
+      "operator": null
+    },
+    "1078": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9521326,
+      "lon": 127.0292056,
+      "osm_id": "way/587309796",
+      "amenity": null,
+      "operator": null
+    },
+    "1127": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9498579,
+      "lon": 127.0184144,
+      "osm_id": "way/587296050",
+      "amenity": null,
+      "operator": null
+    },
+    "1130": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9493896,
+      "lon": 127.0173965,
+      "osm_id": "way/587296046",
+      "amenity": null,
+      "operator": null
+    },
+    "1131": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9491306,
+      "lon": 127.0174267,
+      "osm_id": "way/587296049",
+      "amenity": null,
+      "operator": null
+    },
+    "1132": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9488488,
+      "lon": 127.0174335,
+      "osm_id": "way/587296047",
+      "amenity": null,
+      "operator": null
+    },
+    "1133": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9485861,
+      "lon": 127.0174648,
+      "osm_id": "way/587296048",
+      "amenity": null,
+      "operator": null
+    },
+    "1134": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9482145,
+      "lon": 127.0171921,
+      "osm_id": "way/587296068",
+      "amenity": null,
+      "operator": null
+    },
+    "1137": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9496727,
+      "lon": 127.0179762,
+      "osm_id": "way/587296052",
+      "amenity": null,
+      "operator": null
+    },
+    "1138": {
+      "name": null,
+      "stop": null,
+      "lat": 36.949624,
+      "lon": 127.0171778,
+      "osm_id": "way/587296044",
+      "amenity": null,
+      "operator": null
+    },
+    "1207": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9628931,
+      "lon": 127.0381902,
+      "osm_id": "way/587024774",
+      "amenity": null,
+      "operator": null
+    },
+    "1212": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9631334,
+      "lon": 127.0378051,
+      "osm_id": "way/587024753",
+      "amenity": null,
+      "operator": null
+    },
+    "1216": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9638011,
+      "lon": 127.0371831,
+      "osm_id": "way/587024749",
+      "amenity": null,
+      "operator": null
+    },
+    "1218": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9645879,
+      "lon": 127.0374309,
+      "osm_id": "way/587024744",
+      "amenity": null,
+      "operator": null
+    },
+    "1219": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9643054,
+      "lon": 127.0378045,
+      "osm_id": "way/587024741",
+      "amenity": null,
+      "operator": null
+    },
+    "1228": {
+      "name": "Bonsa KATUSA Snack Bar",
+      "stop": null,
+      "lat": 36.9605699,
+      "lon": 127.0392058,
+      "osm_id": "way/587024766",
+      "amenity": "restaurant",
+      "operator": null
+    },
+    "1235": {
+      "name": "Fire Station #2",
+      "stop": null,
+      "lat": 36.9604938,
+      "lon": 127.0398376,
+      "osm_id": "way/587024760",
+      "amenity": "fire_station",
+      "operator": null
+    },
+    "1237": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9636632,
+      "lon": 127.0376773,
+      "osm_id": "way/587024748",
+      "amenity": null,
+      "operator": null
+    },
+    "1239": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9650096,
+      "lon": 127.0368097,
+      "osm_id": "way/587024743",
+      "amenity": null,
+      "operator": null
+    },
+    "1240": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9647572,
+      "lon": 127.0368237,
+      "osm_id": "way/587024742",
+      "amenity": null,
+      "operator": null
+    },
+    "1241": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9622835,
+      "lon": 127.0388414,
+      "osm_id": "way/587024772",
+      "amenity": null,
+      "operator": null
+    },
+    "1244": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9633586,
+      "lon": 127.0368407,
+      "osm_id": "way/587024751",
+      "amenity": null,
+      "operator": null
+    },
+    "1247": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9633248,
+      "lon": 127.0375889,
+      "osm_id": "way/587024752",
+      "amenity": null,
+      "operator": null
+    },
+    "1274": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9639848,
+      "lon": 127.0376876,
+      "osm_id": "way/587024747",
+      "amenity": null,
+      "operator": null
+    },
+    "1283": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9632116,
+      "lon": 127.0351107,
+      "osm_id": "way/587024790",
+      "amenity": null,
+      "operator": null
+    },
+    "1289": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9644675,
+      "lon": 127.0383092,
+      "osm_id": "way/587035279",
+      "amenity": null,
+      "operator": null
+    },
+    "1291": {
+      "name": "Provider Grill Dining Facility",
+      "stop": "Provider Grill DFAC",
+      "lat": 36.9647261,
+      "lon": 127.0389407,
+      "osm_id": "way/587035278",
+      "amenity": "restaurant",
+      "operator": null
+    },
+    "1294": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9638477,
+      "lon": 127.0396633,
+      "osm_id": "way/586994390",
+      "amenity": null,
+      "operator": null
+    },
+    "1296": {
+      "name": "Zoeckler Fitness Center",
+      "stop": null,
+      "lat": 36.962857,
+      "lon": 127.039586,
+      "osm_id": "way/586994396",
+      "amenity": null,
+      "operator": null
+    },
+    "1330": {
+      "name": null,
+      "stop": null,
+      "lat": 36.96458,
+      "lon": 127.0378404,
+      "osm_id": "way/1196653129",
+      "amenity": null,
+      "operator": null
+    },
+    "1407": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9585219,
+      "lon": 127.0421952,
+      "osm_id": "way/587035313",
+      "amenity": null,
+      "operator": null
+    },
+    "1417": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9582941,
+      "lon": 127.0419787,
+      "osm_id": "way/587035312",
+      "amenity": null,
+      "operator": null
+    },
+    "1432": {
+      "name": "Pancake House",
+      "stop": null,
+      "lat": 36.9575052,
+      "lon": 127.0426664,
+      "osm_id": "way/1098300853",
+      "amenity": "restaurant",
+      "operator": null
+    },
+    "1601": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9507474,
+      "lon": 127.0275961,
+      "osm_id": "way/587302617",
+      "amenity": null,
+      "operator": null
+    },
+    "1612": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9512507,
+      "lon": 127.0248665,
+      "osm_id": "way/587302604",
+      "amenity": null,
+      "operator": null
+    },
+    "1644": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9506868,
+      "lon": 127.0241981,
+      "osm_id": "way/587302605",
+      "amenity": null,
+      "operator": null
+    },
+    "1645": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9506931,
+      "lon": 127.0246735,
+      "osm_id": "way/587302608",
+      "amenity": null,
+      "operator": null
+    },
+    "1646": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9503807,
+      "lon": 127.0247489,
+      "osm_id": "way/587302607",
+      "amenity": null,
+      "operator": null
+    },
+    "1647": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9506302,
+      "lon": 127.0254357,
+      "osm_id": "way/587302610",
+      "amenity": null,
+      "operator": null
+    },
+    "1750": {
+      "name": "AFN Televideo Center",
+      "stop": null,
+      "lat": 36.9521371,
+      "lon": 127.0377425,
+      "osm_id": "way/587309769",
+      "amenity": null,
+      "operator": "AFN"
+    },
+    "1770": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9506454,
+      "lon": 127.0314256,
+      "osm_id": "way/588172346",
+      "amenity": null,
+      "operator": null
+    },
+    "1949": {
+      "name": "Collier Community Fitness Center (Super Gym)",
+      "stop": "Collier Fitness Center",
+      "lat": 36.9529322,
+      "lon": 127.0229199,
+      "osm_id": "way/587273720",
+      "amenity": null,
+      "operator": null
+    },
+    "2001": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9634475,
+      "lon": 127.02211,
+      "osm_id": "way/587264389",
+      "amenity": null,
+      "operator": null
+    },
+    "2002": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9634334,
+      "lon": 127.0215357,
+      "osm_id": "way/587264388",
+      "amenity": null,
+      "operator": null
+    },
+    "2009": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9618629,
+      "lon": 127.0227676,
+      "osm_id": "way/587264397",
+      "amenity": null,
+      "operator": null
+    },
+    "2010": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9629627,
+      "lon": 127.0219098,
+      "osm_id": "way/587264390",
+      "amenity": null,
+      "operator": null
+    },
+    "2011": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9623559,
+      "lon": 127.0223426,
+      "osm_id": "way/587264396",
+      "amenity": null,
+      "operator": null
+    },
+    "2014": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9606691,
+      "lon": 127.0228508,
+      "osm_id": "way/587264408",
+      "amenity": null,
+      "operator": null
+    },
+    "2022": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9630478,
+      "lon": 127.0223277,
+      "osm_id": "way/587264391",
+      "amenity": null,
+      "operator": null
+    },
+    "2031": {
+      "name": null,
+      "stop": null,
+      "lat": 36.953269,
+      "lon": 127.0209699,
+      "osm_id": "way/587273721",
+      "amenity": null,
+      "operator": null
+    },
+    "2037": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9620558,
+      "lon": 127.0215546,
+      "osm_id": "way/587264399",
+      "amenity": null,
+      "operator": null
+    },
+    "2040": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9514675,
+      "lon": 127.0240203,
+      "osm_id": "way/1002040330",
+      "amenity": null,
+      "operator": null
+    },
+    "2044": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9622904,
+      "lon": 127.0232101,
+      "osm_id": "way/587264395",
+      "amenity": null,
+      "operator": null
+    },
+    "2061": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9599408,
+      "lon": 127.0225328,
+      "osm_id": "way/587264404",
+      "amenity": null,
+      "operator": null
+    },
+    "2063": {
+      "name": "Turner Fitness Center",
+      "stop": "Turner Fitness Center",
+      "lat": 36.9606346,
+      "lon": 127.0239046,
+      "osm_id": "way/587264400",
+      "amenity": null,
+      "operator": null
+    },
+    "2064": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9601609,
+      "lon": 127.0245643,
+      "osm_id": "way/587264405",
+      "amenity": null,
+      "operator": null
+    },
+    "2090": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9590204,
+      "lon": 127.0202221,
+      "osm_id": "way/587264419",
+      "amenity": null,
+      "operator": null
+    },
+    "2091": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9595729,
+      "lon": 127.019642,
+      "osm_id": "way/1001502265",
+      "amenity": null,
+      "operator": null
+    },
+    "2092": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9593428,
+      "lon": 127.0197774,
+      "osm_id": "way/1001502264",
+      "amenity": null,
+      "operator": null
+    },
+    "2096": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9607522,
+      "lon": 127.0206927,
+      "osm_id": "way/587264402",
+      "amenity": null,
+      "operator": null
+    },
+    "2097": {
+      "name": "Talon Café Dining Facility",
+      "stop": "Talon Cafe DFAC",
+      "lat": 36.9611892,
+      "lon": 127.0213216,
+      "osm_id": "way/609413700",
+      "amenity": "restaurant",
+      "operator": null
+    },
+    "2098": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9613431,
+      "lon": 127.0221418,
+      "osm_id": "way/587264401",
+      "amenity": null,
+      "operator": null
+    },
+    "2105": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9632173,
+      "lon": 127.0224919,
+      "osm_id": "way/587264392",
+      "amenity": null,
+      "operator": null
+    },
+    "2106": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9630458,
+      "lon": 127.0227628,
+      "osm_id": "way/587264394",
+      "amenity": null,
+      "operator": null
+    },
+    "2109": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9626775,
+      "lon": 127.0226113,
+      "osm_id": "way/1001502240",
+      "amenity": null,
+      "operator": null
+    },
+    "2110": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9587801,
+      "lon": 127.0233989,
+      "osm_id": "way/586682933",
+      "amenity": null,
+      "operator": null
+    },
+    "2111": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9587733,
+      "lon": 127.0250073,
+      "osm_id": "way/586994366",
+      "amenity": null,
+      "operator": null
+    },
+    "2220": {
+      "name": "SFC Ray E. Duke Memorial Library",
+      "stop": null,
+      "lat": 36.9603138,
+      "lon": 127.0160863,
+      "osm_id": "way/586975356",
+      "amenity": "library",
+      "operator": null
+    },
+    "2230": {
+      "name": "Four Chaplains Memorial Chapel",
+      "stop": null,
+      "lat": 36.9607286,
+      "lon": 127.0150327,
+      "osm_id": "way/586975354",
+      "amenity": "place_of_worship",
+      "operator": null
+    },
+    "2240": {
+      "name": "Eighth United States Army Band",
+      "stop": null,
+      "lat": 36.9617362,
+      "lon": 127.0127189,
+      "osm_id": "way/586975350",
+      "amenity": null,
+      "operator": null
+    },
+    "2250": {
+      "name": "Automotive Skills Center",
+      "stop": null,
+      "lat": 36.962276,
+      "lon": 127.0111318,
+      "osm_id": "way/586975349",
+      "amenity": null,
+      "operator": null
+    },
+    "2260": {
+      "name": "Veterinary Treatment Facility",
+      "stop": null,
+      "lat": 36.9627049,
+      "lon": 127.010128,
+      "osm_id": "way/586975347",
+      "amenity": "veterinary",
+      "operator": null
+    },
+    "2270": {
+      "name": "Family Mini Mall Express",
+      "stop": "Family Mini Mall / Gas Station",
+      "lat": 36.9629749,
+      "lon": 127.0093273,
+      "osm_id": "way/699218029",
+      "amenity": "fuel",
+      "operator": null
+    },
+    "3020": {
+      "name": "Carius Dental Treatment Facility",
+      "stop": null,
+      "lat": 36.9544281,
+      "lon": 127.0308394,
+      "osm_id": "way/587273681",
+      "amenity": "dentist",
+      "operator": null
+    },
+    "3030": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9539893,
+      "lon": 127.028352,
+      "osm_id": "way/587273688",
+      "amenity": null,
+      "operator": null
+    },
+    "3032": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9538319,
+      "lon": 127.030162,
+      "osm_id": "way/587273682",
+      "amenity": "parking",
+      "operator": null
+    },
+    "3033": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9534847,
+      "lon": 127.0320697,
+      "osm_id": "way/587273683",
+      "amenity": null,
+      "operator": null
+    },
+    "3040": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9551215,
+      "lon": 127.0301801,
+      "osm_id": "way/587273687",
+      "amenity": "mortuary",
+      "operator": null
+    },
+    "5101": {
+      "name": "Blackhawk Tower",
+      "stop": null,
+      "lat": 36.9575518,
+      "lon": 127.0133025,
+      "osm_id": "way/586964374",
+      "amenity": null,
+      "operator": null
+    },
+    "5102": {
+      "name": "Apache Tower",
+      "stop": null,
+      "lat": 36.9577456,
+      "lon": 127.0141561,
+      "osm_id": "way/586964373",
+      "amenity": null,
+      "operator": null
+    },
+    "5103": {
+      "name": "Chinook Tower",
+      "stop": null,
+      "lat": 36.957037,
+      "lon": 127.0144039,
+      "osm_id": "way/586964371",
+      "amenity": null,
+      "operator": null
+    },
+    "5171": {
+      "name": "Patton Tower",
+      "stop": null,
+      "lat": 36.9584744,
+      "lon": 127.0113679,
+      "osm_id": "way/586964381",
+      "amenity": null,
+      "operator": null
+    },
+    "5172": {
+      "name": "Pershing Tower",
+      "stop": null,
+      "lat": 36.9586681,
+      "lon": 127.0122184,
+      "osm_id": "way/586964379",
+      "amenity": null,
+      "operator": null
+    },
+    "5173": {
+      "name": "Abrams Tower",
+      "stop": null,
+      "lat": 36.9579658,
+      "lon": 127.0124661,
+      "osm_id": "way/586964380",
+      "amenity": null,
+      "operator": null
+    },
+    "5502": {
+      "name": "Visitor Control Center (VCC)",
+      "stop": null,
+      "lat": 36.9622337,
+      "lon": 126.9900877,
+      "osm_id": "way/877543869",
+      "amenity": null,
+      "operator": null
+    },
+    "5520": {
+      "name": "Humphreys West Elementary School",
+      "stop": null,
+      "lat": 36.9618084,
+      "lon": 126.996033,
+      "osm_id": "way/586709806",
+      "amenity": "school",
+      "operator": "Department of Defense Education Activity (DoDEA)"
+    },
+    "5540": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9651232,
+      "lon": 126.9896794,
+      "osm_id": "way/877543846",
+      "amenity": null,
+      "operator": null
+    },
+    "5541": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9646593,
+      "lon": 126.9918522,
+      "osm_id": "way/874734739",
+      "amenity": null,
+      "operator": null
+    },
+    "5545": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9629511,
+      "lon": 126.9917299,
+      "osm_id": "way/874734738",
+      "amenity": null,
+      "operator": null
+    },
+    "5550": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9617943,
+      "lon": 126.9933748,
+      "osm_id": "way/877543847",
+      "amenity": null,
+      "operator": null
+    },
+    "5642": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9635929,
+      "lon": 127.0072979,
+      "osm_id": "way/586672704",
+      "amenity": null,
+      "operator": null
+    },
+    "5700": {
+      "name": "Humphreys Main Exchange",
+      "stop": "Main Exchange (PX)",
+      "lat": 36.9658039,
+      "lon": 126.9996912,
+      "osm_id": "way/586660633",
+      "amenity": null,
+      "operator": "AAFES"
+    },
+    "5725": {
+      "name": "Commissary",
+      "stop": "Commissary",
+      "lat": 36.9646035,
+      "lon": 127.0022825,
+      "osm_id": "way/586660637",
+      "amenity": null,
+      "operator": null
+    },
+    "5730": {
+      "name": "Main Post Office",
+      "stop": "Main Post Office",
+      "lat": 36.9636263,
+      "lon": 127.0000602,
+      "osm_id": "way/586660632",
+      "amenity": "post_office",
+      "operator": "United States Postal Service"
+    },
+    "5801": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9661453,
+      "lon": 126.9976573,
+      "osm_id": "way/586652268",
+      "amenity": null,
+      "operator": null
+    },
+    "5802": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9664562,
+      "lon": 126.9980096,
+      "osm_id": "way/586652269",
+      "amenity": null,
+      "operator": null
+    },
+    "5803": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9663779,
+      "lon": 126.9973331,
+      "osm_id": "way/586652267",
+      "amenity": null,
+      "operator": null
+    },
+    "5804": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9666886,
+      "lon": 126.9977278,
+      "osm_id": "way/586652270",
+      "amenity": null,
+      "operator": null
+    },
+    "5805": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9665472,
+      "lon": 126.9969635,
+      "osm_id": "way/586652266",
+      "amenity": null,
+      "operator": null
+    },
+    "5806": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9668625,
+      "lon": 126.9973993,
+      "osm_id": "way/586652271",
+      "amenity": null,
+      "operator": null
+    },
+    "5807": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9666558,
+      "lon": 126.9963659,
+      "osm_id": "way/586652265",
+      "amenity": null,
+      "operator": null
+    },
+    "5808": {
+      "name": null,
+      "stop": null,
+      "lat": 36.966985,
+      "lon": 126.9970323,
+      "osm_id": "way/586652272",
+      "amenity": null,
+      "operator": null
+    },
+    "5809": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9666016,
+      "lon": 126.995964,
+      "osm_id": "way/586652264",
+      "amenity": null,
+      "operator": null
+    },
+    "5810": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9670433,
+      "lon": 126.9966241,
+      "osm_id": "way/586652273",
+      "amenity": null,
+      "operator": null
+    },
+    "5811": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9670555,
+      "lon": 126.9962019,
+      "osm_id": "way/586652276",
+      "amenity": null,
+      "operator": null
+    },
+    "5812": {
+      "name": null,
+      "stop": null,
+      "lat": 36.966912,
+      "lon": 126.9956626,
+      "osm_id": "way/586652275",
+      "amenity": null,
+      "operator": null
+    },
+    "5813": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9664,
+      "lon": 126.9950681,
+      "osm_id": "way/586652274",
+      "amenity": null,
+      "operator": null
+    },
+    "5816": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9661153,
+      "lon": 126.9955609,
+      "osm_id": "way/586652259",
+      "amenity": null,
+      "operator": null
+    },
+    "5817": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9662925,
+      "lon": 126.9964024,
+      "osm_id": "way/586652263",
+      "amenity": null,
+      "operator": null
+    },
+    "5818": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9659904,
+      "lon": 126.995945,
+      "osm_id": "way/586652258",
+      "amenity": null,
+      "operator": null
+    },
+    "5819": {
+      "name": null,
+      "stop": null,
+      "lat": 36.966112,
+      "lon": 126.996758,
+      "osm_id": "way/586652262",
+      "amenity": null,
+      "operator": null
+    },
+    "5820": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9658158,
+      "lon": 126.9962938,
+      "osm_id": "way/586652257",
+      "amenity": null,
+      "operator": null
+    },
+    "5821": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9659359,
+      "lon": 126.997096,
+      "osm_id": "way/586652261",
+      "amenity": null,
+      "operator": null
+    },
+    "5822": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9656471,
+      "lon": 126.9966311,
+      "osm_id": "way/586652256",
+      "amenity": null,
+      "operator": null
+    },
+    "5823": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9657629,
+      "lon": 126.9974244,
+      "osm_id": "way/586652260",
+      "amenity": null,
+      "operator": null
+    },
+    "5824": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9654689,
+      "lon": 126.996965,
+      "osm_id": "way/586652254",
+      "amenity": null,
+      "operator": null
+    },
+    "5826": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9652829,
+      "lon": 126.9973271,
+      "osm_id": "way/586652255",
+      "amenity": null,
+      "operator": null
+    },
+    "5901": {
+      "name": "Driving Range",
+      "stop": null,
+      "lat": 36.9717316,
+      "lon": 126.9846803,
+      "osm_id": "way/890922918",
+      "amenity": null,
+      "operator": null
+    },
+    "5903": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9713689,
+      "lon": 126.9855284,
+      "osm_id": "way/890922939",
+      "amenity": null,
+      "operator": null
+    },
+    "5904": {
+      "name": "River Bend Golf Club House",
+      "stop": "River Bend Golf Course",
+      "lat": 36.971477,
+      "lon": 126.9863931,
+      "osm_id": "way/890922940",
+      "amenity": null,
+      "operator": null
+    },
+    "5908": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9681127,
+      "lon": 126.9850941,
+      "osm_id": "way/890922877",
+      "amenity": null,
+      "operator": null
+    },
+    "5911": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9681414,
+      "lon": 126.9854247,
+      "osm_id": "way/890922876",
+      "amenity": null,
+      "operator": null
+    },
+    "6008": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9636781,
+      "lon": 127.0164784,
+      "osm_id": "way/586660627",
+      "amenity": null,
+      "operator": null
+    },
+    "6050": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9663458,
+      "lon": 127.0117969,
+      "osm_id": "way/1023341554",
+      "amenity": null,
+      "operator": null
+    },
+    "6060": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9662743,
+      "lon": 127.0107212,
+      "osm_id": "way/1023341553",
+      "amenity": null,
+      "operator": null
+    },
+    "6070": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9653803,
+      "lon": 127.0102666,
+      "osm_id": "way/1023341552",
+      "amenity": null,
+      "operator": null
+    },
+    "6100": {
+      "name": "Korea Battle Simulation Center (KBSC)",
+      "stop": null,
+      "lat": 36.9677338,
+      "lon": 127.0126968,
+      "osm_id": "way/586652313",
+      "amenity": null,
+      "operator": null
+    },
+    "6106": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9683088,
+      "lon": 127.0130685,
+      "osm_id": "way/1019699980",
+      "amenity": null,
+      "operator": null
+    },
+    "6110": {
+      "name": "Vandal Training Complex",
+      "stop": null,
+      "lat": 36.9677995,
+      "lon": 127.0116415,
+      "osm_id": "way/586652315",
+      "amenity": null,
+      "operator": null
+    },
+    "6120": {
+      "name": "Eighth Army Wightman NCO Academy",
+      "stop": "Eighth Army HQ",
+      "lat": 36.9666685,
+      "lon": 127.0138312,
+      "osm_id": "way/586660600",
+      "amenity": null,
+      "operator": null
+    },
+    "6140": {
+      "name": "Directorate of Public Works (DPW)",
+      "stop": "Corps of Engineers",
+      "lat": 36.9670773,
+      "lon": 127.0165122,
+      "osm_id": "way/586660601",
+      "amenity": null,
+      "operator": null
+    },
+    "6315": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9688337,
+      "lon": 127.0106669,
+      "osm_id": "way/586652304",
+      "amenity": null,
+      "operator": null
+    },
+    "6317": {
+      "name": "Burke Child Youth Services SKIES Center",
+      "stop": null,
+      "lat": 36.9675357,
+      "lon": 127.0098709,
+      "osm_id": "way/586652303",
+      "amenity": null,
+      "operator": null
+    },
+    "6320": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9693962,
+      "lon": 127.009467,
+      "osm_id": "way/586652283",
+      "amenity": null,
+      "operator": null
+    },
+    "6321": {
+      "name": "Spartan Dining Facility",
+      "stop": "Spartan DFAC",
+      "lat": 36.9694806,
+      "lon": 127.0083973,
+      "osm_id": "way/586652288",
+      "amenity": "restaurant",
+      "operator": null
+    },
+    "6322": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9701397,
+      "lon": 127.0073093,
+      "osm_id": "way/586652282",
+      "amenity": null,
+      "operator": null
+    },
+    "6323": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9695628,
+      "lon": 127.0065528,
+      "osm_id": "way/586652287",
+      "amenity": null,
+      "operator": null
+    },
+    "6324": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9688233,
+      "lon": 127.006647,
+      "osm_id": "way/586652286",
+      "amenity": null,
+      "operator": null
+    },
+    "6325": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9683865,
+      "lon": 127.0076943,
+      "osm_id": "way/586652285",
+      "amenity": null,
+      "operator": null
+    },
+    "6326": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9680952,
+      "lon": 127.0088031,
+      "osm_id": "way/586652284",
+      "amenity": null,
+      "operator": null
+    },
+    "6350": {
+      "name": "Smith Youth Teen Center",
+      "stop": null,
+      "lat": 36.9672307,
+      "lon": 127.0085706,
+      "osm_id": "way/586652312",
+      "amenity": null,
+      "operator": null
+    },
+    "6360": {
+      "name": "Pacific Victors Chapel",
+      "stop": "Pacific Victors Chapel",
+      "lat": 36.9662522,
+      "lon": 127.0093661,
+      "osm_id": "way/586652310",
+      "amenity": "place_of_worship",
+      "operator": null
+    },
+    "6365": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9654541,
+      "lon": 127.0086671,
+      "osm_id": "way/586652309",
+      "amenity": "restaurant",
+      "operator": null
+    },
+    "6370": {
+      "name": "Sgt. Shin W. Kim Medical Clinic",
+      "stop": null,
+      "lat": 36.966875,
+      "lon": 127.0095973,
+      "osm_id": "way/586652311",
+      "amenity": "clinic",
+      "operator": null
+    },
+    "6380": {
+      "name": "Fire Station #4",
+      "stop": null,
+      "lat": 36.9655861,
+      "lon": 127.0078752,
+      "osm_id": "way/586652308",
+      "amenity": "fire_station",
+      "operator": null
+    },
+    "6390": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9677711,
+      "lon": 127.0055048,
+      "osm_id": "way/1019700017",
+      "amenity": null,
+      "operator": null
+    },
+    "6391": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9678683,
+      "lon": 127.0064219,
+      "osm_id": "way/1019700019",
+      "amenity": null,
+      "operator": null
+    },
+    "6392": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9675181,
+      "lon": 127.0074865,
+      "osm_id": "way/1019700018",
+      "amenity": null,
+      "operator": null
+    },
+    "6400": {
+      "name": "LTG Timothy J. Maude Hall (One Stop)",
+      "stop": "LTG Maude Hall (9th St)",
+      "lat": 36.967669,
+      "lon": 127.0031189,
+      "osm_id": "way/586652251",
+      "amenity": null,
+      "operator": null
+    },
+    "6410": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9688303,
+      "lon": 127.0026927,
+      "osm_id": "way/586652252",
+      "amenity": null,
+      "operator": null
+    },
+    "6420": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9682441,
+      "lon": 127.0025287,
+      "osm_id": "way/586652249",
+      "amenity": null,
+      "operator": null
+    },
+    "6430": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9676376,
+      "lon": 127.0020857,
+      "osm_id": "way/586652250",
+      "amenity": null,
+      "operator": null
+    },
+    "6500": {
+      "name": "2nd Infantry Division Headquarters",
+      "stop": null,
+      "lat": 36.9709927,
+      "lon": 127.0044031,
+      "osm_id": "way/586652253",
+      "amenity": null,
+      "operator": null
+    },
+    "6701": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9723605,
+      "lon": 127.0005202,
+      "osm_id": "way/586652280",
+      "amenity": null,
+      "operator": null
+    },
+    "6702": {
+      "name": "Pittman Dining Facility",
+      "stop": "Pittman DFAC",
+      "lat": 36.9725264,
+      "lon": 126.9991164,
+      "osm_id": "way/585759550",
+      "amenity": "restaurant",
+      "operator": null
+    },
+    "6703": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9730764,
+      "lon": 126.9983361,
+      "osm_id": "way/586652281",
+      "amenity": null,
+      "operator": null
+    },
+    "6704": {
+      "name": null,
+      "stop": null,
+      "lat": 36.972481,
+      "lon": 126.9976271,
+      "osm_id": "way/585759562",
+      "amenity": null,
+      "operator": null
+    },
+    "6705": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9715186,
+      "lon": 127.0005687,
+      "osm_id": "way/585759548",
+      "amenity": null,
+      "operator": null
+    },
+    "6706": {
+      "name": null,
+      "stop": null,
+      "lat": 36.971013,
+      "lon": 126.999863,
+      "osm_id": "way/585759557",
+      "amenity": null,
+      "operator": null
+    },
+    "6707": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9713286,
+      "lon": 126.9987391,
+      "osm_id": "way/585759558",
+      "amenity": null,
+      "operator": null
+    },
+    "6708": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9717528,
+      "lon": 126.997674,
+      "osm_id": "way/585759560",
+      "amenity": null,
+      "operator": null
+    },
+    "6800": {
+      "name": "Warrior Chapel",
+      "stop": null,
+      "lat": 36.9739176,
+      "lon": 126.9958771,
+      "osm_id": "way/585759586",
+      "amenity": "place_of_worship",
+      "operator": null
+    },
+    "6803": {
+      "name": "Warrior Shoppette",
+      "stop": null,
+      "lat": 36.9729173,
+      "lon": 126.9953156,
+      "osm_id": "way/585759587",
+      "amenity": null,
+      "operator": null
+    },
+    "6806": {
+      "name": "Warrior Theater",
+      "stop": null,
+      "lat": 36.9729548,
+      "lon": 126.9945979,
+      "osm_id": "way/585759589",
+      "amenity": "cinema",
+      "operator": "The Exchange"
+    },
+    "6807": {
+      "name": "Warrior Zone",
+      "stop": null,
+      "lat": 36.9730799,
+      "lon": 126.9937937,
+      "osm_id": "way/585759590",
+      "amenity": "community_centre",
+      "operator": null
+    },
+    "6809": {
+      "name": "Cowan Post Office",
+      "stop": "Main Post Office",
+      "lat": 36.9736582,
+      "lon": 126.9937337,
+      "osm_id": "way/585759595",
+      "amenity": "post_office",
+      "operator": "United States Postal Service"
+    },
+    "6815": {
+      "name": "Sitman Fitness Center",
+      "stop": "Sitman Fitness Center",
+      "lat": 36.9741728,
+      "lon": 126.9947872,
+      "osm_id": "way/585759592",
+      "amenity": null,
+      "operator": null
+    },
+    "6820": {
+      "name": null,
+      "stop": null,
+      "lat": 36.975073,
+      "lon": 126.9927078,
+      "osm_id": "way/585759603",
+      "amenity": "parking",
+      "operator": null
+    },
+    "6821": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9740133,
+      "lon": 126.9915754,
+      "osm_id": "way/585759597",
+      "amenity": null,
+      "operator": null
+    },
+    "6824": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9746279,
+      "lon": 126.9919496,
+      "osm_id": "way/1006752887",
+      "amenity": null,
+      "operator": null
+    },
+    "6827": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9742696,
+      "lon": 126.992909,
+      "osm_id": "way/1006752886",
+      "amenity": null,
+      "operator": null
+    },
+    "6830": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9736431,
+      "lon": 126.9925317,
+      "osm_id": "way/1006752888",
+      "amenity": null,
+      "operator": null
+    },
+    "6907": {
+      "name": null,
+      "stop": null,
+      "lat": 36.974512,
+      "lon": 126.9901204,
+      "osm_id": "way/585759612",
+      "amenity": null,
+      "operator": null
+    },
+    "6910": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9737569,
+      "lon": 126.9902197,
+      "osm_id": "way/585759614",
+      "amenity": null,
+      "operator": null
+    },
+    "6915": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9732623,
+      "lon": 126.9895438,
+      "osm_id": "way/585759611",
+      "amenity": null,
+      "operator": null
+    },
+    "6940": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9754319,
+      "lon": 126.9907722,
+      "osm_id": "way/982174449",
+      "amenity": null,
+      "operator": null
+    },
+    "6950": {
+      "name": "Central Issue Facility",
+      "stop": null,
+      "lat": 36.9736032,
+      "lon": 126.9867818,
+      "osm_id": "way/585759606",
+      "amenity": null,
+      "operator": null
+    },
+    "6953": {
+      "name": "Central Issue Facility",
+      "stop": null,
+      "lat": 36.9755373,
+      "lon": 126.9877635,
+      "osm_id": "way/585759605",
+      "amenity": null,
+      "operator": null
+    },
+    "6957": {
+      "name": null,
+      "stop": null,
+      "lat": 36.976479,
+      "lon": 126.986907,
+      "osm_id": "way/585759604",
+      "amenity": null,
+      "operator": null
+    },
+    "6961": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9755716,
+      "lon": 126.9866092,
+      "osm_id": "way/585759607",
+      "amenity": null,
+      "operator": null
+    },
+    "6963": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9744636,
+      "lon": 126.9859774,
+      "osm_id": "way/585759608",
+      "amenity": null,
+      "operator": null
+    },
+    "7000": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9687299,
+      "lon": 127.0171821,
+      "osm_id": "way/585752272",
+      "amenity": null,
+      "operator": null
+    },
+    "7010": {
+      "name": "Transportation Motor Pool (TMP)",
+      "stop": null,
+      "lat": 36.9691642,
+      "lon": 127.0158722,
+      "osm_id": "way/585752269",
+      "amenity": null,
+      "operator": null
+    },
+    "7020": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9693604,
+      "lon": 127.0143229,
+      "osm_id": "way/585752262",
+      "amenity": null,
+      "operator": null
+    },
+    "7030": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9697495,
+      "lon": 127.0125043,
+      "osm_id": "way/585752255",
+      "amenity": null,
+      "operator": null
+    },
+    "7031": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9695972,
+      "lon": 127.0130079,
+      "osm_id": "way/585752256",
+      "amenity": null,
+      "operator": null
+    },
+    "7032": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9702643,
+      "lon": 127.0131427,
+      "osm_id": "way/585752257",
+      "amenity": null,
+      "operator": null
+    },
+    "7040": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9719859,
+      "lon": 127.0139631,
+      "osm_id": "way/585752259",
+      "amenity": null,
+      "operator": null
+    },
+    "7110": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9715001,
+      "lon": 127.0116682,
+      "osm_id": "way/585743634",
+      "amenity": null,
+      "operator": null
+    },
+    "7111": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9708557,
+      "lon": 127.0113182,
+      "osm_id": "way/585743623",
+      "amenity": null,
+      "operator": null
+    },
+    "7112": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9704368,
+      "lon": 127.0114216,
+      "osm_id": "way/585743626",
+      "amenity": null,
+      "operator": null
+    },
+    "7113": {
+      "name": null,
+      "stop": null,
+      "lat": 36.970183,
+      "lon": 127.0109906,
+      "osm_id": "way/585743629",
+      "amenity": null,
+      "operator": null
+    },
+    "7120": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9720141,
+      "lon": 127.0101382,
+      "osm_id": "way/585743633",
+      "amenity": null,
+      "operator": null
+    },
+    "7121": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9713675,
+      "lon": 127.0097887,
+      "osm_id": "way/585743622",
+      "amenity": null,
+      "operator": null
+    },
+    "7122": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9709466,
+      "lon": 127.0098971,
+      "osm_id": "way/585743625",
+      "amenity": null,
+      "operator": null
+    },
+    "7123": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9706988,
+      "lon": 127.0094661,
+      "osm_id": "way/585743628",
+      "amenity": null,
+      "operator": null
+    },
+    "7130": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9725136,
+      "lon": 127.0086127,
+      "osm_id": "way/585743632",
+      "amenity": null,
+      "operator": null
+    },
+    "7131": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9718649,
+      "lon": 127.0082641,
+      "osm_id": "way/585743621",
+      "amenity": null,
+      "operator": null
+    },
+    "7132": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9716308,
+      "lon": 127.00782,
+      "osm_id": "way/585743624",
+      "amenity": null,
+      "operator": null
+    },
+    "7133": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9711998,
+      "lon": 127.0079159,
+      "osm_id": "way/585743627",
+      "amenity": null,
+      "operator": null
+    },
+    "7210": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9731388,
+      "lon": 127.006686,
+      "osm_id": "way/585743617",
+      "amenity": null,
+      "operator": null
+    },
+    "7211": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9725074,
+      "lon": 127.0063537,
+      "osm_id": "way/585743616",
+      "amenity": null,
+      "operator": null
+    },
+    "7212": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9720807,
+      "lon": 127.0064523,
+      "osm_id": "way/585743615",
+      "amenity": null,
+      "operator": null
+    },
+    "7213": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9718295,
+      "lon": 127.0060101,
+      "osm_id": "way/585743614",
+      "amenity": null,
+      "operator": null
+    },
+    "7230": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9736482,
+      "lon": 127.0051794,
+      "osm_id": "way/585743608",
+      "amenity": null,
+      "operator": null
+    },
+    "7231": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9730181,
+      "lon": 127.0048415,
+      "osm_id": "way/585743607",
+      "amenity": null,
+      "operator": null
+    },
+    "7232": {
+      "name": null,
+      "stop": null,
+      "lat": 36.972591,
+      "lon": 127.0049388,
+      "osm_id": "way/585743606",
+      "amenity": null,
+      "operator": null
+    },
+    "7233": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9723569,
+      "lon": 127.0045031,
+      "osm_id": "way/585743604",
+      "amenity": null,
+      "operator": null
+    },
+    "7240": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9741664,
+      "lon": 127.0036049,
+      "osm_id": "way/585743537",
+      "amenity": null,
+      "operator": null
+    },
+    "7241": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9735504,
+      "lon": 127.0033212,
+      "osm_id": "way/585743538",
+      "amenity": null,
+      "operator": null
+    },
+    "7242": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9732796,
+      "lon": 127.0028693,
+      "osm_id": "way/585743539",
+      "amenity": null,
+      "operator": null
+    },
+    "7243": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9728488,
+      "lon": 127.002973,
+      "osm_id": "way/585743542",
+      "amenity": null,
+      "operator": null
+    },
+    "7300": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9731908,
+      "lon": 126.9970464,
+      "osm_id": "way/585759563",
+      "amenity": null,
+      "operator": null
+    },
+    "7309": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9731675,
+      "lon": 127.0007125,
+      "osm_id": "way/585728040",
+      "amenity": null,
+      "operator": null
+    },
+    "7310": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9736066,
+      "lon": 127.0006303,
+      "osm_id": "way/585728042",
+      "amenity": null,
+      "operator": null
+    },
+    "7314": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9738633,
+      "lon": 127.0010818,
+      "osm_id": "way/585728044",
+      "amenity": null,
+      "operator": null
+    },
+    "7315": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9738535,
+      "lon": 126.999926,
+      "osm_id": "way/585728037",
+      "amenity": null,
+      "operator": null
+    },
+    "7316": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9735769,
+      "lon": 126.9994831,
+      "osm_id": "way/585728035",
+      "amenity": null,
+      "operator": null
+    },
+    "7319": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9742972,
+      "lon": 126.9998455,
+      "osm_id": "way/585743565",
+      "amenity": null,
+      "operator": null
+    },
+    "7320": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9748694,
+      "lon": 126.997872,
+      "osm_id": "way/585728026",
+      "amenity": null,
+      "operator": null
+    },
+    "7321": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9744279,
+      "lon": 126.997965,
+      "osm_id": "way/585728024",
+      "amenity": null,
+      "operator": null
+    },
+    "7324": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9751164,
+      "lon": 126.9983175,
+      "osm_id": "way/585743566",
+      "amenity": null,
+      "operator": null
+    },
+    "7325": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9757692,
+      "lon": 126.9986104,
+      "osm_id": "way/585728029",
+      "amenity": null,
+      "operator": null
+    },
+    "7410": {
+      "name": null,
+      "stop": null,
+      "lat": 36.977423,
+      "lon": 126.9936946,
+      "osm_id": "way/585728000",
+      "amenity": null,
+      "operator": null
+    },
+    "7411": {
+      "name": null,
+      "stop": null,
+      "lat": 36.976078,
+      "lon": 126.9929788,
+      "osm_id": "way/585728005",
+      "amenity": null,
+      "operator": null
+    },
+    "7412": {
+      "name": null,
+      "stop": null,
+      "lat": 36.976777,
+      "lon": 126.9933474,
+      "osm_id": "way/585743569",
+      "amenity": null,
+      "operator": null
+    },
+    "7413": {
+      "name": null,
+      "stop": null,
+      "lat": 36.976526,
+      "lon": 126.9928995,
+      "osm_id": "way/585728003",
+      "amenity": null,
+      "operator": null
+    },
+    "7430": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9768916,
+      "lon": 126.9952253,
+      "osm_id": "way/585728011",
+      "amenity": null,
+      "operator": null
+    },
+    "7431": {
+      "name": null,
+      "stop": null,
+      "lat": 36.976251,
+      "lon": 126.9948988,
+      "osm_id": "way/585743568",
+      "amenity": null,
+      "operator": null
+    },
+    "7434": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9755718,
+      "lon": 126.9945497,
+      "osm_id": "way/585728006",
+      "amenity": null,
+      "operator": null
+    },
+    "7435": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9760013,
+      "lon": 126.994457,
+      "osm_id": "way/585728008",
+      "amenity": null,
+      "operator": null
+    },
+    "7436": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9753089,
+      "lon": 126.9965365,
+      "osm_id": "way/585728016",
+      "amenity": null,
+      "operator": null
+    },
+    "7437": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9750489,
+      "lon": 126.9960775,
+      "osm_id": "way/585728015",
+      "amenity": null,
+      "operator": null
+    },
+    "7440": {
+      "name": null,
+      "stop": null,
+      "lat": 36.976383,
+      "lon": 126.9967617,
+      "osm_id": "way/585728020",
+      "amenity": null,
+      "operator": null
+    },
+    "7441": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9757366,
+      "lon": 126.9964513,
+      "osm_id": "way/585743567",
+      "amenity": null,
+      "operator": null
+    },
+    "7500": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9767439,
+      "lon": 126.9909074,
+      "osm_id": "way/585743570",
+      "amenity": null,
+      "operator": null
+    },
+    "7503": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9769545,
+      "lon": 126.991528,
+      "osm_id": "way/585743585",
+      "amenity": null,
+      "operator": null
+    },
+    "7505": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9774541,
+      "lon": 126.9912807,
+      "osm_id": "way/585743571",
+      "amenity": null,
+      "operator": null
+    },
+    "7506": {
+      "name": null,
+      "stop": null,
+      "lat": 36.97834,
+      "lon": 126.9917248,
+      "osm_id": "way/585743582",
+      "amenity": null,
+      "operator": null
+    },
+    "7514": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9773783,
+      "lon": 126.9889933,
+      "osm_id": "way/585743572",
+      "amenity": null,
+      "operator": null
+    },
+    "7515": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9778776,
+      "lon": 126.9887567,
+      "osm_id": "way/585743574",
+      "amenity": null,
+      "operator": null
+    },
+    "7519": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9780811,
+      "lon": 126.989373,
+      "osm_id": "way/585743573",
+      "amenity": null,
+      "operator": null
+    },
+    "7520": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9789917,
+      "lon": 126.9898307,
+      "osm_id": "way/585743578",
+      "amenity": null,
+      "operator": null
+    },
+    "7550": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9783345,
+      "lon": 126.9861255,
+      "osm_id": "way/585743588",
+      "amenity": null,
+      "operator": null
+    },
+    "7553": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9785986,
+      "lon": 126.9865793,
+      "osm_id": "way/585743590",
+      "amenity": null,
+      "operator": null
+    },
+    "7555": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9790446,
+      "lon": 126.9864953,
+      "osm_id": "way/585743592",
+      "amenity": null,
+      "operator": null
+    },
+    "7556": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9796778,
+      "lon": 126.9868022,
+      "osm_id": "way/585743593",
+      "amenity": null,
+      "operator": null
+    },
+    "7621": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9794444,
+      "lon": 126.9848588,
+      "osm_id": "way/585743597",
+      "amenity": null,
+      "operator": null
+    },
+    "7626": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9799546,
+      "lon": 126.9850289,
+      "osm_id": "way/585743598",
+      "amenity": null,
+      "operator": null
+    },
+    "7628": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9807938,
+      "lon": 126.9854677,
+      "osm_id": "way/585743603",
+      "amenity": null,
+      "operator": null
+    },
+    "8110": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9764903,
+      "lon": 127.0148163,
+      "osm_id": "way/585752283",
+      "amenity": null,
+      "operator": null
+    },
+    "8240": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9740548,
+      "lon": 127.013668,
+      "osm_id": "way/993052080",
+      "amenity": null,
+      "operator": null
+    },
+    "8300": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9744607,
+      "lon": 127.0015026,
+      "osm_id": "way/585728045",
+      "amenity": null,
+      "operator": null
+    },
+    "8310": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9749607,
+      "lon": 127.0000083,
+      "osm_id": "way/585728034",
+      "amenity": null,
+      "operator": null
+    },
+    "8710": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9824546,
+      "lon": 126.9901459,
+      "osm_id": "way/993052092",
+      "amenity": "prison",
+      "operator": null
+    },
+    "12001": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9638239,
+      "lon": 127.0386022,
+      "osm_id": "way/586994393",
+      "amenity": null,
+      "operator": null
+    },
+    "12002": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9638364,
+      "lon": 127.0391838,
+      "osm_id": "way/586994394",
+      "amenity": null,
+      "operator": null
+    },
+    "12008": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9626648,
+      "lon": 127.0379145,
+      "osm_id": "way/587024754",
+      "amenity": null,
+      "operator": null
+    },
+    "12100": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9640947,
+      "lon": 127.0354721,
+      "osm_id": "way/587024787",
+      "amenity": null,
+      "operator": null
+    },
+    "12103": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9636749,
+      "lon": 127.0355329,
+      "osm_id": "way/587024786",
+      "amenity": null,
+      "operator": null
+    },
+    "12106": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9654551,
+      "lon": 127.0353202,
+      "osm_id": "way/587024739",
+      "amenity": null,
+      "operator": null
+    },
+    "12110": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9632539,
+      "lon": 127.0341048,
+      "osm_id": "way/877538630",
+      "amenity": null,
+      "operator": null
+    },
+    "12200": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9664736,
+      "lon": 127.0373866,
+      "osm_id": "way/587024737",
+      "amenity": null,
+      "operator": null
+    },
+    "12203": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9665175,
+      "lon": 127.038345,
+      "osm_id": "way/587024735",
+      "amenity": null,
+      "operator": null
+    },
+    "12206": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9658601,
+      "lon": 127.0383704,
+      "osm_id": "way/587024738",
+      "amenity": null,
+      "operator": null
+    },
+    "12209": {
+      "name": null,
+      "stop": null,
+      "lat": 36.965849,
+      "lon": 127.0373943,
+      "osm_id": "way/587024736",
+      "amenity": null,
+      "operator": null
+    },
+    "12302": {
+      "name": "Visitor Control Center (VCC)",
+      "stop": null,
+      "lat": 36.9690473,
+      "lon": 127.0359462,
+      "osm_id": "way/587024720",
+      "amenity": null,
+      "operator": null
+    },
+    "12380": {
+      "name": "Hanra KATUSA Snack Bar",
+      "stop": null,
+      "lat": 36.9666075,
+      "lon": 127.0328372,
+      "osm_id": "way/874676854",
+      "amenity": "restaurant",
+      "operator": null
+    },
+    "12385": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9656964,
+      "lon": 127.0324952,
+      "osm_id": "way/877538618",
+      "amenity": "restaurant",
+      "operator": null
+    },
+    "12400": {
+      "name": "Eighth United States Army",
+      "stop": null,
+      "lat": 36.9667976,
+      "lon": 127.0307143,
+      "osm_id": "way/586994385",
+      "amenity": null,
+      "operator": null
+    },
+    "12401": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9662579,
+      "lon": 127.0311552,
+      "osm_id": "way/586994383",
+      "amenity": null,
+      "operator": null
+    },
+    "12410": {
+      "name": "United States Forces Korea",
+      "stop": null,
+      "lat": 36.9677829,
+      "lon": 127.0295915,
+      "osm_id": "way/586994377",
+      "amenity": null,
+      "operator": null
+    },
+    "12412": {
+      "name": "United Nations Command",
+      "stop": null,
+      "lat": 36.968161,
+      "lon": 127.0300019,
+      "osm_id": "way/586994375",
+      "amenity": null,
+      "operator": null
+    },
+    "12420": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9683057,
+      "lon": 127.0275951,
+      "osm_id": "way/875209164",
+      "amenity": "parking",
+      "operator": "United States Forces Korea"
+    },
+    "12600": {
+      "name": "US Army Corps of Engineers Far East District",
+      "stop": "Corps of Engineers",
+      "lat": 36.9737217,
+      "lon": 127.0232362,
+      "osm_id": "way/587035270",
+      "amenity": null,
+      "operator": null
+    },
+    "12601": {
+      "name": "Consolidated Headquarters",
+      "stop": null,
+      "lat": 36.9731777,
+      "lon": 127.0241515,
+      "osm_id": "way/587035271",
+      "amenity": null,
+      "operator": null
+    },
+    "12700": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9750168,
+      "lon": 127.0219433,
+      "osm_id": "way/586692052",
+      "amenity": null,
+      "operator": null
+    },
+    "12710": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9741931,
+      "lon": 127.0212586,
+      "osm_id": "way/586692054",
+      "amenity": null,
+      "operator": null
+    },
+    "13000": {
+      "name": "CFC Annex",
+      "stop": null,
+      "lat": 36.9718328,
+      "lon": 127.0248174,
+      "osm_id": "way/586692055",
+      "amenity": null,
+      "operator": null
+    },
+    "13004": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9713406,
+      "lon": 127.0238676,
+      "osm_id": "way/586692061",
+      "amenity": null,
+      "operator": null
+    },
+    "13007": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9709573,
+      "lon": 127.0243184,
+      "osm_id": "way/586692058",
+      "amenity": null,
+      "operator": null
+    },
+    "13013": {
+      "name": "ROK-US Combined Forces Command",
+      "stop": null,
+      "lat": 36.9702701,
+      "lon": 127.0252452,
+      "osm_id": "way/586692056",
+      "amenity": null,
+      "operator": null
+    },
+    "13014": {
+      "name": null,
+      "stop": null,
+      "lat": 36.9706595,
+      "lon": 127.0256878,
+      "osm_id": "way/586692057",
+      "amenity": null,
+      "operator": null
+    },
+    "13019": {
+      "name": "Friendship Hall",
+      "stop": null,
+      "lat": 36.9696585,
+      "lon": 127.0261769,
+      "osm_id": "way/586692064",
+      "amenity": null,
+      "operator": null
+    }
+  }
+}

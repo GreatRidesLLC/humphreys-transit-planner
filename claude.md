@@ -35,7 +35,7 @@ Verification status:
 - **Black, Orange**: 15-min headway unconfirmed — no stops served *exclusively* by either route in the per-stop image directory. ROUTES still carries the old estimates (25 / 30).
 - **Inter-garrison routes**: not integrated into trip planner; shown as info only.
 
-Building-number directory: ~15 mapped of an unknown total. Full directory pending from DPW GIS / IGI&S office (Bldg 6140).
+Building-number directory: 32 mapped (15 hand-curated + 17 OSM-sourced via `scripts/fetch_osm_buildings.py`). OSM has 380 numbered buildings inside the installation polygon; only those whose `name` tag unambiguously matches a known bus stop are merged into the `BUILDINGS` const. Full per-building stop assignment is blocked on bus-stop lat/long (DPW GIS / IGI&S office, Bldg 6140); raw OSM dataset lives in `src/data/buildings_osm.json`.
 
 ## Conventions
 
@@ -43,7 +43,7 @@ Building-number directory: ~15 mapped of an unknown total. Full directory pendin
 - Times in 24h format (`HH:MM`)
 - Mock walk times: 3 min per segment
 - Mock ride times: 2 min per stop (heuristic, not real)
-- Wait times: `freq ÷ 2` (statistical average)
+- Wait times: `nextScheduledDeparture − userArrivalAtStop`. For Gold/Brown/Pink the scheduled departure comes from the PDF data in `src/data/schedules.json`; for other routes it falls back to a `:00`-anchor cycle heuristic (`+2 min/stop offset from the first stop`).
 - Service hours filtered automatically: routes out of service at the planned trip time are excluded from results
 
 ## Out of scope (for now)
