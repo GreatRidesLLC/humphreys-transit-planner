@@ -2,24 +2,26 @@ import { useState, useMemo, useRef, useEffect, createContext, useContext } from 
 import SCHEDULES_JSON from "./data/schedules.json";
 
 // ─── Army Color Palette ───────────────────────────────────────────────────────
+// Cooled olive ("tactical night") + muted military gold. Contrast against
+// every text colour exceeds WCAG AA 4.5:1.
 const C = {
-  bgDeep:    "#080f04",
-  bgBase:    "#0e1a08",
-  bgCard:    "#162210",
-  bgSurface: "#1c2e14",
-  bgHover:   "#243a18",
-  borderMain:"#3a5820",
-  borderSub: "#263c14",
-  borderDim: "#182810",
-  gold:      "#FFB81C",
-  goldDark:  "#d4960e",
-  goldAlpha: "rgba(255,184,28,0.15)",
+  bgDeep:    "#070f0a",
+  bgBase:    "#0c1612",
+  bgCard:    "#14211a",
+  bgSurface: "#1c2b22",
+  bgHover:   "#243826",
+  borderMain:"#3d5a3a",
+  borderSub: "#293f2b",
+  borderDim: "#1a2519",
+  gold:      "#E5BB39",
+  goldDark:  "#b8941e",
+  goldAlpha: "rgba(229,187,57,0.15)",
   khaki:     "#e8dca8",
   tan:       "#c8b878",
   sage:      "#8aaa60",
   oliveDim:  "#7a9a58",
   oliveMute: "#6a8a48",
-  oliveFaint:"#263c18",
+  oliveFaint:"#293f2b",
 };
 
 // ─── Time Helpers ─────────────────────────────────────────────────────────────
@@ -509,33 +511,33 @@ function findTrips(from, to, refTime, mode) {
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const CSS=`
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:#0e1a08}
-.inp{background:#1c2e14;color:#e8dca8;border:1px solid #3a5820;border-radius:8px;padding:13px 14px;width:100%;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:15px;font-weight:500;transition:border-color .2s}
-.inp:focus{outline:none;border-color:#FFB81C;box-shadow:0 0 0 2px rgba(255,184,28,.18)}
-.inp::placeholder{color:#3a5828}
-.dd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1c2e14;border:1px solid #3a5820;border-radius:8px;max-height:210px;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.7)}
-.di{padding:10px 14px;cursor:pointer;border-bottom:1px solid #182810}
+body{background:#0c1612}
+.inp{background:#1c2b22;color:#e8dca8;border:1px solid #3d5a3a;border-radius:8px;padding:13px 14px;width:100%;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:15px;font-weight:500;transition:border-color .2s}
+.inp:focus{outline:none;border-color:#E5BB39;box-shadow:0 0 0 2px rgba(229,187,57,.18)}
+.inp::placeholder{color:#3d5a3a}
+.dd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1c2b22;border:1px solid #3d5a3a;border-radius:8px;max-height:210px;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.7)}
+.di{padding:10px 14px;cursor:pointer;border-bottom:1px solid #1a2519}
 .di:last-child{border-bottom:none}
-.di:hover{background:#243a18}
-.btn{width:100%;padding:14px;background:linear-gradient(135deg,#FFB81C,#d4960e);color:#080f04;border:none;border-radius:10px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:transform .1s,box-shadow .2s}
-.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,184,28,.35)}
-.btn:disabled{background:#1c2e14;color:#3a5828;cursor:not-allowed}
+.di:hover{background:#243826}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,#E5BB39,#b8941e);color:#070f0a;border:none;border-radius:10px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:transform .1s,box-shadow .2s}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(229,187,57,.35)}
+.btn:disabled{background:#1c2b22;color:#3d5a3a;cursor:not-allowed}
 .si{animation:si .3s cubic-bezier(.22,.68,0,1.2)}
 @keyframes si{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .tab{flex:1;padding:8px 4px;border:none;border-radius:8px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .2s}
-.seg{display:flex;gap:3px;background:#1c2e14;padding:3px;border-radius:8px;border:1px solid #3a5820}
+.seg{display:flex;gap:3px;background:#1c2b22;padding:3px;border-radius:8px;border:1px solid #3d5a3a}
 .segbtn{flex:1;padding:7px 6px;border:none;border-radius:6px;font-family:'Rajdhani','Noto Sans KR',sans-serif;font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;background:transparent;color:#8aaa60;text-transform:uppercase;transition:all .15s}
-.segbtn.on{background:#FFB81C;color:#080f04}
-.timep{background:#1c2e14;color:#FFB81C;border:1px solid #3a5820;border-radius:6px;padding:9px 12px;width:100%;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;letter-spacing:1px;text-align:center}
-.timep:focus{outline:none;border-color:#FFB81C}
+.segbtn.on{background:#E5BB39;color:#070f0a}
+.timep{background:#1c2b22;color:#E5BB39;border:1px solid #3d5a3a;border-radius:6px;padding:9px 12px;width:100%;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;letter-spacing:1px;text-align:center}
+.timep:focus{outline:none;border-color:#E5BB39}
 .timep::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(1) saturate(4) hue-rotate(2deg);cursor:pointer}
 .tm{font-family:'JetBrains Mono',monospace;font-weight:500}
 ::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:#0e1a08}
-::-webkit-scrollbar-thumb{background:#3a5820;border-radius:2px}
-.chip{display:inline-flex;align-items:center;gap:6px;background:#162210;border:1px solid #3a5820;border-radius:14px;padding:5px 4px 5px 10px;font-size:12px;color:#e8dca8;white-space:nowrap;flex-shrink:0;font-family:'Rajdhani','Noto Sans KR',sans-serif}
+::-webkit-scrollbar-track{background:#0c1612}
+::-webkit-scrollbar-thumb{background:#3d5a3a;border-radius:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#14211a;border:1px solid #3d5a3a;border-radius:14px;padding:5px 4px 5px 10px;font-size:12px;color:#e8dca8;white-space:nowrap;flex-shrink:0;font-family:'Rajdhani','Noto Sans KR',sans-serif}
 .chipx{background:transparent;border:none;color:#5a7a40;font-size:14px;cursor:pointer;padding:0 6px;line-height:1;border-radius:50%}
-.chipx:hover{color:#FFB81C;background:#243a18}
+.chipx:hover{color:#E5BB39;background:#243826}
 `;
 
 // ─── Searchable Input ─────────────────────────────────────────────────────────
@@ -642,7 +644,7 @@ function Leg({leg:l, last}) {
         </>}
         {l.k==="bus" && <>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-            <span style={{background:ROUTES[l.rid].color,color:"#080f04",fontSize:10,fontWeight:700,padding:"2px 9px",borderRadius:20,letterSpacing:1,fontFamily:"'JetBrains Mono',monospace"}}>
+            <span style={{background:ROUTES[l.rid].color,color:"#070f0a",fontSize:10,fontWeight:700,padding:"2px 9px",borderRadius:20,letterSpacing:1,fontFamily:"'JetBrains Mono',monospace"}}>
               {ROUTES[l.rid].name.replace(" Route","").toUpperCase()}
             </span>
             <span style={{fontSize:11,color:C.sage}}>{t.everyMin(ROUTES[l.rid].freq)}</span>
@@ -676,7 +678,7 @@ function TripCard({trip, rank:r}) {
   const bl=trip.legs.filter(l=>l.k==="bus");
   const estimated=bl.some(l=>!ROUTES[l.rid].verified);
   return (
-    <div style={{background:C.bgCard,border:`1px solid ${r===0?C.gold+"55":C.borderSub}`,borderRadius:14,marginBottom:12,overflow:"hidden",boxShadow:r===0?`0 0 28px rgba(255,184,28,.1)`:"none"}}>
+    <div style={{background:C.bgCard,border:`1px solid ${r===0?C.gold+"55":C.borderSub}`,borderRadius:14,marginBottom:12,overflow:"hidden",boxShadow:r===0?`0 0 28px rgba(229,187,57,.1)`:"none"}}>
       <div role="button" tabIndex={0} aria-expanded={open} aria-label={open?t.collapseTrip:t.expandTrip}
         onClick={()=>setOpen(o=>!o)}
         onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(o=>!o);}}}
@@ -866,7 +868,7 @@ function OffPostTab() {
   const { t } = useT();
   return (
     <div style={{padding:"16px 14px 32px"}}>
-      <div style={{background:`linear-gradient(135deg,${C.bgCard},#162a10)`,border:`1px solid ${C.borderMain}`,borderRadius:14,padding:18,marginBottom:20}}>
+      <div style={{background:`linear-gradient(135deg,${C.bgCard},#142a19)`,border:`1px solid ${C.borderMain}`,borderRadius:14,padding:18,marginBottom:20}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <span style={{fontSize:22}}>📡</span>
           <div>
@@ -889,7 +891,7 @@ function OffPostTab() {
             </div>
           </div>
         ))}
-        <div style={{background:"#0a1a08",border:"1px solid #2a5a20",borderRadius:8,padding:"10px 12px"}}>
+        <div style={{background:"#091610",border:"1px solid #2d5a30",borderRadius:8,padding:"10px 12px"}}>
           <div style={{fontSize:11,color:"#5dde88",lineHeight:1.6}}>
             <strong style={{color:"#4dde88"}}>{t.gpsAction}</strong>{t.gpsActionText}
           </div>
@@ -917,7 +919,7 @@ function OffPostTab() {
         </div>
       ))}
 
-      <div style={{background:"#120e04",border:`1px solid #4a3a10`,borderRadius:12,padding:"14px 16px",marginTop:12}}>
+      <div style={{background:"#11100a",border:`1px solid #4a3e1a`,borderRadius:12,padding:"14px 16px",marginTop:12}}>
         <div style={{fontSize:13,fontWeight:700,color:C.gold,marginBottom:10}}>{t.todoHeader}</div>
         {[
           "Download current inter-garrison PDFs from USAG Humphreys (airport schedule updated Feb 2026)",
@@ -992,7 +994,7 @@ export default function App() {
 
       <div style={{background:`linear-gradient(180deg,${C.bgCard} 0%,${C.bgBase} 100%)`,borderBottom:`1px solid ${C.borderSub}`,padding:"18px 16px 14px"}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <div style={{width:48,height:48,background:`linear-gradient(135deg,${C.gold},${C.goldDark})`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:`0 4px 20px rgba(255,184,28,.4)`,flexShrink:0}}>🚌</div>
+          <div style={{width:48,height:48,background:`linear-gradient(135deg,${C.gold},${C.goldDark})`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:`0 4px 20px rgba(229,187,57,.4)`,flexShrink:0}}>🚌</div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",fontSize:lang==="ko"?20:22,fontWeight:700,color:C.gold,letterSpacing:lang==="ko"?1.5:3,textTransform:lang==="ko"?"none":"uppercase",lineHeight:1.1}}>{t.appTitle}</div>
             <div style={{fontSize:11,color:C.oliveMute,letterSpacing:lang==="ko"?1:2,textTransform:lang==="ko"?"none":"uppercase"}}>{t.appSubtitle}</div>

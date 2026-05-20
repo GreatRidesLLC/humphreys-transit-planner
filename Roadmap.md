@@ -40,6 +40,9 @@ Base map (Leaflet or MapLibre), stop markers, route polylines, optional fit-to-r
 ### Loop directionality
 Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes you can travel either direction. Correcting this requires authoritative direction data from the schedule PDFs, and the payoff is low (edge cases only). Park until someone reports a wrong-direction bug.
 
+### Bold repalette
+Cheap colour tweaks shipped (saffron gold, cooled olive bg, tightened mid-tone ramp) but identity is still "ROTC olive + gold". A bolder direction would lean closer to "ranger green + flat gold" (think REI / Filson) or to a high-contrast "tactical night + signal blue" scheme, dropping olive entirely. Risk: military audience may find the new look unfamiliar; needs PAO buy-in before public release. Skip unless feedback explicitly asks for it.
+
 ### Per-route schedule lookup for Blue / Black / Green / Orange / Purple
 Mostly done: Gold/Brown/Pink consult `src/data/schedules.json` directly in `findTrips`. The remaining five routes still use the `:00`-anchor + 2-min/stop heuristic because the per-stop PNG schedules can't be reliably split per-route by tesseract (panels are colour-coded, not labelled with the route name in OCR'd text). Options to close the gap: (a) request per-route PDFs from the Transportation Office, (b) use a per-panel image-crop pipeline (needs OpenCV / Pillow), or (c) manual transcription from the official site. Drop `goldDisclaimer` string once all eight routes are verified.
 
