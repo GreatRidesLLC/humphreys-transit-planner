@@ -72,15 +72,47 @@ function haversineMeters(lat1, lon1, lat2, lon2) {
   return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Returns the walking time (whole minutes) from a building to a stop, or
-// the WALK_FLOOR_MIN default when either coordinate is unknown.
-function walkMinutes(bldgNum, stopName) {
+// Returns the walking time (whole minutes) to a stop from the user's coords
+// (preferred when present) or from a building's OSM-derived centre. Falls
+// back to WALK_FLOOR_MIN when neither source has data.
+function walkMinutes(bldgNum, stopName, userCoords) {
+  const s = STOP_COORDS[stopName];
+  if (s && userCoords && userCoords.lat != null) {
+    const meters = haversineMeters(userCoords.lat, userCoords.lon, s.lat, s.lon);
+    return Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
+  }
   if (!bldgNum) return WALK_FLOOR_MIN;
   const b = BUILDING_COORDS[bldgNum];
-  const s = STOP_COORDS[stopName];
   if (!b || !s || b.lat == null || s.lat == null) return WALK_FLOOR_MIN;
   const meters = haversineMeters(b.lat, b.lon, s.lat, s.lon);
   return Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
+}
+
+// Closest stop to a given lat/lon. Returns { stop, meters } or null when
+// stop_coords.json is empty.
+function nearestStopTo(coords) {
+  let bestStop = null, bestM = Infinity;
+  for (const [name, s] of Object.entries(STOP_COORDS)) {
+    if (s.lat == null) continue;
+    const m = haversineMeters(coords.lat, coords.lon, s.lat, s.lon);
+    if (m < bestM) { bestM = m; bestStop = name; }
+  }
+  return bestStop ? { stop: bestStop, meters: bestM } : null;
+}
+
+// Promise-wrapped geolocation. Resolves to { lat, lon, accuracy } or rejects.
+function requestUserLocation() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation not supported in this browser."));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      p => resolve({ lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy }),
+      e => reject(e),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  });
 }
 const DOW_KO = ["일","월","화","수","목","금","토"];
 
@@ -101,6 +133,10 @@ const STRINGS = {
     stopPh: l => `${l} — stop name or Bldg #`,
     saveFav: "★ Save", saveFavTitle: "Save From as favorite",
     saveFavPrompt: "Name this favorite (e.g. Home, Work, Gym)",
+    nearestStop: "📍 Nearest",
+    nearestLoading: "📍 …",
+    usingLocation: "Using your current location for walk time",
+    locError: msg => `Could not get your location: ${msg}`,
     pickFromFirst: "Pick a From stop first, then save it as a favorite.",
     removeFavorite: "Remove favorite", removeRecent: "Remove recent",
     swapStops: "Swap from and to",
@@ -162,6 +198,10 @@ const STRINGS = {
     stopPh: l => `${l} — 정류장 또는 건물 번호`,
     saveFav: "★ 저장", saveFavTitle: "출발지를 즐겨찾기에 저장",
     saveFavPrompt: "즐겨찾기 이름 (예: 집, 직장, 체육관)",
+    nearestStop: "📍 가까운 정류장",
+    nearestLoading: "📍 …",
+    usingLocation: "현재 위치를 사용하여 도보 시간 계산",
+    locError: msg => `위치를 가져올 수 없습니다: ${msg}`,
     pickFromFirst: "먼저 출발 정류장을 선택한 후 즐겨찾기에 저장하세요.",
     removeFavorite: "즐겨찾기 삭제", removeRecent: "최근 기록 삭제",
     swapStops: "출발/도착 바꾸기",
@@ -467,17 +507,18 @@ function prevScheduledDeparture(R, stop, before) {
   return anchoredHeuristic(R, stop, before, -1);
 }
 
-// `fBldg` / `tBldg` are optional building numbers picked by the user; when
-// present, the walk leg uses haversine(from-stop, building) instead of the
-// 3-min mock. Floor stays at 3 min for the "find the stop, board" buffer.
-function findTrips(from, to, refTime, mode, fBldg, tBldg) {
+// `fBldg`/`tBldg` are optional building numbers; `fCoords`/`tCoords` are
+// optional user lat/lon (set by the "📍 Nearest stop" geolocation flow).
+// When either is present the walk leg uses haversine instead of the 3-min
+// mock. Floor stays at 3 min for the "find the stop, board" buffer.
+function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoords) {
   if (!from||!to||from===to) return { trips:[], filtered:[] };
   const fr=STOP_ROUTES[from]||[], tr=STOP_ROUTES[to]||[];
   const candidates=[];
   const filtered=[]; // routes excluded for being out-of-service
 
-  const originWalk = walkMinutes(fBldg, from);
-  const destWalk = walkMinutes(tBldg, to);
+  const originWalk = walkMinutes(fBldg, from, fCoords);
+  const destWalk = walkMinutes(tBldg, to, tCoords);
 
   // For service-hour check: in "arrive" mode the trip starts roughly earlier
   const checkTime = mode === "depart" ? refTime : subMin(refTime, 60);
@@ -1016,6 +1057,10 @@ export default function App() {
   // Building numbers if the user picked a "Bldg N – Name" entry — used to
   // compute a real haversine walk leg in findTrips.
   const [fBldg,setFB]=useState(null), [tBldg,setTB]=useState(null);
+  // User lat/lon when the "📍 Nearest" button has fetched geolocation.
+  // Overrides building coords for the origin walk leg.
+  const [fCoords,setFC]=useState(null);
+  const [locBusy,setLocBusy]=useState(false);
   const [results,setRes]=useState(null), [searched,setSrch]=useState(false);
   const [tab,setTab]=useState("plan");
 
@@ -1037,7 +1082,7 @@ export default function App() {
   const search=()=>{
     const ref = tMode === "now" ? new Date() : parseHMD(tTime, tDate);
     const mode = tMode === "arrive" ? "arrive" : "depart";
-    setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg));
+    setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null));
     setSrch(true);
     setRecent(prev => {
       const entry = { fStop, tStop, fLbl, tLbl, fBldg, tBldg };
@@ -1049,7 +1094,29 @@ export default function App() {
   const swap=()=>{
     setFS(tStop);setTS(fStop);setFL(tLbl);setTL(fLbl);
     setFB(tBldg);setTB(fBldg);
+    // User coords describe "From" position; after a swap they no longer apply
+    // to either side, so clear.
+    setFC(null);
     reset();
+  };
+
+  const findNearest = async () => {
+    if (locBusy) return;
+    setLocBusy(true);
+    try {
+      const coords = await requestUserLocation();
+      const hit = nearestStopTo(coords);
+      if (!hit) throw new Error("No stops have coordinates yet.");
+      setFC(coords);
+      setFS(hit.stop);
+      setFL(hit.stop);
+      setFB(null);
+      reset();
+    } catch (e) {
+      alert(t.locError(e.message || String(e)));
+    } finally {
+      setLocBusy(false);
+    }
   };
 
   const addFavorite=()=>{
@@ -1147,10 +1214,17 @@ export default function App() {
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <div style={{width:9,height:9,borderRadius:"50%",background:"#4dde88",boxShadow:"0 0 7px #4dde88aa"}}/>
                   <span style={{fontSize:10,color:"#4dde88",textTransform:"uppercase",letterSpacing:1.5}}>{t.from}</span>
+                  {fCoords && <span title={t.usingLocation} style={{fontSize:10,color:C.accent,letterSpacing:1}}>📍</span>}
                 </div>
-                {fStop && <button onClick={addFavorite} title={t.saveFavTitle} style={{background:"transparent",border:`1px solid ${C.gold}55`,color:C.gold,fontSize:10,padding:"2px 8px",borderRadius:10,cursor:"pointer",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>{t.saveFav}</button>}
+                <div style={{display:"flex",gap:6}}>
+                  <button onClick={findNearest} disabled={locBusy} aria-label={t.nearestStop} title={t.nearestStop}
+                    style={{background:"transparent",border:`1px solid ${C.accent}55`,color:C.accent,fontSize:10,padding:"2px 8px",borderRadius:10,cursor:locBusy?"wait":"pointer",letterSpacing:1,textTransform:"uppercase",fontWeight:700,opacity:locBusy?0.6:1}}>
+                    {locBusy ? t.nearestLoading : t.nearestStop}
+                  </button>
+                  {fStop && <button onClick={addFavorite} title={t.saveFavTitle} style={{background:"transparent",border:`1px solid ${C.gold}55`,color:C.gold,fontSize:10,padding:"2px 8px",borderRadius:10,cursor:"pointer",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>{t.saveFav}</button>}
+                </div>
               </div>
-              <StopInput label={t.from} value={fLbl} onChange={(s,l,b)=>{setFS(s);setFL(l);setFB(b);reset();}}/>
+              <StopInput label={t.from} value={fLbl} onChange={(s,l,b)=>{setFS(s);setFL(l);setFB(b);setFC(null);reset();}}/>
             </div>
             <div style={{display:"flex",justifyContent:"center",margin:"4px 0"}}>
               <button onClick={swap} aria-label={t.swapStops} title={t.swapStops} style={{background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:"50%",width:32,height:32,cursor:"pointer",color:C.sage,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>⇅</button>

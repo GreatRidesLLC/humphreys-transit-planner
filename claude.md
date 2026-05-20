@@ -43,9 +43,10 @@ Bus-stop coordinates: 43 of 44 ROUTES stops have lat/lon in `src/data/stop_coord
 
 - Stop names in proper case (`"Bus Terminal"`, `"Main Exchange (PX)"`)
 - Times in 24h format (`HH:MM`)
-- Mock walk times: 3 min per segment
+- Walk times: see "Walk leg" below — only mock when no coords available for either side.
 - Mock ride times: 2 min per stop (heuristic, not real)
 - Wait times: `nextScheduledDeparture − userArrivalAtStop`. For Gold/Brown/Pink the scheduled departure comes from the PDF data in `src/data/schedules.json`; for other routes it falls back to a `:00`-anchor cycle heuristic (`+2 min/stop offset from the first stop`).
+- Walk leg: `haversine(origin, stop)` divided by 5 km/h, floored at 3 min. Origin is the user's geolocation if the "📍 Nearest" button was used, else the picked building's OSM centroid (`src/data/buildings_osm.json`), else the 3-min mock. No geolocation request on page load — only on explicit button click.
 - Service hours filtered automatically: routes out of service at the planned trip time are excluded from results
 
 ## Out of scope (for now)
