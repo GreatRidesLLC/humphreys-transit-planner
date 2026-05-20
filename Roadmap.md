@@ -15,6 +15,10 @@ Planned improvements grouped into phases by effort and impact. Update this file 
 - Favorites & recent trips — `humphreys.favorites` and `humphreys.recent` in localStorage. Favorite chips populate just the From input; recent chips populate both From and To. `★ Save` button on the Plan form names the current From stop. `×` on each chip removes it. Recent is auto-pruned to 5, deduped by stop-pair
 - Day-of-week picker — when Depart-at or Arrive-by is active, the Plan form shows a 7-day chip row (Today, Tmrw, DOW…) plus a `<input type="date">` for arbitrary future dates. The chosen day is passed to `findTrips` so Mon–Fri routes are correctly filtered on weekends and vice versa. Enables both planning ahead and weekend testing of weekday-only routes
 - Korean language toggle (MVP) — `EN | 한국어` toggle in the header, persisted in `humphreys.lang` localStorage. Flat `STRINGS.en` / `STRINGS.ko` lookup keyed by string identifier (~80 strings). Noto Sans KR added alongside Rajdhani in the font stack so hangul renders correctly. Stop names and route names stay English by design. Korean strings are first-draft and need KATUSA / KSC QA before public release. Long descriptive paragraphs on the Off-Post tab (GPS infrastructure bullets, inter-garrison route descriptions) remain English — out of MVP scope
+- Schedule scrape + PDF parse pipeline — `scripts/scrape_schedules.py` OCRs every per-stop PNG on the official Humphreys shuttle page (31 stops). `scripts/parse_route_pdfs.py` reads the route-level Gold/Brown/Pink PDFs (selectable text via `pdftotext -layout`). Output: `src/data/schedules.json` with per-stop, per-route, per-day timetables. `scripts/diff_schedules.py` reconciles against the `ROUTES` const and writes `scripts/diff_report.md`. MyArmyPost App has no public data feed; this is the closest authoritative source we found
+- Schedule-aware wait time — `findTrips` now computes wait = `nextScheduledDeparture − userArrivalAtStop` instead of `freq ÷ 2`. For Gold/Brown/Pink the next departure comes from `schedules.json`; for other routes it falls back to a `:00`-anchor + `2 min/stop` heuristic, which still varies 0…freq instead of being a flat average
+- Brown/Pink stops + freq + days/hours — replaced the placeholder 5-stop guess in each with the real 15- and 6-stop PDF data. Pink freq corrected 30 → 15. Both marked `verified: true` and Fri–Sat (Brown 1600–2200; Pink 1700–2300). `inService` handles the Fri–Sat day filter
+- Blue/Green/Purple headway correction — OCR-confirmed 15-min on exclusive stops. ROUTES `freq` updated from 20/20/25 → 15
 
 ## Phase 4 — Data-gated features
 
@@ -36,8 +40,8 @@ Base map (Leaflet or MapLibre), stop markers, route polylines, optional fit-to-r
 ### Loop directionality
 Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes you can travel either direction. Correcting this requires authoritative direction data from the schedule PDFs, and the payoff is low (edge cases only). Park until someone reports a wrong-direction bug.
 
-### Schedule data structure (replaces `freq ÷ 2` wait math)
-Blocked on PDFs for Blue / Black / Green / Orange / Purple / Brown / Pink. Once authoritative timetables exist, add a per-route schedule lookup (departure times by stop, by day-of-week) and extend `nextDepartureInfo` (`App.jsx:598`) plus the wait math in `findTrips` (`App.jsx:283`, `:293`) to consult it before falling back to `Math.round(R.freq/2)`. Existing Gold + Bus Terminal branch (`App.jsx:603–612`) is the template. Drop `goldDisclaimer` string once all routes verified.
+### Per-route schedule lookup for Blue / Black / Green / Orange / Purple
+Mostly done: Gold/Brown/Pink consult `src/data/schedules.json` directly in `findTrips`. The remaining five routes still use the `:00`-anchor + 2-min/stop heuristic because the per-stop PNG schedules can't be reliably split per-route by tesseract (panels are colour-coded, not labelled with the route name in OCR'd text). Options to close the gap: (a) request per-route PDFs from the Transportation Office, (b) use a per-panel image-crop pipeline (needs OpenCV / Pillow), or (c) manual transcription from the official site. Drop `goldDisclaimer` string once all eight routes are verified.
 
 ### Test framework + findTrips coverage
 No tests yet. `findTrips` is the heart of routing logic and refactor risk grows as schedule data lands. Add Vitest, write a fixture-driven suite covering: direct routes, transfer routes (validate the score-min transfer selection), service-hours filtering, day-of-week filtering, Gold verified-departure path, edge cases (same from/to stop, no path). Run on pre-commit and in CI once remote is set up.
@@ -59,9 +63,10 @@ A11y pass added aria roles + states. Skipped: wrapping the header / nav / main /
 
 ## Known data gaps
 
-- Brown, Pink: stops estimated, no PDFs verified
-- Blue, Black, Green, Orange, Purple: stops listed, frequencies estimated
+- Black, Orange: 15-min headway unconfirmed — no stops served exclusively by either route in the per-stop image directory. Current `freq` of 25 / 30 is unverified
+- Blue / Green / Purple: headway confirmed 15 min, but service-hour bounds still placeholder `0600–2200`
 - Inter-garrison routes: PDFs need re-download (Incheon Airport schedule updated Feb 2026)
 - Building directory: ~15 mapped of unknown total
 - Stop coordinates: none yet (blocks Phase 4)
-- Holiday / training-holiday schedule variations: not represented anywhere
+- Holiday / training-holiday schedule variations: Brown/Pink panels capture them; other routes still treat training holidays as ordinary weekdays
+- New stops not yet in `BUILDINGS`: Downtown Plaza, Family Mini Mall / Gas Station, Family Housing Towers (15th Street) — building numbers unknown
