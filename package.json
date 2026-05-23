@@ -11,6 +11,7 @@
     "sbom": "npx --yes @cyclonedx/cyclonedx-npm --output-format json --output-file sbom.json --spec-version 1.6"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
