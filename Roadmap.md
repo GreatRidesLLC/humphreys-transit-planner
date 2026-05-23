@@ -24,13 +24,20 @@ Planned improvements grouped into phases by effort and impact. Update this file 
 - Bus-stop coordinates — `scripts/fetch_stop_coords.py` reads OSM `highway=bus_stop` nodes tagged `operator=USAG Humphreys`. 43 of 44 ROUTES stops matched to a tagged node (only `Family Housing Towers (15th Street)`, the newest Pink trial-route stop, is missing from OSM). Output: `src/data/stop_coords.json`
 - Real walk time in `findTrips` — origin/destination walk legs use `haversine(building, stop)` from the OSM-sourced coords when the user picks a "Bldg N – Name" entry. Floored at 3 min for the "find the stop, board" buffer. Wait time accuracy improves directly because user-at-stop time is grounded in real distance instead of a flat 3-min mock
 - Nearest stop from current location — "📍 Nearest" button next to the From input. On click, requests browser geolocation, finds the closest stop in `src/data/stop_coords.json`, and seeds the walk-leg haversine with the user's real lat/lon (not a building centroid). Permission only requested on click — never on page load. Falls back to alert on deny / timeout / no support
+- Map view — fifth "📍 Map" tab. Leaflet + CARTO `dark_all` raster tiles for the tactical-night palette. Per-route polylines (straight lines between consecutive stops in `src/data/stop_coords.json`, coloured per `ROUTES[r].color`) plus circle markers at every stop, popup with route chips and "From / To" buttons that seed the Plan tab and switch. CSP updated to allow `https://*.basemaps.cartocdn.com` under `img-src`; `Permissions-Policy: geolocation=(self)` fixed (was `=()` which silently blocked the "📍 Nearest" button in production)
 
 ## Phase 4 — Data-gated features
 
-The remaining Phase 4 item:
+All Phase 4 items shipped. Open follow-ups:
 
-### Map view
-Base map (Leaflet or MapLibre), stop markers, route polylines, optional fit-to-route. Bigger lift than nearest stop. Map tile licensing question for on-post use needs answering before shipping publicly.
+### Real route polylines
+Today's map draws straight lines between consecutive stops. Real road geometry would need either a route-of-route Overpass query (`relation[route=bus]`) or hand-drawn ways. Low priority — straight lines convey the topology.
+
+### Offline map tiles
+CARTO tiles fetch at runtime. App still installs offline; the map shows a grey panel until network returns. A workbox `runtimeCaching` entry would cache visited tiles. Add when complaints arrive.
+
+### Map tile licensing review
+CARTO `dark_all` is free for non-commercial use with attribution (now in the leaflet attribution control). If the app ships under USAG branding (vs. unofficial), the licence note in [[distribution-options]] needs an update.
 
 ## Phase 5 — Deferred
 

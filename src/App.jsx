@@ -1,4 +1,6 @@
 import { useState, useMemo, useRef, useEffect, createContext, useContext } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import SCHEDULES_JSON from "./data/schedules.json";
 import STOP_COORDS_JSON from "./data/stop_coords.json";
 import BUILDINGS_OSM_JSON from "./data/buildings_osm.json";
@@ -126,7 +128,8 @@ const STRINGS = {
   en: {
     appTitle: "Humphreys Transit",
     appSubtitle: "Camp Humphreys · USAG Korea",
-    tabPlan: "🗺 Plan", tabNow: "⏱ Now", tabRoutes: "🚌 Routes", tabOffpost: "📡 Off-Post",
+    tabPlan: "🗺 Plan", tabNow: "⏱ Now", tabMap: "📍 Map", tabRoutes: "🚌 Routes", tabOffpost: "📡 Off-Post",
+    mapHint: "Tap a stop to set it as From or To.",
     favorites: "★ Favorites", recent: "↺ Recent",
     typePrompt: "Type a stop name or building number",
     from: "From", to: "To", atStop: "At stop",
@@ -191,7 +194,8 @@ const STRINGS = {
   ko: {
     appTitle: "험프리스 교통",
     appSubtitle: "캠프 험프리스 · USAG Korea",
-    tabPlan: "🗺 계획", tabNow: "⏱ 지금", tabRoutes: "🚌 노선", tabOffpost: "📡 기지 외",
+    tabPlan: "🗺 계획", tabNow: "⏱ 지금", tabMap: "📍 지도", tabRoutes: "🚌 노선", tabOffpost: "📡 기지 외",
+    mapHint: "정류장을 누르면 출발 또는 도착으로 설정됩니다.",
     favorites: "★ 즐겨찾기", recent: "↺ 최근",
     typePrompt: "정류장 이름 또는 건물 번호를 입력하세요",
     from: "출발", to: "도착", atStop: "정류장",
@@ -971,6 +975,188 @@ function NowTab() {
     </div>
   );
 }
+// ─── Map Tab ──────────────────────────────────────────────────────────────────
+// Leaflet map with stop markers + per-route polylines. Tile source is CARTO
+// "dark all" to match the tactical-night palette; the CSP in public/_headers
+// allows `https://*.basemaps.cartocdn.com` under img-src.
+//
+// Tap a marker → popup shows the stop name, the routes that serve it, and
+// "Use as From / To" buttons that seed the Plan tab and switch tabs.
+// Amenities from buildings_osm.json that we want to surface as POI pins
+// (smaller, neutral-coloured, no route info). Mirrors what MAPA shows.
+const POI_AMENITIES = new Set([
+  "clinic","dentist","place_of_worship","post_office","library",
+  "school","fuel","fast_food","restaurant","fire_station","police",
+  "community_centre","veterinary",
+]);
+const POI_EMOJI = {
+  clinic:"🏥", dentist:"🦷", place_of_worship:"⛪", post_office:"📮",
+  library:"📚", school:"🏫", fuel:"⛽", fast_food:"🍔", restaurant:"🍴",
+  fire_station:"🚒", police:"🚓", community_centre:"🏛", veterinary:"🐾",
+};
+
+// Tiny DOM-builder. Uses textContent for the value so OSM-sourced strings
+// (b.name, b.amenity) can never break out of the popup body — defense in
+// depth on top of CSP `script-src 'self'`.
+function el(tag, style, text) {
+  const n = document.createElement(tag);
+  if (style) n.style.cssText = style;
+  if (text != null) n.textContent = text;
+  return n;
+}
+
+function MapTab({ onPickStop, userCoords }) {
+  const { t } = useT();
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+  const userMarkerRef = useRef(null);
+
+  useEffect(() => {
+    if (mapRef.current || !containerRef.current) return;
+    const now = new Date();
+    const map = L.map(containerRef.current, {
+      center: [36.967, 127.033], zoom: 14, zoomControl: true,
+      preferCanvas: true, attributionControl: true,
+    });
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png", {
+      attribution: "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> © <a href='https://carto.com/attributions'>CARTO</a>",
+      subdomains: "abcd",
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Per-route polylines, drawn underneath markers.
+    for (const r of Object.values(ROUTES)) {
+      const pts = r.stops
+        .map(s => STOP_COORDS[s])
+        .filter(s => s && s.lat != null)
+        .map(s => [s.lat, s.lon]);
+      if (pts.length < 2) continue;
+      L.polyline(pts, { color: r.color, weight: 3, opacity: 0.65 }).addTo(map);
+    }
+
+    // Secondary POI markers (chapels, clinics, post offices, etc.).
+    const buildings = BUILDINGS_OSM_JSON.buildings || {};
+    for (const [num, b] of Object.entries(buildings)) {
+      if (!b.amenity || !POI_AMENITIES.has(b.amenity)) continue;
+      if (b.lat == null) continue;
+      const emoji = POI_EMOJI[b.amenity] || "•";
+      const icon = L.divIcon({
+        className: "poi-marker",
+        html: `<div style="font-size:14px;filter:drop-shadow(0 0 2px #000)">${emoji}</div>`,
+        iconSize: [18, 18], iconAnchor: [9, 9],
+      });
+      const poiPopup = el("div", "font-family:Rajdhani,'Noto Sans KR',sans-serif");
+      poiPopup.append(
+        el("div", "font-weight:700;font-size:13px;color:#111", b.name || `Bldg ${num}`),
+        el("div", "font-size:11px;color:#666;margin-top:2px", `Bldg ${num} · ${b.amenity}`),
+      );
+      L.marker([b.lat, b.lon], { icon, opacity: 0.85 })
+        .bindPopup(poiPopup)
+        .addTo(map);
+    }
+
+    // Stop markers with route chips, From/To buttons, and live next-departure
+    // list. Markers added last so they sit on top of the polylines/POIs.
+    const stopBounds = [];
+    for (const [name, s] of Object.entries(STOP_COORDS)) {
+      if (s.lat == null) continue;
+      stopBounds.push([s.lat, s.lon]);
+      const servingRids = STOP_ROUTES[name] || [];
+      const primaryColor = servingRids.length
+        ? ROUTES[servingRids[0]].color
+        : "#22D3EE";
+      const m = L.circleMarker([s.lat, s.lon], {
+        radius: 7, color: "#06080c", weight: 1.5,
+        fillColor: primaryColor, fillOpacity: 0.95,
+      }).addTo(map);
+
+      const popup = el("div", "font-family:Rajdhani,'Noto Sans KR',sans-serif;min-width:190px");
+      popup.append(el("div", "font-weight:700;font-size:14px;margin-bottom:4px;color:#111", name));
+
+      const chipRow = el("div", "margin-bottom:8px");
+      for (const rid of servingRids) {
+        const color = ROUTES[rid].color;
+        chipRow.append(el(
+          "span",
+          `background:${color};color:#06080c;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;margin-right:4px`,
+          ROUTES[rid].name.replace(" Route",""),
+        ));
+      }
+      popup.append(chipRow);
+
+      // Build next-departure list from in-service routes that serve this stop.
+      const liveRows = [];
+      for (const rid of servingRids) {
+        const info = nextDepartureInfo(rid, name, now);
+        if (info.kind === "oos") continue;
+        const when = info.mins === 0 ? "now" : `${info.mins} min`;
+        const row = el("div", "display:flex;justify-content:space-between;gap:8px;font-size:11px;margin-top:3px");
+        row.append(
+          el("span", `color:${ROUTES[rid].color};font-weight:700`, ROUTES[rid].name.replace(" Route","")),
+          el("span", "color:#333;font-family:'JetBrains Mono',monospace", `${fmt(info.at)} · ${when}`),
+        );
+        liveRows.push(row);
+      }
+      if (liveRows.length) {
+        const live = el("div", "border-top:1px solid #ddd;padding-top:6px;margin-bottom:8px");
+        live.append(...liveRows);
+        popup.append(live);
+      } else {
+        popup.append(el("div", "font-size:11px;color:#888;margin-bottom:8px", "All routes here are out of service."));
+      }
+
+      const btnRow = el("div", "display:flex;gap:6px");
+      const fromBtn = el("button", "flex:1;background:#22D3EE;color:#06080c;border:none;border-radius:4px;padding:6px 10px;font-weight:700;font-size:11px;letter-spacing:1px;cursor:pointer", t.from.toUpperCase());
+      const toBtn = el("button", "flex:1;background:#0EA5B7;color:#06080c;border:none;border-radius:4px;padding:6px 10px;font-weight:700;font-size:11px;letter-spacing:1px;cursor:pointer", t.to.toUpperCase());
+      fromBtn.addEventListener("click", () => { onPickStop(name, "from"); map.closePopup(); });
+      toBtn.addEventListener("click", () => { onPickStop(name, "to"); map.closePopup(); });
+      btnRow.append(fromBtn, toBtn);
+      popup.append(btnRow);
+
+      m.bindPopup(popup);
+    }
+
+    // Auto-fit to bounds of all stop markers on first render.
+    if (stopBounds.length) {
+      map.fitBounds(stopBounds, { padding: [24, 24], maxZoom: 16 });
+    }
+
+    mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; };
+  }, [onPickStop, t]);
+
+  // "You are here" pulsing marker — only when the user has already shared
+  // their location (via the "📍 Nearest" flow in Plan tab). No re-prompt here.
+  useEffect(() => {
+    if (!mapRef.current) return;
+    if (userMarkerRef.current) {
+      mapRef.current.removeLayer(userMarkerRef.current);
+      userMarkerRef.current = null;
+    }
+    if (userCoords && userCoords.lat != null) {
+      const halo = L.circleMarker([userCoords.lat, userCoords.lon], {
+        radius: 14, color: "#22D3EE", weight: 2, fillColor: "#22D3EE",
+        fillOpacity: 0.15,
+      }).addTo(mapRef.current);
+      const dot = L.circleMarker([userCoords.lat, userCoords.lon], {
+        radius: 5, color: "#fff", weight: 1.5, fillColor: "#22D3EE",
+        fillOpacity: 1,
+      }).addTo(mapRef.current);
+      userMarkerRef.current = L.layerGroup([halo, dot]).addTo(mapRef.current);
+    }
+  }, [userCoords]);
+
+  return (
+    <div style={{padding:"8px 8px 0"}}>
+      <div ref={containerRef} role="application" aria-label={t.tabMap}
+        style={{height:"calc(100vh - 200px)",minHeight:380,width:"100%",borderRadius:10,overflow:"hidden",border:`1px solid ${C.borderMain}`}}/>
+      <div style={{fontSize:10,color:C.oliveMute,textAlign:"center",margin:"8px 0 16px",lineHeight:1.6}}>
+        {t.mapHint}
+      </div>
+    </div>
+  );
+}
+
 // ─── Off-Post Tab ─────────────────────────────────────────────────────────────
 // Long English descriptive paragraphs here intentionally left English: MVP scope
 // for the Korean toggle is UI chrome only. Long-form reference content can be
@@ -1129,7 +1315,14 @@ export default function App() {
   const removeRecent=idx=>setRecent(prev=>prev.filter((_,i)=>i!==idx));
   const applyFavorite=f=>{setFS(f.stop);setFL(f.label);setFB(f.bldg||null);reset();};
   const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setFB(r.fBldg||null);setTS(r.tStop);setTL(r.tLbl);setTB(r.tBldg||null);reset();};
-  const TABS=[["plan",t.tabPlan],["now",t.tabNow],["routes",t.tabRoutes],["offpost",t.tabOffpost]];
+  const TABS=[["plan",t.tabPlan],["now",t.tabNow],["map",t.tabMap],["routes",t.tabRoutes],["offpost",t.tabOffpost]];
+
+  const pickStopFromMap = (stopName, slot) => {
+    if (slot === "from") { setFS(stopName); setFL(stopName); setFB(null); setFC(null); }
+    else { setTS(stopName); setTL(stopName); setTB(null); }
+    setTab("plan");
+    reset();
+  };
 
   return (
     <LangContext.Provider value={{ lang, t }}>
@@ -1320,6 +1513,8 @@ export default function App() {
       )}
 
       {tab==="now" && <NowTab/>}
+
+      {tab==="map" && <MapTab onPickStop={pickStopFromMap} userCoords={fCoords}/>}
 
       {tab==="routes" && (
         <div style={{padding:"16px 14px 24px"}}>

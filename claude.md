@@ -7,6 +7,7 @@ A mobile-first React app for planning on-post bus trips at Camp Humphreys (USAG 
 - React 18 + Vite
 - No external state management — local component state only
 - No CSS framework — inline styles via a shared color palette object (`C`) plus a small `<style>{CSS}</style>` block for shared rules (form elements, animations, scrollbar)
+- Leaflet for the Map tab (raster tiles from CARTO `dark_all`; circleMarker only, no default Marker icons to avoid Vite-bundling traps)
 
 ## Audience
 
