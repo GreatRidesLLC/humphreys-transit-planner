@@ -74,12 +74,16 @@ These may enter scope as the application gains features. Update this section whe
 - Fonts are self-hosted; no Google Fonts call at runtime
 - No third-party analytics or telemetry
 - HTTPS only
+- Map tab loads raster tiles from `https://*.basemaps.cartocdn.com` (CARTO `dark_all`). This host is the only third-party origin in the CSP `img-src` allowlist. Tiles are fetched via `<img>` only; no XHR or script load from CARTO is permitted by `connect-src 'self'` and `script-src 'self'`.
+- Map popups for stops and OSM-sourced POIs are built with `document.createElement` and `textContent` — `innerHTML` is not used with any OSM-derived string (`name`, `amenity`), so a malicious OSM tag cannot inject markup. CSP `script-src 'self'` provides a second layer.
 
 ### Data handling
 
 - No PII is collected, stored, or transmitted
 - `localStorage` is used only for non-sensitive UI state (favorites, recent trips, language preference)
 - No background network calls beyond serving static assets
+- Geolocation is requested only on explicit user click of the "📍 Nearest" button on the Plan tab. The browser-granted lat/lon is held in component state for the lifetime of the page, used locally to pick the closest stop and to compute a haversine walk leg, and is never persisted to `localStorage` or transmitted. Coords are cleared on swap or manual From-field edit.
+- `Permissions-Policy: geolocation=(self)` scopes the permission to first-party only; all other sensors (camera, mic, accelerometer, etc.) remain denied via `=()`.
 
 ## Controls deferred until deployment path is chosen
 
