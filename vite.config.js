@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon.svg'],
       manifest: {
-        name: 'Humphreys Transit',
-        short_name: 'Humphreys',
-        description: 'Plan on-post bus trips at Camp Humphreys (USAG Korea).',
+        name: 'Humphreys Transit Planner',
+        short_name: 'Transit Planner',
+        description: 'Community shuttle planner for the post in Pyeongtaek. Not affiliated with USAG Humphreys, the U.S. Army, or the Department of Defense.',
         theme_color: '#0a0e12',
         background_color: '#06080c',
         display: 'standalone',

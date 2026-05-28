@@ -1,6 +1,6 @@
-# Humphreys Transit
+# Humphreys Transit Planner
 
-A mobile-first React app for planning on-post bus trips at Camp Humphreys (USAG Korea), the largest U.S. military installation overseas.
+A mobile-first, community-built React app for planning shuttle trips around the U.S. Army installation in Pyeongtaek, South Korea. Not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense — see `docs/legal-posture.md` for the full posture statement and disclaimer wording. Distribution path (standalone PWA vs MAPA integration) is pending PAO outreach; standalone is currently active.
 
 ## Stack
 
@@ -15,7 +15,7 @@ Soldiers, family members, civilian employees, and Korean nationals (KATUSAs, KSC
 
 ## Aesthetic
 
-Tactical night: charcoal-blue backgrounds, signal cyan (`#22D3EE`) for primary-action chrome (buttons, focus rings, active tab, "FASTEST" badge, "To" indicator), saffron gold (`#FFC83D`) reserved as a verified-PDF / Gold-Route trust marker and the brand-mark logo. Earlier "olive on olive" identity was dropped after a bold repalette; olive-named keys in the `C` palette object still exist as aliases for the new cool blue-grey text ramp to avoid touching every callsite.
+Tactical night: charcoal-blue backgrounds, signal cyan (`#22D3EE`) for primary-action chrome (buttons, focus rings, active tab, "FASTEST" badge, "To" indicator), saffron gold (`#FFC83D`) reserved as a PDF-sourced-schedule / Gold-Route marker and the brand-mark logo. Earlier "olive on olive" identity was dropped after a bold repalette; olive-named keys in the `C` palette object still exist as aliases for the new cool blue-grey text ramp to avoid touching every callsite.
 
 Two fonts:
 
@@ -28,10 +28,10 @@ Dark theme by default. No light mode planned.
 
 8 on-post routes (Blue, Black, Green, Orange, Purple, Gold, Brown, Pink) plus 5 inter-garrison routes (Incheon Airport, Seoul/Dragon Hill, K-16, Daegu, Osan).
 
-Verification status:
+Data status (internal `verified` flag on `ROUTES`; gates whether `findTrips` reads `schedules.json` or falls back to heuristics — user-facing copy says "PDF-sourced" not "PDF-verified" regardless):
 
-- **Gold Route**: verified from official 15 July 2023 PDF (`:00 :20 :40` departures from Bus Terminal). Full per-stop timetable in `src/data/schedules.json`.
-- **Brown, Pink**: stops + frequencies + days/hours verified from official 15 July 2023 PDFs (Brown 30-min Fri–Sat 1600–2200; Pink 15-min Fri–Sat 1700–2300, trial route).
+- **Gold Route**: `verified: true`; data transcribed from publicly posted 15 July 2023 PDF (`:00 :20 :40` departures from Bus Terminal). Full per-stop timetable in `src/data/schedules.json`.
+- **Brown, Pink**: `verified: true`; stops + frequencies + days/hours transcribed from publicly posted 15 July 2023 PDFs (Brown 30-min Fri–Sat 1600–2200; Pink 15-min Fri–Sat 1700–2300, trial route).
 - **Blue, Green, Purple**: 15-min headway confirmed via OCR of the per-stop schedule images (`scripts/scrape_schedules.py`). Service hours still listed as `0600–2200` placeholder.
 - **Black, Orange**: 15-min headway unconfirmed — no stops served *exclusively* by either route in the per-stop image directory. ROUTES still carries the old estimates (25 / 30).
 - **Inter-garrison routes**: not integrated into trip planner; shown as info only.
@@ -56,12 +56,12 @@ Bus-stop coordinates: 43 of 44 ROUTES stops have lat/lon in `src/data/stop_coord
 - Multi-day or multi-leg trip planning
 - Account features / login
 
-## Reference contacts
+## Reference contacts (external; descriptive use only — not affiliation claims)
 
-- USAG Humphreys Public Affairs Office: Manages MyArmyPost App (MAPA)
-- Transportation Office: DSN 755-0424
-- DPW GIS / IGI&S: Bldg 6140
-- USAG Humphreys website: home.army.mil/humphreys
+- USAG Humphreys Public Affairs Office: stakeholder for potential MAPA integration. Outreach pending; currently unresponsive (see `docs/legal-posture.md`).
+- Transportation Office: DSN 755-0424 — public reference contact for shuttle schedule changes.
+- DPW GIS / IGI&S: Bldg 6140 — public reference contact for building directory + stop coordinates.
+- Public shuttle page: home.army.mil/humphreys — source of publicly posted route PDFs.
 
 ## When working on this codebase
 
@@ -69,4 +69,10 @@ Bus-stop coordinates: 43 of 44 ROUTES stops have lat/lon in `src/data/stop_coord
 - Keep the single-component structure until it actually hurts; do not pre-split into many files
 - The `findTrips` function is the heart of routing logic — read it carefully before touching
 - Wait/ride time heuristics will get replaced once real schedule PDFs arrive; do not over-engineer them now
-- See `Roadmap.md` for the planned improvement queue and rationale
+- See `Roadmap.md` for the planned improvement queue (Phase 5a in progress, 5b only if PAO accepts MAPA, 5c if PAO declines long-term)
+- Before adding or editing user-facing copy, check `docs/legal-posture.md` to keep the disclaimer / non-affiliation stance intact. The internal `verified: true` flag on `ROUTES` is a data switch — do not surface the word "verified" in user-facing strings; use "PDF-sourced"
+- See `docs/distribution-pivot.md` if you need to know what flips on MAPA-positive
+
+## Filename quirk
+
+The conventions file is tracked in git as lowercase `claude.md`. The case-insensitive Windows / WSL filesystem also surfaces an uppercase `CLAUDE.md` that points at the same inode, but `git add CLAUDE.md` silently no-ops on Linux. Always edit `claude.md` (lowercase) and stage from that path.

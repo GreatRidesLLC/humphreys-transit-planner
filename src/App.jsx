@@ -7,7 +7,7 @@ import BUILDINGS_OSM_JSON from "./data/buildings_osm.json";
 
 // ─── Tactical Night Palette ───────────────────────────────────────────────────
 // Charcoal bg + signal cyan accent for primary actions; gold reserved as a
-// "verified PDF schedule" trust marker. Every text colour exceeds WCAG AA
+// PDF-sourced-schedule / Gold-Route marker. Every text colour exceeds WCAG AA
 // 4.5:1 against bgBase.
 const C = {
   bgDeep:    "#06080c",
@@ -22,7 +22,7 @@ const C = {
   accent:    "#22D3EE",
   accentDark:"#0EA5B7",
   accentAlpha:"rgba(34,211,238,0.15)",
-  // Gold is now only used for the verified-schedule / Gold-route trust marker.
+  // Gold is now only used for the PDF-sourced-schedule / Gold-route marker.
   gold:      "#FFC83D",
   goldDark:  "#b8941e",
   goldAlpha: "rgba(255,200,61,0.15)",
@@ -126,8 +126,8 @@ const DOW_KO = ["일","월","화","수","목","금","토"];
 // is hard to get right from machine translation alone.
 const STRINGS = {
   en: {
-    appTitle: "Humphreys Transit",
-    appSubtitle: "Camp Humphreys · USAG Korea",
+    appTitle: "Humphreys Transit Planner",
+    appSubtitle: "Community shuttle planner · Pyeongtaek",
     tabPlan: "🗺 Plan", tabNow: "⏱ Now", tabMap: "📍 Map", tabRoutes: "🚌 Routes", tabOffpost: "📡 Off-Post",
     mapHint: "Tap a stop to set it as From or To.",
     favorites: "★ Favorites", recent: "↺ Recent",
@@ -163,37 +163,39 @@ const STRINGS = {
     busLegMeta: (w,t,n) => `~${w} min wait · ~${t} min ride · ${n} stop${n!==1?"s":""}`,
     xferMeta: (at,dur) => `${at} · ~${dur} min`,
     fastest: "FASTEST", est: "EST.",
-    estTitle: "Times based on estimated schedule — not yet verified against an official PDF",
+    estTitle: "Times based on estimated schedule — not yet matched against a publicly posted PDF",
     everyMin: m => `every ${m} min`,
-    waitDisclaimer: "Wait times estimate the next scheduled bus assuming each route starts its cycle at :00 from its first stop. Real PDFs may differ. Verify at USAG Humphreys or MyArmyPost app.",
+    waitDisclaimer: "Wait times estimate the next scheduled bus assuming each route starts its cycle at :00 from its first stop. Real PDFs may differ. Verify with Transportation Office (DSN 755-0424) before relying on it.",
     shuttleInfo: "Shuttles run Mon–Fri 0600–2200. Gold Route runs Mon–Sun 0900–2100. Out-of-service routes are filtered automatically. Confirm: DSN 755-0424.",
     noMatch: "No matching stop or building",
     whereAreYou: "Where are you?",
     asOf: time => `As of ${time} — updates every minute`,
     nextDeparturesFrom: stop => `Next departures from ${stop}`,
-    goldDisclaimer: "Gold, Brown, and Pink use PDF-verified schedules. Other routes estimate next departure assuming a :00 cycle anchor — real timetables may shift the times.",
+    goldDisclaimer: "Gold, Brown, and Pink use PDF-sourced schedules. Other routes estimate next departure assuming a :00 cycle anchor — real timetables may shift the times.",
     noRoutesHere: "No routes serve this stop.",
     pickStopHint: "Pick a stop to see the next bus on every route that serves it. The page auto-refreshes once a minute.",
     outOfService1: "Out of", outOfService2: "service",
     inMin: m => `in ${m} min`, nowWord: "now", estAvg: "EST. AVG",
     goldDotsInfo: "Gold dots next to stop names = transfer points served by multiple routes.",
     routeMeta: (freq,n,days,hours) => `Every ${freq} min · ${n} stops · ${days} · ${hours}`,
-    pdfVerified: "✓ PDF-verified schedule",
-    verifiedScheduleHeader: "PDF-VERIFIED SCHEDULE",
+    pdfVerified: "✓ PDF-sourced schedule",
+    verifiedScheduleHeader: "PDF-SOURCED SCHEDULE",
     liveGps: "Live GPS Tracking",
     futureFeatureLabel: "FUTURE FEATURE · WHAT IT REQUIRES",
     gpsAction: "Action:",
-    gpsActionText: " Contact Transportation (DSN 755-0424) and DPW GIS/IGI&S (Bldg 6140) to explore GPS trackers or a BusWhere deployment for Humphreys.",
+    gpsActionText: " Contact Transportation (DSN 755-0424) and DPW GIS/IGI&S (Bldg 6140) to explore GPS trackers or a BusWhere deployment for the post.",
     interGarrisonHeader: "Inter-Garrison Routes",
     interGarrisonWarn1: "⚠️ Inter-garrison buses are ",
     interGarrisonWarnStrong: "not integrated",
     interGarrisonWarn2: " into the trip planner. Priority-based seating, fixed schedules, not connectable as transfers. Verify at:",
     pickupLabel: "Pick-up:",
     todoHeader: "📋 Your To-Do List",
+    disclaimer: "Community-built shuttle planner. Not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. Schedule data transcribed from publicly posted PDFs; verify with the Transportation Office (DSN 755-0424) before relying on it.",
+    offpostBanner: "Unofficial planner. Inter-garrison schedules below are transcribed from publicly posted PDFs and may be out of date — always confirm departures before travel.",
   },
   ko: {
-    appTitle: "험프리스 교통",
-    appSubtitle: "캠프 험프리스 · USAG Korea",
+    appTitle: "험프리스 교통 플래너",
+    appSubtitle: "사용자 제작 셔틀 플래너 · 평택",
     tabPlan: "🗺 계획", tabNow: "⏱ 지금", tabMap: "📍 지도", tabRoutes: "🚌 노선", tabOffpost: "📡 기지 외",
     mapHint: "정류장을 누르면 출발 또는 도착으로 설정됩니다.",
     favorites: "★ 즐겨찾기", recent: "↺ 최근",
@@ -229,23 +231,23 @@ const STRINGS = {
     busLegMeta: (w,t,n) => `~${w}분 대기 · ~${t}분 승차 · ${n}개 정류장`,
     xferMeta: (at,dur) => `${at} · ~${dur}분`,
     fastest: "최단", est: "추정",
-    estTitle: "추정 시간표 기반 — 공식 PDF로 검증되지 않음",
+    estTitle: "추정 시간표 기반 — 공개 PDF와 대조되지 않음",
     everyMin: m => `${m}분 간격`,
-    waitDisclaimer: "대기 시간은 각 노선이 첫 정류장에서 :00에 출발한다고 가정한 추정치입니다. 실제 시간표는 다를 수 있습니다. USAG 험프리스 또는 MyArmyPost 앱에서 확인하세요.",
+    waitDisclaimer: "대기 시간은 각 노선이 첫 정류장에서 :00에 출발한다고 가정한 추정치입니다. 실제 시간표는 다를 수 있습니다. 운행 전 교통과(DSN 755-0424)에 확인하세요.",
     shuttleInfo: "셔틀 운행: 월–금 06:00–22:00. Gold 노선: 일–월 09:00–21:00. 운행 종료된 노선은 자동 제외됩니다. 확인: DSN 755-0424.",
     noMatch: "일치하는 정류장 또는 건물 없음",
     whereAreYou: "어디에 계세요?",
     asOf: time => `${time} 기준 — 1분마다 갱신`,
     nextDeparturesFrom: stop => `${stop}에서 다음 출발`,
-    goldDisclaimer: "Gold, Brown, Pink 노선은 PDF 검증된 시간표를 사용합니다. 다른 노선은 :00 정시 기준 주기로 다음 출발을 추정하며, 실제 시간표와 다를 수 있습니다.",
+    goldDisclaimer: "Gold, Brown, Pink 노선은 PDF에서 옮긴 시간표를 사용합니다. 다른 노선은 :00 정시 기준 주기로 다음 출발을 추정하며, 실제 시간표와 다를 수 있습니다.",
     noRoutesHere: "이 정류장을 지나는 노선이 없습니다.",
     pickStopHint: "정류장을 선택하면 해당 정류장의 모든 노선의 다음 버스를 볼 수 있습니다. 1분마다 자동 갱신됩니다.",
     outOfService1: "운행", outOfService2: "종료",
     inMin: m => `${m}분 후`, nowWord: "지금", estAvg: "추정 평균",
     goldDotsInfo: "정류장 이름 옆 금색 점 = 여러 노선이 정차하는 환승 지점.",
     routeMeta: (freq,n,days,hours) => `${freq}분 간격 · 정류장 ${n}개 · ${days} · ${hours}`,
-    pdfVerified: "✓ PDF 검증된 시간표",
-    verifiedScheduleHeader: "PDF 검증된 시간표",
+    pdfVerified: "✓ PDF 기반 시간표",
+    verifiedScheduleHeader: "PDF 기반 시간표",
     liveGps: "실시간 GPS 추적",
     futureFeatureLabel: "추후 기능 · 필요 요건",
     gpsAction: "조치:",
@@ -256,6 +258,8 @@ const STRINGS = {
     interGarrisonWarn2: ". 우선순위 좌석, 고정 시간표, 환승 불가. 확인:",
     pickupLabel: "탑승 지점:",
     todoHeader: "📋 할 일 목록",
+    disclaimer: "사용자 제작 셔틀 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 시간표는 공개된 PDF에서 옮긴 것입니다. 운행 전 교통과(DSN 755-0424)에 확인하세요.",
+    offpostBanner: "비공식 플래너입니다. 아래의 기지 간 시간표는 공개 PDF에서 옮긴 것으로 변경되었을 수 있습니다. 이동 전 반드시 출발 시간을 확인하세요.",
   },
 };
 const LangContext = createContext({ lang: "en", t: STRINGS.en });
@@ -286,13 +290,13 @@ const ROUTES = {
   PURPLE:{ id:"PURPLE",name:"Purple Route", color:"#c47aff", freq:15, hours:"0600–2200", days:"Mon–Fri",
     stops:["Brian D. Allgood Hospital","Bus Terminal","Collier Fitness Center","Turner Fitness Center","TMP / Driver's Licensing","Spartan DFAC","Sitman Fitness Center","Barracks (6800s & 6900s Block)","Balboni Sports Field (5th St)","Pittman DFAC"] },
   GOLD:  { id:"GOLD",  name:"Gold Route",   color:"#FFD040", freq:20, hours:"0900–2100", days:"Mon–Sun",
-    verified:true, note:"Departs Bus Terminal :00 :20 :40 each hour (from official July 2023 PDF)",
+    verified:true, note:"Departs Bus Terminal :00 :20 :40 each hour (from publicly posted July 2023 PDF)",
     stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course"] },
   BROWN: { id:"BROWN", name:"Brown Route",  color:"#e8944a", freq:30, hours:"1600–2200", days:"Fri–Sat",
-    verified:true, note:"From official PDF (15 July 2023). Friday evening + Saturday/Training Holiday only.",
+    verified:true, note:"Transcribed from publicly posted PDF (15 July 2023). Friday evening + Saturday/Training Holiday only.",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Pacific Victors Chapel","Downtown Plaza","Balboni Sports Field (Marne Ave)","Balboni Sports Field (5th St)","Pittman DFAC","Spartan DFAC","TMP / Driver's Licensing","Airfield Operations","Family Housing Towers (Tropic Lightning Ave)","Collier Fitness Center","Bus Terminal"] },
   PINK:  { id:"PINK",  name:"Pink Route",   color:"#ff6bb5", freq:15, hours:"1700–2300", days:"Fri–Sat",
-    verified:true, note:"From official PDF (15 July 2023). Trial-run route; Friday/Training Holiday + Saturday only.",
+    verified:true, note:"Transcribed from publicly posted PDF (15 July 2023). Trial-run route; Friday/Training Holiday + Saturday only.",
     stops:["Pacific Victors Chapel","Family Mini Mall / Gas Station","Family Housing Towers (Taro Ave)","Family Housing Towers (15th Street)","Talon Cafe DFAC","TMP / Driver's Licensing"] },
 };
 
@@ -340,23 +344,23 @@ const BUILDINGS = {
 const OFFPOST = [
   { id:"AIRPORT", icon:"✈️", name:"Incheon Airport Shuttle", color:"#5bb8ff",
     desc:"Runs daily. Priority: PCS → Emergency Leave → TDY → Ordinary Leave → All Others. Limited seating.",
-    schedule:"Updated Feb 2026. Download current PDF from USAG Humphreys website.",
+    schedule:"Updated Feb 2026. Download current PDF from the post's public shuttle page.",
     pickup:"Bus Terminal + Brian D. Allgood Hospital" },
   { id:"SEOUL", icon:"🏙️", name:"Seoul / Dragon Hill Lodge", color:"#c47aff",
     desc:"Inter-garrison service to Yongsan-area installations. 1–2 departures per day.",
-    schedule:"Verify current schedule at USAG Humphreys website.",
+    schedule:"Verify current schedule on the post's public shuttle page.",
     pickup:"Bus Terminal + Brian D. Allgood Hospital" },
   { id:"K16", icon:"🚁", name:"K-16 Seoul Air Base", color:"#4dde88",
     desc:"Service to Seongnam (Seoul Air Base). Stops at Troop Medical Clinic and Main Gate.",
-    schedule:"Verify current schedule at USAG Humphreys website.",
+    schedule:"Verify current schedule on the post's public shuttle page.",
     pickup:"Bus Terminal + Brian D. Allgood Hospital" },
   { id:"DAEGU", icon:"🏔️", name:"USAG Daegu – Camp Carroll", color:"#ff8c3a",
     desc:"Service to Waegwan / Camp Carroll (Daegu area). Very limited frequency.",
-    schedule:"Verify current schedule at USAG Humphreys website.",
+    schedule:"Verify current schedule on the post's public shuttle page.",
     pickup:"Bus Terminal" },
   { id:"OSAN", icon:"🛫", name:"Osan Air Base", color:"#ff6bb5",
     desc:"Inter-garrison service to Osan Air Base.",
-    schedule:"Verify current schedule at USAG Humphreys website.",
+    schedule:"Verify current schedule on the post's public shuttle page.",
     pickup:"Bus Terminal" },
 ];
 
@@ -1165,6 +1169,10 @@ function OffPostTab() {
   const { t } = useT();
   return (
     <div style={{padding:"16px 14px 32px"}}>
+      <div role="note" style={{background:"#1a1408",border:`1px solid ${C.gold}66`,borderRadius:10,padding:"12px 14px",marginBottom:16,display:"flex",gap:10}}>
+        <span style={{fontSize:16,flexShrink:0}}>⚠️</span>
+        <div style={{fontSize:12,color:C.khaki,lineHeight:1.6}}>{t.offpostBanner}</div>
+      </div>
       <div style={{background:`linear-gradient(135deg,${C.bgCard},#142a19)`,border:`1px solid ${C.borderMain}`,borderRadius:14,padding:18,marginBottom:20}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <span style={{fontSize:22}}>📡</span>
@@ -1219,7 +1227,7 @@ function OffPostTab() {
       <div style={{background:"#11100a",border:`1px solid #4a3e1a`,borderRadius:12,padding:"14px 16px",marginTop:12}}>
         <div style={{fontSize:13,fontWeight:700,color:C.accent,marginBottom:10}}>{t.todoHeader}</div>
         {[
-          "Download current inter-garrison PDFs from USAG Humphreys (airport schedule updated Feb 2026)",
+          "Download current inter-garrison PDFs from the post's public shuttle page (airport schedule updated Feb 2026)",
           "Provide Brown & Pink route PDFs to verify their stops (currently estimated)",
           "Obtain full building-number directory from DPW GIS / IGI&S office (Bldg 6140)",
           "Contact Transportation (DSN 755-0424) about GPS tracker feasibility or BusWhere deployment",
@@ -1528,6 +1536,10 @@ export default function App() {
       )}
 
       {tab==="offpost" && <OffPostTab/>}
+
+      <div role="contentinfo" style={{borderTop:`1px solid ${C.borderSub}`,padding:"14px 16px 22px",marginTop:8,fontSize:10,color:C.oliveMute,lineHeight:1.6,textAlign:"center"}}>
+        {t.disclaimer}
+      </div>
     </div>
     </LangContext.Provider>
   );

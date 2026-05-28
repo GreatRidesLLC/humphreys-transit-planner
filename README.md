@@ -1,6 +1,6 @@
-# Humphreys Transit
+# Humphreys Transit Planner
 
-Mobile-first React app for planning on-post bus trips at Camp Humphreys (USAG Korea). Built for soldiers, family members, civilian employees, and Korean nationals living and working on the installation.
+Mobile-first React app for planning shuttle trips around the U.S. Army installation in Pyeongtaek, South Korea. Community-built; not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. See `docs/legal-posture.md` for the full posture statement.
 
 ## Quick start
 
@@ -35,6 +35,8 @@ After cloning, also bootstrap the gitleaks pre-commit hook once:
 | `CLAUDE.md` | Project conventions, data-source status, audience notes. |
 | `SECURITY.md` | Threat model, reporting policy, controls list, deferral sections. |
 | `Roadmap.md` | Phased improvement queue and rationale. |
+| `docs/legal-posture.md` | Trademark / endorsement stance, name choice, text-scrub checklist, asset audit, PAO-positive revert path. |
+| `docs/distribution-pivot.md` | File / line index for flipping from standalone to MAPA-integrated if PAO accepts. |
 
 ## Updating data
 
@@ -48,7 +50,7 @@ Schedule and reference data is hardcoded in `src/App.jsx`. To update:
 | UI strings (EN / KO) | `STRINGS` const (~line 38) |
 | Color palette | `C` const (top of file) |
 
-When a new official PDF arrives for a route currently flagged as estimated, set `verified: true` on that route's entry. Phase 5 in `Roadmap.md` covers the bigger schedule-data-structure refactor that replaces the `freq ÷ 2` wait math.
+When a new publicly posted PDF arrives for a route currently flagged as estimated, set `verified: true` on that route's entry (the flag gates `findTrips`' switch to the PDF-sourced timetable in `src/data/schedules.json`; it is internal and does not change the user-facing "PDF-sourced" wording). Phase 5a in `Roadmap.md` covers the bigger schedule-data-structure refactor that replaces the `freq ÷ 2` wait math.
 
 ## Where to look for X
 
@@ -102,7 +104,7 @@ Target: Cloudflare Pages or Netlify (static-site host that respects `public/_hea
 3. Verify headers post-deploy with [securityheaders.com](https://securityheaders.com).
 4. Regenerate `sbom.json` on each release (`npm run sbom`) and commit alongside the version bump.
 
-CI gates (gitleaks, `npm audit --audit-level=high`, SBOM upload, Dependabot, branch protection) are deferred until the repo is pushed to a hosted remote — see `SECURITY.md`.
+CI gates (gitleaks, `npm audit --audit-level=high`, SBOM upload, Dependabot, branch protection) are deferred until the repo is pushed to a hosted remote — see `SECURITY.md`. Pushing the repo is the next Phase 5a milestone in `Roadmap.md`.
 
 ## Security ops
 
@@ -114,9 +116,9 @@ CI gates (gitleaks, `npm audit --audit-level=high`, SBOM upload, Dependabot, bra
 ## Handoff / succession
 
 - **Maintainer:** _(fill in — name + email)_
-- **USAG Humphreys Public Affairs Office:** manages MyArmyPost App (MAPA) and is the integration / distribution stakeholder.
-- **Transportation Office:** DSN 755-0424 — authoritative source for shuttle schedule changes.
-- **DPW GIS / IGI&S:** Bldg 6140 — source of building directory and stop coordinates.
-- **USAG Humphreys website:** [home.army.mil/humphreys](https://home.army.mil/humphreys)
+- **USAG Humphreys Public Affairs Office:** stakeholder for potential MyArmyPost App (MAPA) integration. Current status: outreach unanswered as of 2026-05-28; project proceeds standalone in the meantime (see `docs/legal-posture.md`).
+- **Transportation Office:** DSN 755-0424 — public reference contact for shuttle schedule changes.
+- **DPW GIS / IGI&S:** Bldg 6140 — public reference contact for building directory and stop coordinates.
+- **Public shuttle page:** [home.army.mil/humphreys](https://home.army.mil/humphreys) — source of the publicly posted route PDFs the planner transcribes.
 
-If you're inheriting this project, read in this order: `CLAUDE.md` (conventions and audience), `Roadmap.md` (what's planned and why), `SECURITY.md` (what's hardened and what's deferred), then `src/App.jsx` (the whole app). The `findTrips` function is the trickiest piece — read it carefully before touching.
+If you're inheriting this project, read in this order: `CLAUDE.md` (conventions and audience), `docs/legal-posture.md` (trademark / endorsement stance and disclaimer wording), `Roadmap.md` (what's planned and why), `SECURITY.md` (what's hardened and what's deferred), `docs/distribution-pivot.md` (what changes if PAO accepts integration), then `src/App.jsx` (the whole app). The `findTrips` function is the trickiest piece — read it carefully before touching.

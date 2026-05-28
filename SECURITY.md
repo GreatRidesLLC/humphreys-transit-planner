@@ -2,7 +2,7 @@
 
 ## Scope
 
-Humphreys Transit is a static, client-side React application for planning on-post bus trips at USAG Humphreys - South Korea. It has no backend, no authentication, no PII collection, and no third-party analytics by default.
+Humphreys Transit Planner is a community-built, static, client-side React application for planning shuttle trips around the U.S. Army installation in Pyeongtaek, South Korea. It is not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. It has no backend, no authentication, no PII collection, and no third-party analytics by default.
 
 ## Reporting a vulnerability
 
@@ -30,7 +30,7 @@ The project is pre-1.0. Only the `main` branch receives security fixes.
 
 | Asset | Sensitivity | Notes |
 |-------|-------------|-------|
-| Route and stop data | Low | Public information sourced from USAG PAO and route PDFs |
+| Route and stop data | Low | Publicly posted route PDFs and OpenStreetMap data |
 | Build artifact (HTML/JS/CSS) | Medium | Tampering enables phishing against a trusted audience |
 | Build pipeline | High | Supply-chain entry point |
 | Hosting infrastructure (CDN, DNS, certs) | High | Loss of integrity here compromises every user |
@@ -85,13 +85,26 @@ These may enter scope as the application gains features. Update this section whe
 - Geolocation is requested only on explicit user click of the "📍 Nearest" button on the Plan tab. The browser-granted lat/lon is held in component state for the lifetime of the page, used locally to pick the closest stop and to compute a haversine walk leg, and is never persisted to `localStorage` or transmitted. Coords are cleared on swap or manual From-field edit.
 - `Permissions-Policy: geolocation=(self)` scopes the permission to first-party only; all other sensors (camera, mic, accelerometer, etc.) remain denied via `=()`.
 
-## Controls deferred until deployment path is chosen
+## Trademark / endorsement posture
 
-The project may ship as a MyArmyPost App (MAPA) integration, a standalone PWA, a native wrapper, or a hybrid. Some controls depend on that decision and are intentionally deferred:
+The app ships under the name **Humphreys Transit Planner** with a universal footer disclaimer asserting non-affiliation with USAG Humphreys, the U.S. Army, and the Department of Defense. A larger banner appears on the Off-Post tab where official-sounding content (DSN contacts, inter-garrison routes) raises endorsement risk. User-facing strings have been scrubbed of language that implies authoritative verification ("PDF-verified" → "PDF-sourced"; "official PDF" → "publicly posted PDF"). Committed assets (`public/favicon.svg`, `public/icon.svg`, `public/icons.svg`) carry no Army / DoD / USAG identifiers — audit performed 2026-05-28.
 
-- DNS hardening (DNSSEC, CAA, registrar lock) — only relevant once a production domain is registered
-- Code-signing infrastructure — only relevant for native wrappers
+Decision record and scrub checklist: `docs/legal-posture.md`. PAO-positive revert index: `docs/distribution-pivot.md`.
+
+If the PAO Director accepts MAPA integration, copy reverts per `docs/distribution-pivot.md` "PAO-positive delta" and the "Controls deferred to MAPA-positive branch" list below activates.
+
+## Controls deferred to MAPA-positive branch
+
+The project currently ships standalone (see `docs/legal-posture.md`). Some controls only become relevant if the PAO Director accepts MyArmyPost App (MAPA) integration:
+
 - ATO / RMF / STIG paperwork — only relevant for MAPA integration
+- CSP `frame-ancestors` swap from `'none'` to the MAPA origin (and removal of `X-Frame-Options: DENY`)
+- Code-signing infrastructure — only relevant if a native wrapper is later added on top of MAPA
+- Pen test engagement scoped to MAPA's embedding chrome
+
+## Controls deferred until a production domain is registered
+
+- DNS hardening (DNSSEC, CAA, registrar lock) — only relevant once a production domain is registered (Cloudflare Pages default `*.pages.dev` is the planned initial host)
 - Pen test engagement — timed to whichever path goes live
 
 ## Controls deferred until a remote repository exists
