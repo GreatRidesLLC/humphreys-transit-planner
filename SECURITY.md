@@ -66,7 +66,11 @@ These may enter scope as the application gains features. Update this section whe
 - Pinned Node version via `package.json` `engines` (to be added)
 - `package-lock.json` committed; CI uses `npm ci`
 - `gitleaks` pre-commit hook scans staged changes for secrets
-- SBOM generated on each build (`sbom.json`, CycloneDX format)
+- `gitleaks` GitHub Actions job runs on every PR and push to `main` (`.github/workflows/ci.yml`)
+- Full-history `gitleaks detect --log-opts="--all"` scan completed against 38 commits prior to first push — no leaks
+- `npm audit --audit-level=high` gate in CI; build fails on high/critical advisories
+- SBOM generated on each build (`sbom.json`, CycloneDX format) and uploaded as a CI artifact
+- Dependabot weekly updates for `npm` and `github-actions` ecosystems (`.github/dependabot.yml`)
 
 ### Runtime / hosting
 
@@ -107,17 +111,13 @@ The project currently ships standalone (see `docs/legal-posture.md`). Some contr
 - DNS hardening (DNSSEC, CAA, registrar lock) — only relevant once a production domain is registered (Cloudflare Pages default `*.pages.dev` is the planned initial host)
 - Pen test engagement — timed to whichever path goes live
 
-## Controls deferred until a remote repository exists
+## Controls deferred until branch protection / deploy is wired up
 
-The repo is currently local-only. The following controls require a hosted git remote with CI (GitHub Actions, GitLab CI, or equivalent) and will be enabled after the project is pushed:
+The repo is hosted at `github.com/Bennoah/humphreys-transit-planner`. CI (gitleaks, `npm audit`, SBOM upload) and Dependabot are active. The following still require admin / deploy-target setup:
 
-- `gitleaks` job on every PR and on `main`
-- `npm audit --audit-level=high` gate in CI
-- SBOM regeneration on each build, uploaded as a CI artifact
-- Dependabot or Renovate weekly dependency updates (auto-merge for patch-level only)
-- Branch protection: required reviews, required status checks, no force-push to `main`
-- OIDC federation to the hosting provider for deploys (replace any static deploy token)
-- Run `gitleaks detect --log-opts="--all"` against full history on first push, before the repo is made public or shared
+- Branch protection on `main`: required reviews, required status checks (CI jobs), no force-push
+- Dependabot auto-merge for patch-level updates (requires branch protection + a workflow with `gh pr merge --auto`)
+- OIDC federation to the hosting provider for deploys (replace any static deploy token) — deferred until Cloudflare Pages target is wired
 
 ## Out-of-scope security findings
 

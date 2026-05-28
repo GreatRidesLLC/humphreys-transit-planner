@@ -39,8 +39,8 @@ All Phase 4 items shipped. Map / offline / licensing follow-ups have been folded
 
 Work that ships regardless of PAO outcome and benefits both distribution paths.
 
-### Push repo to hosted remote (next)
-Unblocks every "deferred until remote exists" control in `SECURITY.md`: gitleaks CI job, `npm audit --audit-level=high` gate, SBOM artifact upload, Dependabot weekly, branch protection on `main`, OIDC federation for deploys, full-history `gitleaks detect --log-opts="--all"` first-push scan. Cheapest milestone on the board — pick host (GitHub assumed), push, wire CI.
+### Push repo to hosted remote — ✅ shipped
+Pushed to `github.com/Bennoah/humphreys-transit-planner`. Full-history `gitleaks detect --log-opts="--all"` scan completed pre-push (38 commits, 0 leaks). CI workflow (`.github/workflows/ci.yml`) wires gitleaks, `npm audit --audit-level=high`, eslint, build, and SBOM regen + artifact upload. Dependabot config (`.github/dependabot.yml`) covers weekly npm + github-actions updates. Remaining: branch protection on `main` (admin token), Dependabot patch auto-merge, OIDC federation (deferred until Cloudflare Pages target is wired).
 
 ### Deploy to Cloudflare Pages free tier
 Default subdomain `*.pages.dev`. `public/_headers` already configured. Domain registration (DNSSEC, CAA, registrar lock — `SECURITY.md` deferral) waits until a name is chosen.
