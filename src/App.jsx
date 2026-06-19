@@ -9,6 +9,14 @@ import BUILDINGS_OSM_JSON from "./data/buildings_osm.json";
 // Charcoal bg + signal cyan accent for primary actions; gold reserved as a
 // PDF-sourced-schedule / Gold-Route marker. Every text colour exceeds WCAG AA
 // 4.5:1 against bgBase.
+// MAPA = My Army Post App, the official U.S. Army garrison app. We point users
+// toward it (Director Nagan's condition for not competing with MAPA), never away.
+// Store URLs verified via public listings June 2026.
+const MAPA_LINKS = {
+  ios:     "https://apps.apple.com/us/app/myarmypost/id6467240977",
+  android: "https://play.google.com/store/apps/details?id=mil.aswf.garrison",
+};
+
 const C = {
   bgDeep:    "#06080c",
   bgBase:    "#0a0e12",
@@ -192,6 +200,14 @@ const STRINGS = {
     todoHeader: "📋 Your To-Do List",
     disclaimer: "Community-built shuttle planner. Not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. Schedule data transcribed from publicly posted PDFs; verify with the Transportation Office (DSN 755-0424) before relying on it.",
     offpostBanner: "Unofficial planner. Inter-garrison schedules below are transcribed from publicly posted PDFs and may be out of date — always confirm departures before travel.",
+    mapaCardTitle: "Looking for the official app?",
+    mapaCardBody: "MAPA (My Army Post App) is the official U.S. Army app for garrison information. Get it here:",
+    mapaAppStore: "App Store",
+    mapaPlayStore: "Google Play",
+    scheduleCredit: "Route schedules sourced from publicly posted USAG Humphreys PDFs.",
+    noticeTitle: "Before you start",
+    noticeBody: "This is an unofficial, community-built trip planner. It is not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. For official garrison information, use MAPA (My Army Post App), the official U.S. Army app:",
+    noticeAck: "I understand — continue",
   },
   ko: {
     appTitle: "험프리스 교통 플래너",
@@ -260,6 +276,14 @@ const STRINGS = {
     todoHeader: "📋 할 일 목록",
     disclaimer: "사용자 제작 셔틀 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 시간표는 공개된 PDF에서 옮긴 것입니다. 운행 전 교통과(DSN 755-0424)에 확인하세요.",
     offpostBanner: "비공식 플래너입니다. 아래의 기지 간 시간표는 공개 PDF에서 옮긴 것으로 변경되었을 수 있습니다. 이동 전 반드시 출발 시간을 확인하세요.",
+    mapaCardTitle: "공식 앱을 찾으세요?",
+    mapaCardBody: "MAPA(My Army Post App)는 미 육군 공식 기지 정보 앱입니다. 여기서 받으세요:",
+    mapaAppStore: "App Store",
+    mapaPlayStore: "Google Play",
+    scheduleCredit: "노선 시간표는 공개된 USAG 험프리스 PDF에서 가져왔습니다.",
+    noticeTitle: "시작하기 전에",
+    noticeBody: "이 앱은 비공식 사용자 제작 교통 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 공식 기지 정보는 미 육군 공식 앱 MAPA(My Army Post App)를 이용하세요:",
+    noticeAck: "확인했습니다 — 계속",
   },
 };
 const LangContext = createContext({ lang: "en", t: STRINGS.en });
@@ -1245,6 +1269,47 @@ function OffPostTab() {
 }
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
+// Twin store links to MAPA. Reused by the home-screen card and the first-run notice.
+function MapaStoreLinks() {
+  const { t } = useT();
+  const link = {display:"flex",alignItems:"center",justifyContent:"center",flex:1,background:"transparent",border:`1px solid ${C.gold}66`,color:C.gold,borderRadius:8,padding:"9px 8px",fontSize:12,fontWeight:700,letterSpacing:.5,textDecoration:"none",fontFamily:"'Rajdhani','Noto Sans KR',sans-serif"};
+  return (
+    <div style={{display:"flex",gap:8}}>
+      <a href={MAPA_LINKS.ios} target="_blank" rel="noopener noreferrer" style={link}>{t.mapaAppStore}</a>
+      <a href={MAPA_LINKS.android} target="_blank" rel="noopener noreferrer" style={link}>{t.mapaPlayStore}</a>
+    </div>
+  );
+}
+
+// Home-screen pointer to the official Army app (Nagan condition).
+function MapaCard() {
+  const { t } = useT();
+  return (
+    <div style={{background:C.bgCard,border:`1px solid ${C.gold}33`,borderRadius:14,padding:16,marginBottom:14}}>
+      <div style={{fontSize:13,fontWeight:700,color:C.gold,marginBottom:6,letterSpacing:.5}}>{t.mapaCardTitle}</div>
+      <div style={{fontSize:12,color:C.oliveDim,lineHeight:1.6,marginBottom:12}}>{t.mapaCardBody}</div>
+      <MapaStoreLinks/>
+    </div>
+  );
+}
+
+// One-time non-affiliation notice. Dismissal persisted in localStorage so it
+// shows once per device. Points to MAPA rather than away from it.
+function FirstRunNotice({ onAck }) {
+  const { t } = useT();
+  return (
+    <div role="dialog" aria-modal="true" aria-label={t.noticeTitle}
+      style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(4,6,10,.84)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}}>
+      <div style={{maxWidth:420,width:"100%",background:C.bgCard,border:`1px solid ${C.borderMain}`,borderRadius:14,padding:"22px 20px",boxShadow:"0 12px 48px rgba(0,0,0,.6)"}}>
+        <div style={{fontSize:18,fontWeight:700,color:C.gold,letterSpacing:1,textTransform:"uppercase",marginBottom:12}}>{t.noticeTitle}</div>
+        <div style={{fontSize:13,color:C.tan,lineHeight:1.7,marginBottom:16}}>{t.noticeBody}</div>
+        <div style={{marginBottom:16}}><MapaStoreLinks/></div>
+        <button className="btn" onClick={onAck}>{t.noticeAck}</button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [fStop,setFS]=useState(""), [tStop,setTS]=useState("");
   const [fLbl,setFL]=useState(""),  [tLbl,setTL]=useState("");
@@ -1272,6 +1337,9 @@ export default function App() {
   // UI language. Persisted across reloads. Stop / route names stay English regardless.
   const [lang, setLang] = useLocalStorage("humphreys.lang", "en");
   const t = STRINGS[lang] || STRINGS.en;
+
+  // First-run non-affiliation notice. Shown once per device until acknowledged.
+  const [noticeSeen, setNoticeSeen] = useLocalStorage("humphreys.noticeSeen", false);
 
   const search=()=>{
     const ref = tMode === "now" ? new Date() : parseHMD(tTime, tDate);
@@ -1337,6 +1405,8 @@ export default function App() {
     <div style={{fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",background:C.bgBase,minHeight:"100vh",color:C.tan,maxWidth:480,margin:"0 auto"}}>
       <style>{CSS}</style>
 
+      {!noticeSeen && <FirstRunNotice onAck={()=>setNoticeSeen(true)}/>}
+
       <div style={{background:`linear-gradient(180deg,${C.bgCard} 0%,${C.bgBase} 100%)`,borderBottom:`1px solid ${C.borderSub}`,padding:"18px 16px 14px"}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{width:48,height:48,background:`linear-gradient(135deg,${C.gold},${C.goldDark})`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:`0 4px 20px rgba(229,187,57,.4)`,flexShrink:0}}>🚌</div>
@@ -1370,6 +1440,7 @@ export default function App() {
 
       {tab==="plan" && (
         <div style={{padding:"16px 14px"}}>
+          <MapaCard/>
           {(favorites.length>0 || recent.length>0) && (
             <div style={{marginBottom:12}}>
               {favorites.length>0 && (
@@ -1539,6 +1610,7 @@ export default function App() {
 
       <div role="contentinfo" style={{borderTop:`1px solid ${C.borderSub}`,padding:"14px 16px 22px",marginTop:8,fontSize:10,color:C.oliveMute,lineHeight:1.6,textAlign:"center"}}>
         {t.disclaimer}
+        <div style={{marginTop:8,color:C.oliveDim}}>{t.scheduleCredit}</div>
       </div>
     </div>
     </LangContext.Provider>

@@ -1,8 +1,18 @@
 # Legal posture
 
-Status: **Active** (standalone path, PAO unresponsive as of 2026-05-28).
+Status: **Active** (standalone path; PAO engaged, coexistence approved 2026-06-19).
 
 This document records the trademark / endorsement / branding stance taken while shipping the app standalone. If the Director of USAG Humphreys Public Affairs Office (PAO) accepts the project for MyArmyPost App (MAPA) integration, the "PAO-positive revert path" section below lists what changes — none of the changes here are load-bearing on architecture, only on copy.
+
+## PAO engagement — Director Nagan (2026-06-19)
+
+Director Nagan (PAO) responded after earlier silence. He does **not** oppose the standalone app, on the condition that it **points users toward MAPA, not away from it**. This is a coexistence arrangement, not MAPA integration — the distribution-pivot path stays unexecuted.
+
+Three commitments made to Nagan, all shipped 2026-06-19 in `src/App.jsx`:
+
+1. **Home-screen MAPA button** (`MapaCard`) — links to MAPA on the App Store (`apps.apple.com/us/app/myarmypost/id6467240977`) and Google Play (`play.google.com/store/apps/details?id=mil.aswf.garrison`). URLs in `MAPA_LINKS` const.
+2. **First-launch notice** (`FirstRunNotice`) — one-time modal (dismissal persisted in `localStorage` key `humphreys.noticeSeen`) stating the tool is unofficial / community-built and that MAPA is the official U.S. Army app. Strings: `STRINGS.{en,ko}.noticeTitle` / `noticeBody` / `noticeAck`.
+3. **Schedule-source credit line** — footer line crediting USAG Humphreys as the publicly posted source of route schedules. String: `STRINGS.{en,ko}.scheduleCredit`. Kept **descriptive** ("sourced from publicly posted USAG Humphreys PDFs"), not an affiliation/partnership claim — non-affiliation stance below is unchanged.
 
 ## Audience risk summary
 
