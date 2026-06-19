@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "sbom": "npx --yes @cyclonedx/cyclonedx-npm --output-format json --output-file sbom.json --spec-version 1.6"
+    "preview": "npm run build && wrangler dev",
+    "sbom": "npx --yes @cyclonedx/cyclonedx-npm --output-format json --output-file sbom.json --spec-version 1.6",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
@@ -16,6 +17,7 @@
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.42.0",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -25,6 +27,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "vite": "^8.0.12",
-    "vite-plugin-pwa": "^1.3.0"
+    "vite-plugin-pwa": "^1.3.0",
+    "wrangler": "^4.102.0"
   }
 }
