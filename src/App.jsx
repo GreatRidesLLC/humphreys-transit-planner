@@ -162,6 +162,8 @@ const STRINGS = {
     noTrips: "No Trips Available",
     noTripsOOS: names => `Possible routes are outside service hours at this time (${names}). Try a different time.`,
     noTripsNoPath: "No shared or 1-transfer path exists. Try selecting the Bus Terminal as a hub, or a nearby major stop.",
+    noTripsOvernightDirect: names => `Bus service (${names}) ends before this trip can finish. Service resumes the next service day — consider a taxi, Kakao T, or walking.`,
+    noTripsOvernightXfer: names => `The transfer bus (${names.join(" → ")}) would have stopped running before you could board it. The shuttle network can't get you there in time — consider a taxi, Kakao T, or walking.`,
     optionsFound: n => `${n} option${n!==1?"s":""} found`,
     routesOOS: n => `${n} route${n!==1?"s":""} out of service`,
     direct: "Direct · no transfer", oneTransfer: "1 transfer",
@@ -238,6 +240,8 @@ const STRINGS = {
     noTrips: "이용 가능한 노선 없음",
     noTripsOOS: names => `현재 시간에 운행하지 않는 노선이 있습니다 (${names}). 다른 시간을 시도해 보세요.`,
     noTripsNoPath: "공유 정류장 또는 1회 환승 경로가 없습니다. 버스 터미널이나 가까운 주요 정류장을 시도해 보세요.",
+    noTripsOvernightDirect: names => `이 시간에 출발하면 ${names} 노선의 운행이 종료되어 목적지까지 도착할 수 없습니다. 다음 운행일까지 기다리거나 택시, 카카오T, 도보를 이용하세요.`,
+    noTripsOvernightXfer: names => `환승 버스(${names.join(" → ")})가 탑승 전에 운행을 종료합니다. 셔틀로는 시간 내 도착이 불가능하니 택시, 카카오T, 도보를 권장합니다.`,
     optionsFound: n => `${n}개 옵션`,
     routesOOS: n => `${n}개 노선 운행 종료`,
     direct: "직행 · 환승 없음", oneTransfer: "환승 1회",
@@ -299,6 +303,20 @@ const inService = (r, d) => {
   const sm = parseInt(s.slice(0,2))*60 + parseInt(s.slice(2));
   const em = parseInt(e.slice(0,2))*60 + parseInt(e.slice(2));
   return mins >= sm && mins <= em;
+};
+
+// Date of route's service-end on the same calendar day as `ref`.
+// Returns null if route doesn't run on that day-of-week.
+const serviceEndToday = (r, ref) => {
+  const dow = ref.getDay();
+  if (r.days === "Mon–Fri" && (dow === 0 || dow === 6)) return null;
+  if (r.days === "Fri–Sat" && !(dow === 5 || dow === 6)) return null;
+  const [, e] = r.hours.split("–");
+  const em = parseInt(e.slice(0,2))*60 + parseInt(e.slice(2));
+  const d = new Date(ref);
+  d.setHours(0, 0, 0, 0);
+  d.setMinutes(em);
+  return d;
 };
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
@@ -544,10 +562,13 @@ function prevScheduledDeparture(R, stop, before) {
 // When either is present the walk leg uses haversine instead of the 3-min
 // mock. Floor stays at 3 min for the "find the stop, board" buffer.
 function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoords) {
-  if (!from||!to||from===to) return { trips:[], filtered:[] };
+  if (!from||!to||from===to) return { trips:[], filtered:[], overnight:[] };
   const fr=STOP_ROUTES[from]||[], tr=STOP_ROUTES[to]||[];
   const candidates=[];
   const filtered=[]; // routes excluded for being out-of-service
+  // Trips dropped because a bus leg lands after that route's service-end today
+  // (or before service-start, in arrive mode). Each entry: { type, routes:[], strandedLeg }
+  const overnight=[];
 
   const originWalk = walkMinutes(fBldg, from, fCoords);
   const destWalk = walkMinutes(tBldg, to, tCoords);
@@ -592,22 +613,46 @@ function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoords) {
   // Attach actual clock times and compute real waits from scheduled departures
   const trips=[];
   for (const trip of candidates) {
+    // Collect bus-leg route names in path order so we can describe a stranded transfer.
+    const tripBusRoutes = trip.legs.filter(l => l.k === "bus").map(l => ROUTES[l.rid].name);
+    let strandedLegIdx = -1; // 0-based index among bus legs that failed the overnight check
+
     if (mode === "arrive") {
       // Pass 1: walk backward from deadline to find latest viable departAt
       let t = new Date(refTime);
       let ok = true;
+      let busLegSeen = 0;
       for (let i = trip.legs.length - 1; i >= 0; i--) {
         const leg = trip.legs[i];
         if (leg.k === "walk" || leg.k === "xfer") {
           t = subMin(t, leg.dur);
         } else if (leg.k === "bus") {
+          const R = ROUTES[leg.rid];
           const latestBoard = subMin(t, leg.t);
-          const sched = prevScheduledDeparture(ROUTES[leg.rid], leg.from, latestBoard);
+          const sched = prevScheduledDeparture(R, leg.from, latestBoard);
           if (!sched) { ok = false; break; }
+          // If the latest viable boarding is before today's service-start (i.e. would
+          // have happened yesterday), the deadline is unreachable today by this trip.
+          const dayStart = (() => {
+            const d = new Date(latestBoard); d.setHours(0,0,0,0); return d;
+          })();
+          if (sched < dayStart) {
+            // index counted from the end of the bus-leg list during backward pass
+            strandedLegIdx = tripBusRoutes.length - 1 - busLegSeen;
+            ok = false; break;
+          }
           t = sched;
+          busLegSeen++;
         }
       }
-      if (!ok) continue;
+      if (!ok) {
+        if (strandedLegIdx >= 0) {
+          overnight.push({
+            type: trip.type, routes: tripBusRoutes, strandedLeg: strandedLegIdx,
+          });
+        }
+        continue;
+      }
       trip.departAt = new Date(t);
       // Pass 2: replay forward from departAt to fill in real timestamps
       let f = new Date(trip.departAt);
@@ -628,19 +673,36 @@ function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoords) {
     } else {
       let t = new Date(refTime);
       trip.departAt = new Date(t);
+      let busLegSeen = 0;
+      let ok = true;
       for (const leg of trip.legs) {
         if (leg.k === "walk") {
           leg.startAt = new Date(t); t = addMin(t, leg.dur); leg.endAt = new Date(t);
         } else if (leg.k === "bus") {
           // t = moment user arrives at stop. Wait until next scheduled bus.
-          const sched = nextScheduledDeparture(ROUTES[leg.rid], leg.from, t);
+          const R = ROUTES[leg.rid];
+          const sched = nextScheduledDeparture(R, leg.from, t);
+          // Overnight gap: scheduler had to jump past today's service-end
+          // (or the route doesn't run on `t`'s day). Trip can't complete today.
+          const endToday = serviceEndToday(R, t);
+          if (!sched || !endToday || sched > endToday) {
+            strandedLegIdx = busLegSeen;
+            ok = false; break;
+          }
           leg.w = Math.max(0, Math.round((sched - t) / 60000));
           leg.boardAt = sched;
           t = addMin(sched, leg.t);
           leg.alightAt = new Date(t);
+          busLegSeen++;
         } else if (leg.k === "xfer") {
           leg.startAt = new Date(t); t = addMin(t, leg.dur); leg.endAt = new Date(t);
         }
+      }
+      if (!ok) {
+        overnight.push({
+          type: trip.type, routes: tripBusRoutes, strandedLeg: strandedLegIdx,
+        });
+        continue;
       }
       trip.arriveAt = new Date(t);
     }
@@ -648,7 +710,11 @@ function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoords) {
     trips.push(trip);
   }
 
-  return { trips: trips.sort((a,b)=>a.total-b.total).slice(0,3), filtered: [...new Set(filtered)] };
+  return {
+    trips: trips.sort((a,b)=>a.total-b.total).slice(0,3),
+    filtered: [...new Set(filtered)],
+    overnight,
+  };
 }
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
@@ -1557,17 +1623,29 @@ export default function App() {
 
           {searched && (
             <div className="si">
-              {!results.trips.length ? (
-                <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:14,padding:28,textAlign:"center"}}>
-                  <div style={{fontSize:36,marginBottom:10}}>🔍</div>
-                  <div style={{fontSize:15,fontWeight:600,color:C.khaki,marginBottom:8}}>{t.noTrips}</div>
-                  <div style={{fontSize:13,color:C.oliveDim,lineHeight:1.6}}>
-                    {results.filtered.length > 0
-                      ? t.noTripsOOS(results.filtered.join(", "))
-                      : t.noTripsNoPath}
+              {!results.trips.length ? (() => {
+                const overnight = results.overnight || [];
+                const overnightDirect = overnight.filter(o => o.type === "direct");
+                const overnightXfer = overnight.filter(o => o.type === "xfer");
+                let body;
+                if (overnightDirect.length) {
+                  const names = [...new Set(overnightDirect.flatMap(o => o.routes))].join(", ");
+                  body = t.noTripsOvernightDirect(names);
+                } else if (overnightXfer.length) {
+                  body = t.noTripsOvernightXfer(overnightXfer[0].routes);
+                } else if (results.filtered.length > 0) {
+                  body = t.noTripsOOS(results.filtered.join(", "));
+                } else {
+                  body = t.noTripsNoPath;
+                }
+                return (
+                  <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:14,padding:28,textAlign:"center"}}>
+                    <div style={{fontSize:36,marginBottom:10}}>🔍</div>
+                    <div style={{fontSize:15,fontWeight:600,color:C.khaki,marginBottom:8}}>{t.noTrips}</div>
+                    <div style={{fontSize:13,color:C.oliveDim,lineHeight:1.6}}>{body}</div>
                   </div>
-                </div>
-              ) : (
+                );
+              })() : (
                 <>
                   <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>
                     {t.optionsFound(results.trips.length)}
