@@ -3,9 +3,9 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:10b65ec3-8d5d-4c31-9bbb-a0f60d793d0c",
+  "serialNumber": "urn:uuid:a18d4996-14f0-4f71-94ca-e1454dbfa52c",
   "metadata": {
-    "timestamp": "2026-05-23T14:19:39.679Z",
+    "timestamp": "2026-06-27T10:37:49.782Z",
     "tools": {
       "components": [
         {
@@ -17,7 +17,7 @@
           "type": "application",
           "name": "cyclonedx-npm",
           "group": "@cyclonedx",
-          "version": "4.2.1",
+          "version": "5.0.0",
           "author": "Jan Kowalleck",
           "description": "Create CycloneDX Software Bill of Materials (SBOM) from NPM projects.",
           "licenses": [
@@ -746,8 +746,8 @@
     {
       "type": "library",
       "name": "vite",
-      "version": "8.0.13",
-      "bom-ref": "humphreys-transit@0.0.0|vite@8.0.13",
+      "version": "8.0.16",
+      "bom-ref": "humphreys-transit@0.0.0|vite@8.0.16",
       "author": "Evan You",
       "description": "Native-ESM powered web dev build tool",
       "licenses": [
@@ -758,7 +758,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/vite@8.0.13",
+      "purl": "pkg:npm/vite@8.0.16",
       "externalReferences": [
         {
           "url": "git+https://github.com/vitejs/vite.git#packages/vite",
@@ -776,12 +776,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/vite/-/vite-8.0.13.tgz",
+          "url": "https://registry.npmjs.org/vite/-/vite-8.0.16.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "305b63058833992c66800e1101f8c8c975a919ed6800b9e38144f3cd5ed02f1fd32b10b38ed307e8577dfde54afb9160d6a368cf9540c2c98cb3f3687eb989bf"
+              "content": "87d6d73e62627213f97cb995428dcfc9a1920c4da7dda3eea26780955466d092e6b78ad8eb398f29de7d1d82382cd5bca132bbb654ecb82ee5fe6edac31f4973"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -795,6 +795,61 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/vite"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vitest",
+      "version": "4.1.9",
+      "bom-ref": "humphreys-transit@0.0.0|vitest@4.1.9",
+      "author": "Anthony Fu",
+      "description": "Next generation testing framework powered by Vite",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vitest@4.1.9",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/vitest-dev/vitest.git#packages/vitest",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://vitest.dev",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/vitest/-/vitest-4.1.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9c4dff2c4c9cd33f3bb8760b65e6ea09439a26bda176db8fa7b050e01a2c5459df96dc6002f306d3c372ad21a53e93945af476edce5f95299815336befc2fd19"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vitest"
         }
       ]
     },
@@ -912,8 +967,8 @@
       "type": "library",
       "name": "core",
       "group": "@babel",
-      "version": "7.29.0",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/core@7.29.0",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/core@7.29.7",
       "author": "The Babel Team",
       "description": "Babel compiler core.",
       "licenses": [
@@ -924,7 +979,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/core@7.29.0",
+      "purl": "pkg:npm/%40babel/core@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-core",
@@ -942,12 +997,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/core/-/core-7.29.0.tgz",
+          "url": "https://registry.npmjs.org/@babel/core/-/core-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "08639f389a968e0daa5bf31beb336c0e6faee6f150f03c577db334f73ebda7967afa61358a43f68d45f0fa3e363dfd574d8103d919e2e5ff799e961ebb030340"
+              "content": "4601c10afb636ce2b681748d04d22436811cf6aa1512d6aede18fc804a8a42e2f71d90226ca6ab585108dcb7e6e8460a90b6a53a1f1e4ab8fd6fe721f47fd504"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -968,8 +1023,8 @@
       "type": "library",
       "name": "parser",
       "group": "@babel",
-      "version": "7.29.3",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/parser@7.29.3",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/parser@7.29.7",
       "author": "The Babel Team",
       "description": "A JavaScript parser",
       "licenses": [
@@ -980,7 +1035,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/parser@7.29.3",
+      "purl": "pkg:npm/%40babel/parser@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-parser",
@@ -998,12 +1053,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/parser/-/parser-7.29.3.tgz",
+          "url": "https://registry.npmjs.org/@babel/parser/-/parser-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "6f772da50c29f8f44ebd4fdcb6d7383989783337c9516cba15983e3cc5dfce6b7ffb7f621d5174b037ea6b2f1340cdc90361143b229c159b7be635ab8908a3b0"
+              "content": "8673919e33ffd4fff31449dda1e5fe9feb7547059126226933f8ceec55b7d8a9fdaf9fac241d8958e758a382fa93bf23d79782c18dc69bfef7eb807510cc2d36"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3005,8 +3060,8 @@
     {
       "type": "library",
       "name": "tinyglobby",
-      "version": "0.2.16",
-      "bom-ref": "humphreys-transit@0.0.0|tinyglobby@0.2.16",
+      "version": "0.2.17",
+      "bom-ref": "humphreys-transit@0.0.0|tinyglobby@0.2.17",
       "author": "Superchupu",
       "description": "A fast and minimal alternative to globby and fast-glob",
       "licenses": [
@@ -3017,7 +3072,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/tinyglobby@0.2.16",
+      "purl": "pkg:npm/tinyglobby@0.2.17",
       "externalReferences": [
         {
           "url": "git+https://github.com/SuperchupuDev/tinyglobby.git",
@@ -3035,12 +3090,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.16.tgz",
+          "url": "https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.17.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "a67f7d561a0009847c9c51e1c6a8b1faebec6d78a77806ac5a6e688d7a0df311302b929ddff4eb84d9f5c01cae0f9d94c5644bcbca6efa444c9e2122e84abd66"
+              "content": "c1747f758a5ca8a99f5a911d66388a24ec023459dd0f40cc9eb5bf7188d51adb449017d581c2c51e836b963e3b9a339589cf72c8dbbae5a96c805e0d4324dada"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3502,8 +3557,8 @@
     {
       "type": "library",
       "name": "postcss",
-      "version": "8.5.14",
-      "bom-ref": "humphreys-transit@0.0.0|postcss@8.5.14",
+      "version": "8.5.15",
+      "bom-ref": "humphreys-transit@0.0.0|postcss@8.5.15",
       "author": "Andrey Sitnik",
       "description": "Tool for transforming styles with JS plugins",
       "licenses": [
@@ -3514,7 +3569,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/postcss@8.5.14",
+      "purl": "pkg:npm/postcss@8.5.15",
       "externalReferences": [
         {
           "url": "git+https://github.com/postcss/postcss.git",
@@ -3532,12 +3587,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/postcss/-/postcss-8.5.14.tgz",
+          "url": "https://registry.npmjs.org/postcss/-/postcss-8.5.15.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "4a848be3e39212d47df4b1c56508892e44f9f42e41d5a9863b53734f08fb4d3d6a0948143ba8713afce4398c43faf32b5c13375c920ace892811176a42afd99a"
+              "content": "15f47cb237787a6d93e9f6f723633000953b1d654cafdcdb6be7a799079e5857c26e6f94382ff45f80d2f17b6951333058c19b8ca60fef18df35e933c86981dc"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3557,8 +3612,8 @@
     {
       "type": "library",
       "name": "rolldown",
-      "version": "1.0.1",
-      "bom-ref": "humphreys-transit@0.0.0|rolldown@1.0.1",
+      "version": "1.0.3",
+      "bom-ref": "humphreys-transit@0.0.0|rolldown@1.0.3",
       "description": "Fast JavaScript/TypeScript bundler in Rust with Rollup-compatible API.",
       "licenses": [
         {
@@ -3568,7 +3623,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/rolldown@1.0.1",
+      "purl": "pkg:npm/rolldown@1.0.3",
       "externalReferences": [
         {
           "url": "git+https://github.com/rolldown/rolldown.git#packages/rolldown",
@@ -3586,12 +3641,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.0.1.tgz",
+          "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.0.3.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "5f42901e58cd9c491636aaa2cfdcc9ac6ba78750741e03b12d7be716908e71a773732e6aa21677b6a304520d34be7728468bd7b8add9a824fd2a79cace822715"
+              "content": "8b4d25009da4b35058afbae3363282ec172a012ee755f893dd05f5488e5a63e0051db94299a51ff4e13d75b7730ef5ba749c5b8b6642662cbdbf709cc0e897de"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3665,10 +3720,995 @@
     },
     {
       "type": "library",
+      "name": "expect",
+      "group": "@vitest",
+      "version": "4.1.9",
+      "bom-ref": "humphreys-transit@0.0.0|@vitest/expect@4.1.9",
+      "description": "Jest's expect matchers as a Chai plugin",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vitest/expect@4.1.9",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/vitest-dev/vitest.git#packages/expect",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://vitest.dev/api/expect",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@vitest/expect/-/expect-4.1.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "be5feb62c50a701af74a7427d7aebe5d1e5941c80cc770d084559d7e58bf716a4b9cb5266f166fcab259a2d2c552bca26fe2ed02b60c49327945b439ed9aab94"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vitest/expect"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mocker",
+      "group": "@vitest",
+      "version": "4.1.9",
+      "bom-ref": "humphreys-transit@0.0.0|@vitest/mocker@4.1.9",
+      "description": "Vitest module mocker implementation",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vitest/mocker@4.1.9",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/vitest-dev/vitest.git#packages/mocker",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/tree/main/packages/mocker",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@vitest/mocker/-/mocker-4.1.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "115917cc18eb3c633e70af3f00d5a006b91409f25f6f7f3f11f4d23bc87ba56bca9323e4a56c6f47b0640f633222d305eb60bdef3004a2a769522c7047f7be47"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vitest/mocker"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "estree-walker",
+          "version": "3.0.3",
+          "bom-ref": "humphreys-transit@0.0.0|@vitest/mocker@4.1.9|estree-walker@3.0.3",
+          "author": "Rich Harris",
+          "description": "Traverse an ESTree-compliant AST",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/estree-walker@3.0.3",
+          "externalReferences": [
+            {
+              "url": "git+https://github.com/Rich-Harris/estree-walker.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/Rich-Harris/estree-walker#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            },
+            {
+              "url": "https://github.com/Rich-Harris/estree-walker/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "https://registry.npmjs.org/estree-walker/-/estree-walker-3.0.3.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "ed150a7d781230c933b7a66e5e6a9aa4ebab2c63cf7e08fa97db9167b9511a896f934cb6ca871cdf92dd731282e4f419767d8332a8a8010d8da1672b4ca9a6ea"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:development",
+              "value": "true"
+            },
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/@vitest/mocker/node_modules/estree-walker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pretty-format",
+      "group": "@vitest",
+      "version": "4.1.9",
+      "bom-ref": "humphreys-transit@0.0.0|@vitest/pretty-format@4.1.9",
+      "description": "Fork of pretty-format with support for ESM",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vitest/pretty-format@4.1.9",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/vitest-dev/vitest.git#packages/pretty-format",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/tree/main/packages/pretty-format",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@vitest/pretty-format/-/pretty-format-4.1.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b348ae7e7b37888162b5d826f9847b835c21080686b57cf8e7d552f7f3eac8a0c4105818221b07390997808803b980adec37909a2653d107b6380da9e193eee4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vitest/pretty-format"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "runner",
+      "group": "@vitest",
+      "version": "4.1.9",
+      "bom-ref": "humphreys-transit@0.0.0|@vitest/runner@4.1.9",
+      "description": "Vitest test runner",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vitest/runner@4.1.9",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/vitest-dev/vitest.git#packages/runner",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://vitest.dev/api/advanced/runner",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@vitest/runner/-/runner-4.1.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2972cc0ed73ba1eef4fb79897c6acf5163deb2cc07fb7b13c40300325f031bb23c214413e175bbd7c758e480f7bcf51c9a5bb6ec270a7d8e0fde1dc8dbd48b26"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vitest/runner"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "snapshot",
+      "group": "@vitest",
+      "version": "4.1.9",
+      "bom-ref": "humphreys-transit@0.0.0|@vitest/snapshot@4.1.9",
+      "description": "Vitest snapshot manager",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vitest/snapshot@4.1.9",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/vitest-dev/vitest.git#packages/snapshot",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://vitest.dev/guide/snapshot",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@vitest/snapshot/-/snapshot-4.1.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "25ced1286341a3c676f166089b43627a3e317523c1c917fa994e7c5691d091de99874e6b96703eb708db2b91f2788187c6bcec737989812e37b8cd0264acda20"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vitest/snapshot"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "spy",
+      "group": "@vitest",
+      "version": "4.1.9",
+      "bom-ref": "humphreys-transit@0.0.0|@vitest/spy@4.1.9",
+      "description": "Lightweight Jest compatible spy implementation",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vitest/spy@4.1.9",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/vitest-dev/vitest.git#packages/spy",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://vitest.dev/api/mock",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@vitest/spy/-/spy-4.1.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7c7a6c4ba9888be3e2116faf71154e3245f5a1268f2a77b754e7254852023dc18e99f2a05cf5398806a1fb070d723db13eb08299fabdf480c67fe1288e186f84"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vitest/spy"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "utils",
+      "group": "@vitest",
+      "version": "4.1.9",
+      "bom-ref": "humphreys-transit@0.0.0|@vitest/utils@4.1.9",
+      "description": "Shared Vitest utility functions",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vitest/utils@4.1.9",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/vitest-dev/vitest.git#packages/utils",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/tree/main/packages/utils",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/vitest-dev/vitest/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@vitest/utils/-/utils-4.1.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "039d68f3298ee4fa6a95636704ff591cf5c3229b8cb532e51928cdee56b8512f8b273a143328708c0e505e59b7f497b18301ca5b85e3b3c67677774b09739eb8"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vitest/utils"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-module-lexer",
+      "version": "2.1.0",
+      "bom-ref": "humphreys-transit@0.0.0|es-module-lexer@2.1.0",
+      "author": "Guy Bedford",
+      "description": "Lexes ES modules returning their import/export metadata",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-module-lexer@2.1.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/guybedford/es-module-lexer.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/guybedford/es-module-lexer#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/guybedford/es-module-lexer/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-2.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9f6ef34d832362ed5a8f8323096cd23fb1bdafbe6eb6c6a873c9bad7078af96f093011864326dde371acb425d9dd6366485b464fdc22e7da904d6ea68534792d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-module-lexer"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "expect-type",
+      "version": "1.4.0",
+      "bom-ref": "humphreys-transit@0.0.0|expect-type@1.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/expect-type@1.4.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/mmkal/expect-type.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/mmkal/expect-type#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/mmkal/expect-type/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/expect-type/-/expect-type-1.4.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "29f61b9a9466d156cb8c4bd56bdc86c028bd188df8c6f8bb03f1d761640eeb90920f6bb731ccd4252bb05ca148c651ac801422cd5f6ae49f4d1e3e151b49fea4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/expect-type"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "magic-string",
+      "version": "0.30.21",
+      "bom-ref": "humphreys-transit@0.0.0|magic-string@0.30.21",
+      "author": "Rich Harris",
+      "description": "Modify strings, generate sourcemaps",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/magic-string@0.30.21",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/Rich-Harris/magic-string.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/Rich-Harris/magic-string#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/Rich-Harris/magic-string/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "bddd85e1853211728670b1e8abe4c4c828f1b9e49e1e7171cb28cda7cd328345d5e2f5219c37abfe5bef96a33f6ab0796d740de4adbfde88a7c82472c7c4f609"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/magic-string"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "obug",
+      "version": "2.1.3",
+      "bom-ref": "humphreys-transit@0.0.0|obug@2.1.3",
+      "author": "Kevin Deng",
+      "description": "A lightweight JavaScript debugging utility, forked from debug, featuring TypeScript and ESM support.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/obug@2.1.3",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/sxzz/obug.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/sxzz/obug#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/sxzz/obug/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/obug/-/obug-2.1.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f6688580cd8e15b6bb841fa9460bed57ce2961305aa131e886f98882246de9d448cdbc0438868d68ff9d2251acd9f345a01d127884acd09cf958555189de97ca"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/obug"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pathe",
+      "version": "2.0.3",
+      "bom-ref": "humphreys-transit@0.0.0|pathe@2.0.3",
+      "description": "Universal filesystem path utils",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/pathe@2.0.3",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/unjs/pathe.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/unjs/pathe#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/unjs/pathe/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/pathe/-/pathe-2.0.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5948c6700a8fd6041a72841ef8e049b0503b2dde03c97b9422367971cef970b1ef27b76d36c4ee8298712000f0b294be02b68051e3c22ab495b4f2c58ff17cf3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/pathe"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "std-env",
+      "version": "4.1.0",
+      "bom-ref": "humphreys-transit@0.0.0|std-env@4.1.0",
+      "description": "Runtime agnostic JS utils",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/std-env@4.1.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/unjs/std-env.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/unjs/std-env#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/unjs/std-env/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/std-env/-/std-env-4.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "46aef26dc5f646e0b9e6bf6868f5445bbff1bb7b63f2ee067816070560b272116dccc22bf3a03b7b73cf1013d3dfbb074ad297dfe4e25ff16bfc00a624b5652d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/std-env"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tinybench",
+      "version": "2.9.0",
+      "bom-ref": "humphreys-transit@0.0.0|tinybench@2.9.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tinybench@2.9.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/tinylibs/tinybench.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/tinylibs/tinybench#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/tinylibs/tinybench/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/tinybench/-/tinybench-2.9.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d3e0d4bea58c55a94b9a16ba96be240fc88030ad47cd5d3f68a9c2b566fdbfdeb8d539cffcc15becf7366f1a314234d7004aebc9756050e7efd98a8d965a867a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/tinybench"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tinyexec",
+      "version": "1.2.4",
+      "bom-ref": "humphreys-transit@0.0.0|tinyexec@1.2.4",
+      "author": "James Garbutt",
+      "description": "A minimal library for executing processes in Node",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tinyexec@1.2.4",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/tinylibs/tinyexec.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/tinylibs/tinyexec#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/tinylibs/tinyexec/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/tinyexec/-/tinyexec-1.2.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4877ffaf8f1beef3ab8ef7bd3f1268dcc379bf9caeca31ef75472b41f7d3dd65cc51f9c69870d56c2e24dec1c96894e0642c29529948680a3900db4cca9dd81e"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/tinyexec"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tinyrainbow",
+      "version": "3.1.0",
+      "bom-ref": "humphreys-transit@0.0.0|tinyrainbow@3.1.0",
+      "description": "A small library to print colourful messages.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tinyrainbow@3.1.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/tinylibs/tinyrainbow.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/tinylibs/tinyrainbow#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/tinylibs/tinyrainbow/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/tinyrainbow/-/tinyrainbow-3.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "05ff882e6060adeb54add271cd73344a05cb6775df89a52e3a3fc82901ee4d78a9fb4e579febb21187558349180e2a5305c2eb095c94cc03f3ed0980adbd269b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/tinyrainbow"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "why-is-node-running",
+      "version": "2.3.0",
+      "bom-ref": "humphreys-transit@0.0.0|why-is-node-running@2.3.0",
+      "author": "Mathias Buus",
+      "description": "Node is running but you don't know why? why-is-node-running is here to help you.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/why-is-node-running@2.3.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/mafintosh/why-is-node-running.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/mafintosh/why-is-node-running",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/mafintosh/why-is-node-running/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/why-is-node-running/-/why-is-node-running-2.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "854ae669605d543731bd8aa7ca1d3dcee9cacd13968db65388dcbc741123912ede8440d089b5c9ed7be59ad6f0b9372552223237e0b25d00f8566928f1f366f3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/why-is-node-running"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "code-frame",
       "group": "@babel",
-      "version": "7.29.0",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/code-frame@7.29.0",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/code-frame@7.29.7",
       "author": "The Babel Team",
       "description": "Generate errors that contain a code frame that point to source locations.",
       "licenses": [
@@ -3679,7 +4719,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/code-frame@7.29.0",
+      "purl": "pkg:npm/%40babel/code-frame@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-code-frame",
@@ -3697,12 +4737,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.29.0.tgz",
+          "url": "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "f4d8427988eaf7edeec6076da76d0b4a225726f37415e0ad346a49c6e3056752afddc59435be833a127052f7150b328647ae9cc389e3c0cea1ac92ea80ec1b73"
+              "content": "02ea7b69439fa5b01483644e38937a230e5ff43301973bb4988926fe66a52d014dfd84203b8f300a3d0ac5adec10726f3d5160eec891faa4489f05dddaa8502b"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3723,8 +4763,8 @@
       "type": "library",
       "name": "generator",
       "group": "@babel",
-      "version": "7.29.1",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/generator@7.29.1",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/generator@7.29.7",
       "author": "The Babel Team",
       "description": "Turns an AST into code.",
       "licenses": [
@@ -3735,7 +4775,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/generator@7.29.1",
+      "purl": "pkg:npm/%40babel/generator@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-generator",
@@ -3753,12 +4793,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/generator/-/generator-7.29.1.tgz",
+          "url": "https://registry.npmjs.org/@babel/generator/-/generator-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "aac685fbd41c9b642ff1244830cb1c02f1b83b7949d05d46b8ca391d1fc1a74d8ba293609d9042fc491b7af1c5786b3896cfe83f3f6ff81b26cdb91b7bed1d53"
+              "content": "0e45c3e4e250680408759d5bb775197449c7027f4899ddc8541757d375057bea27cbd3a3c39a73afd6152860d8d63b7e19c9ff1671a435ff2bf958f934e256b5"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3779,8 +4819,8 @@
       "type": "library",
       "name": "helper-compilation-targets",
       "group": "@babel",
-      "version": "7.28.6",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.28.6",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.29.7",
       "author": "The Babel Team",
       "description": "Helper functions on Babel compilation targets",
       "licenses": [
@@ -3791,7 +4831,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/helper-compilation-targets@7.28.6",
+      "purl": "pkg:npm/%40babel/helper-compilation-targets@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-helper-compilation-targets",
@@ -3809,12 +4849,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/helper-compilation-targets/-/helper-compilation-targets-7.28.6.tgz",
+          "url": "https://registry.npmjs.org/@babel/helper-compilation-targets/-/helper-compilation-targets-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "258b65b3786a8b5e5f731e4669234bed209327630d9a3ae41d7838152a4e03f82bc4af0ac326796ee6c7b02abc1570a4b9aeb186e69a062b7eddbefe55945f70"
+              "content": "c1e9ba59a063e0d69561574d84b3cf55a7044ba649f8a0417d2913303dd86716cfdeb9b70e2f39b4953996369436168eca7b7e023d31aee858bb3401b7c9fbd6"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3835,8 +4875,8 @@
       "type": "library",
       "name": "helper-module-transforms",
       "group": "@babel",
-      "version": "7.28.6",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.28.6",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.29.7",
       "author": "The Babel Team",
       "description": "Babel helper functions for implementing ES6 module transformations",
       "licenses": [
@@ -3847,7 +4887,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/helper-module-transforms@7.28.6",
+      "purl": "pkg:npm/%40babel/helper-module-transforms@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-helper-module-transforms",
@@ -3865,12 +4905,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/helper-module-transforms/-/helper-module-transforms-7.28.6.tgz",
+          "url": "https://registry.npmjs.org/@babel/helper-module-transforms/-/helper-module-transforms-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "ebba1714062bd9c0cb0d518b5d3100063741259e9dac4954488ed62a9ef436ba72212b28de9946f52006105eb2ef36e16bfc0ecd40725964c9bc40d534850670"
+              "content": "50f5154b25db3a1eb6eca8822064128305b319e04a2e4689f4f24476b9e0230312cf12d1e234b8f9fd5fd636fb57305b83c9c52da628b6f54f1424ea76b99302"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3891,8 +4931,8 @@
       "type": "library",
       "name": "helpers",
       "group": "@babel",
-      "version": "7.29.2",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/helpers@7.29.2",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/helpers@7.29.7",
       "author": "The Babel Team",
       "description": "Collection of helper functions used by Babel transforms.",
       "licenses": [
@@ -3903,7 +4943,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/helpers@7.29.2",
+      "purl": "pkg:npm/%40babel/helpers@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-helpers",
@@ -3921,12 +4961,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/helpers/-/helpers-7.29.2.tgz",
+          "url": "https://registry.npmjs.org/@babel/helpers/-/helpers-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "1e81ae52ce2c09935ecd510a755730aa664df06a078ab2d470b69854d04ad89d0369d1ad75caa0af70426ef1fcf97528e0d1a3365dd53ad4a310a373a9f1602b"
+              "content": "d64da500644c7c74dcc2e35870235499a51f7e642ff0a58c7e1da225451e465c25c07e0574d1bb99f3c8d7434f7cb1c9153844e13cabe26bfb9133593a23ee06"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3947,8 +4987,8 @@
       "type": "library",
       "name": "template",
       "group": "@babel",
-      "version": "7.28.6",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/template@7.28.6",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/template@7.29.7",
       "author": "The Babel Team",
       "description": "Generate an AST from a string template.",
       "licenses": [
@@ -3959,7 +4999,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/template@7.28.6",
+      "purl": "pkg:npm/%40babel/template@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-template",
@@ -3977,12 +5017,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/template/-/template-7.28.6.tgz",
+          "url": "https://registry.npmjs.org/@babel/template/-/template-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "600e8c6b62ac09d19bf960ba5290551491972f9f0c0c0ea8c8e35b8f217ffb9b0183163f7709212e881b313d865d7c94f38fc8851c3fd83d4eb3507f822cfe05"
+              "content": "a6eabe19fdf9a08db815e375d4b92851016abfdbb035e5a9c57662fc98b7ad1228280cca9f145a67e1a48f4bca4bd6428931127e783537d2f23b25efa3e9be1a"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -4003,8 +5043,8 @@
       "type": "library",
       "name": "traverse",
       "group": "@babel",
-      "version": "7.29.0",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/traverse@7.29.0",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/traverse@7.29.7",
       "author": "The Babel Team",
       "description": "The Babel Traverse module maintains the overall tree state, and is responsible for replacing, removing, and adding nodes",
       "licenses": [
@@ -4015,7 +5055,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/traverse@7.29.0",
+      "purl": "pkg:npm/%40babel/traverse@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-traverse",
@@ -4033,12 +5073,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/traverse/-/traverse-7.29.0.tgz",
+          "url": "https://registry.npmjs.org/@babel/traverse/-/traverse-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "e073e242bd17efec1a1dfc973d9a563df58bfc9edd70dd66c7d80be9675054c6cf9c5dfe66148cb3cb42c4dee81dd74913d7e1344efe9717679727a629f251b8"
+              "content": "12195f350b59f8d2b6db0e4133ad5c8ae8aad66e7c79ddf75abd576a7fff6514f2ea18239f0c827df458c33b065dd012252509d60b9920bb04ae1d5e41c97ecf"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -4059,8 +5099,8 @@
       "type": "library",
       "name": "types",
       "group": "@babel",
-      "version": "7.29.0",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/types@7.29.0",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/types@7.29.7",
       "author": "The Babel Team",
       "description": "Babel Types is a Lodash-esque utility library for AST nodes",
       "licenses": [
@@ -4071,7 +5111,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/types@7.29.0",
+      "purl": "pkg:npm/%40babel/types@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-types",
@@ -4089,12 +5129,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/types/-/types-7.29.0.tgz",
+          "url": "https://registry.npmjs.org/@babel/types/-/types-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "2f07591e949c338433f17c3688a4b34be71f825673246be87d0202cbb5bbbf871aaeee046809b252e3ba046adbc90da6615d755b453c8f998185dd7875ddc1d0"
+              "content": "e33048c693f3a30899a6eb28164c865706a4751254cae1f93f143f3ebaa085f7455966acbe709d3df4171eb7a70da8be8322c046e9598d9a3008e8fa7e34f8a4"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -7915,8 +8955,8 @@
     {
       "type": "library",
       "name": "nanoid",
-      "version": "3.3.12",
-      "bom-ref": "humphreys-transit@0.0.0|nanoid@3.3.12",
+      "version": "3.3.13",
+      "bom-ref": "humphreys-transit@0.0.0|nanoid@3.3.13",
       "author": "Andrey Sitnik",
       "description": "A tiny (116 bytes), secure URL-friendly unique string ID generator",
       "licenses": [
@@ -7927,7 +8967,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/nanoid@3.3.12",
+      "purl": "pkg:npm/nanoid@3.3.13",
       "externalReferences": [
         {
           "url": "git+https://github.com/ai/nanoid.git",
@@ -7945,12 +8985,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.12.tgz",
+          "url": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.13.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "641f511ffdfdaa9ab956ee98f8d99468585047aa69f8cd97b7be970671300da19c540aa196fc6b9770766ca4b90f7347dd047beafdda4ab29a17f2a2cbb944b5"
+              "content": "b0f76a0ba072315546bc5d729efbcca34fe8fa80f5557ec36878628edd5b1608ef0641c189be2de3d1a834385fd8d0ed6b8a1e50d95a19b4ade4aeea8d9f79e5"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -8081,8 +9121,8 @@
       "type": "library",
       "name": "types",
       "group": "@oxc-project",
-      "version": "0.130.0",
-      "bom-ref": "humphreys-transit@0.0.0|@oxc-project/types@0.130.0",
+      "version": "0.133.0",
+      "bom-ref": "humphreys-transit@0.0.0|@oxc-project/types@0.133.0",
       "author": "Boshen and oxc contributors",
       "description": "Types for Oxc AST nodes",
       "licenses": [
@@ -8093,7 +9133,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40oxc-project/types@0.130.0",
+      "purl": "pkg:npm/%40oxc-project/types@0.133.0",
       "externalReferences": [
         {
           "url": "git+https://github.com/oxc-project/oxc.git#npm/oxc-types",
@@ -8111,12 +9151,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.130.0.tgz",
+          "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.133.0.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "89b0f6bacc7d251bbb7f9a6edad30a308e1ca40e0d817250a1844fe2943b3f19a7d65ea4ff9dea5ad41665aca1632dd7e10664b7dd0eb7e98911a797a2e8a8e9"
+              "content": "2b391d09de94c6a9dfea5dc73b0d717dab40954511034835e1cbc1605c89e5268d3906ce52f06bf4f280adc3dcacd21e46c05d81c533386ae12af795a6f38818"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -8137,8 +9177,8 @@
       "type": "library",
       "name": "binding-linux-x64-gnu",
       "group": "@rolldown",
-      "version": "1.0.1",
-      "bom-ref": "humphreys-transit@0.0.0|@rolldown/binding-linux-x64-gnu@1.0.1",
+      "version": "1.0.3",
+      "bom-ref": "humphreys-transit@0.0.0|@rolldown/binding-linux-x64-gnu@1.0.3",
       "description": "Fast JavaScript/TypeScript bundler in Rust with Rollup-compatible API.",
       "scope": "optional",
       "licenses": [
@@ -8149,7 +9189,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40rolldown/binding-linux-x64-gnu@1.0.1",
+      "purl": "pkg:npm/%40rolldown/binding-linux-x64-gnu@1.0.3",
       "externalReferences": [
         {
           "url": "git+https://github.com/rolldown/rolldown.git#packages/rolldown",
@@ -8167,12 +9207,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.0.1.tgz",
+          "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.0.3.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "5c0055986a7d4e0d16b294d5bf076e4dce1fa6acba267014ad241ee8ebb2a83ff4de723baf43bd396524308c05ae328022aa25beaa00e19ac9a698301341b19b"
+              "content": "07c9bab43e7efcde4578d4056ca94b03fdb256af727103f549e79dc8461829604d4776506e4bc851c3670cd334de53b5979176ae88a21491a0be82cbc995ed4a"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -8413,10 +9453,342 @@
     },
     {
       "type": "library",
+      "name": "spec",
+      "group": "@standard-schema",
+      "version": "1.1.0",
+      "bom-ref": "humphreys-transit@0.0.0|@standard-schema/spec@1.1.0",
+      "author": "Colin McDonnell",
+      "description": "A family of specs for interoperable TypeScript",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40standard-schema/spec@1.1.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/standard-schema/standard-schema.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://standardschema.dev",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/standard-schema/standard-schema/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@standard-schema/spec/-/spec-1.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "976685cb98c02e19e21b91e0aab0fa8d72e2feb516acabea37fa89c7aca826c80a85b95577e8aaa94e110976af9bf8cf8adc83a394c2bca327a632a73ab8b2d3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@standard-schema/spec"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chai",
+      "group": "@types",
+      "version": "5.2.3",
+      "bom-ref": "humphreys-transit@0.0.0|@types/chai@5.2.3",
+      "description": "TypeScript definitions for chai",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/chai@5.2.3",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git#types/chai",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/chai",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@types/chai/-/chai-5.2.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "330e79f28780f5f15bbfae7fcb8987b570ecf5b3e714c6402ff8f174f154a4e1c72175fdd667201076d2e4b6a1afea7064547c03b19095e456788e9c1850b650"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@types/chai"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chai",
+      "version": "6.2.2",
+      "bom-ref": "humphreys-transit@0.0.0|chai@6.2.2",
+      "author": "Jake Luer",
+      "description": "BDD/TDD assertion library for node.js and the browser. Test framework agnostic.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/chai@6.2.2",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/chaijs/chai.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "http://chaijs.com",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/chaijs/chai/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/chai/-/chai-6.2.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3543d196e39f3a24ca04abd63ed483e0f845bd60aa3a2d01192b4d5ace7b5fd8eced7193a6b4a6168cf9174b56851e163e335e47d8d7a9d0bbfd4a522539e546"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/chai"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sourcemap-codec",
+      "group": "@jridgewell",
+      "version": "1.5.5",
+      "bom-ref": "humphreys-transit@0.0.0|@jridgewell/sourcemap-codec@1.5.5",
+      "author": "Justin Ridgewell",
+      "description": "Encode/decode sourcemap mappings",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/sourcemap-codec@1.5.5",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/jridgewell/sourcemaps.git#packages/sourcemap-codec",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/jridgewell/sourcemaps/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "71843ddf5d20aeac6e7966e5f96b885086a251a0dc8fb58eab97d58449633558117ce52163d7f2db34ef7e8a96b2779b87c4a5ef45527056c80af2672ca0743a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jridgewell/sourcemap-codec"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "siginfo",
+      "version": "2.0.0",
+      "bom-ref": "humphreys-transit@0.0.0|siginfo@2.0.0",
+      "author": "Emil Bay",
+      "description": "Utility module to print pretty messages on SIGINFO/SIGUSR1",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/siginfo@2.0.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/emilbayes/siginfo.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/emilbayes/siginfo#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/emilbayes/siginfo/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/siginfo/-/siginfo-2.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "c9bc7458ed7ff1b4812c459766f11dee0316dd29f7245956dd3bd7d674446c32d135035a78d37c58ad26781c0f74068e23b4ed4514499ff12cd7386bac21eeee"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/siginfo"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "stackback",
+      "version": "0.0.2",
+      "bom-ref": "humphreys-transit@0.0.0|stackback@0.0.2",
+      "author": "Roman Shtylman",
+      "description": "return list of CallSite objects from a captured stacktrace",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/stackback@0.0.2",
+      "externalReferences": [
+        {
+          "url": "git://github.com/shtylman/node-stackback.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/shtylman/node-stackback#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/shtylman/node-stackback/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/stackback/-/stackback-0.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d573091397d0a358c61fa63fede6e7c0f3811242049d3e10177d9de51d7e557757bde334201309b7ccdf6b15f53f7421570ad87bee7bebe8e400db524b69816f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/stackback"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "helper-validator-identifier",
       "group": "@babel",
-      "version": "7.28.5",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.28.5",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.29.7",
       "author": "The Babel Team",
       "description": "Validate identifier/keywords name",
       "licenses": [
@@ -8427,7 +9799,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/helper-validator-identifier@7.28.5",
+      "purl": "pkg:npm/%40babel/helper-validator-identifier@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-helper-validator-identifier",
@@ -8445,12 +9817,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.28.5.tgz",
+          "url": "https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "a92b3889fc33289495dfdb9c363b2f73a5951ece9bed2d37b0e87639c1c5f541df54fa965802d4b0d515ce1481888b63459a0b1f1ee721aad58ea295bac519d5"
+              "content": "a9e8711a4463e7987f7dff0431a27e71887268a947231a980e7ebcdb0403ed1369f54ba3390b07a20dae4b4af6bf3af8a56fac5dff7435e79aca370d697ddf16"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -8693,8 +10065,8 @@
       "type": "library",
       "name": "compat-data",
       "group": "@babel",
-      "version": "7.29.3",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/compat-data@7.29.3",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/compat-data@7.29.7",
       "author": "The Babel Team",
       "description": "The compat-data to determine required Babel plugins",
       "licenses": [
@@ -8705,7 +10077,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/compat-data@7.29.3",
+      "purl": "pkg:npm/%40babel/compat-data@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-compat-data",
@@ -8723,12 +10095,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/compat-data/-/compat-data-7.29.3.tgz",
+          "url": "https://registry.npmjs.org/@babel/compat-data/-/compat-data-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "2c856a338eb34166618f5eea03cc1be275bf8b1af6cb5370fabd5eb6201681133a53522a3fe2cd84bd72838e348d8651ef68c259c59b2d6cc8a2c1feb8fd5faa"
+              "content": "968713910c8abf0204801cd5ae7f3af7779b73dec5d94f191e36d7c035c9e459f64c2a4dc1394a71a28b91d1e8a7973f89c38513baaded0f490b986728d6ba1a"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -8749,8 +10121,8 @@
       "type": "library",
       "name": "helper-validator-option",
       "group": "@babel",
-      "version": "7.27.1",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-validator-option@7.27.1",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-validator-option@7.29.7",
       "author": "The Babel Team",
       "description": "Validate plugin/preset options",
       "licenses": [
@@ -8761,7 +10133,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/helper-validator-option@7.27.1",
+      "purl": "pkg:npm/%40babel/helper-validator-option@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-helper-validator-option",
@@ -8779,12 +10151,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/helper-validator-option/-/helper-validator-option-7.27.1.tgz",
+          "url": "https://registry.npmjs.org/@babel/helper-validator-option/-/helper-validator-option-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "62f8c9a30f45c5b84514a0d2b859d509ed96c57935cd6736d9f15e3d5344696244bbc22b65595d6ba374b87c3366b50cd6297b342f4c969e0c68961b61df494a"
+              "content": "37d644aeb0fec96e607820ed06a9cea31991f3eb4d2a21aec4a943a6e2717ecaa96b674571ec5ace218013faa81cb8830eb79534cba9c46992a0d972bec03783"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -8915,8 +10287,8 @@
       "type": "library",
       "name": "helper-module-imports",
       "group": "@babel",
-      "version": "7.28.6",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-module-imports@7.28.6",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-module-imports@7.29.7",
       "author": "The Babel Team",
       "description": "Babel helper functions for inserting module loads",
       "licenses": [
@@ -8927,7 +10299,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/helper-module-imports@7.28.6",
+      "purl": "pkg:npm/%40babel/helper-module-imports@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-helper-module-imports",
@@ -8945,12 +10317,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/helper-module-imports/-/helper-module-imports-7.28.6.tgz",
+          "url": "https://registry.npmjs.org/@babel/helper-module-imports/-/helper-module-imports-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "9795e464aeebef06bd2ee706c3d2f0672c8252c71be31dfb2564cfcfbb30c0513fd05310006a62594667f2ef43ce448158470adb98e6bee6dfa70d9d9c031d6f"
+              "content": "7a31f0ad0418726f719d38af4a19f62033a5233227377e005ec92fabd42272f0ad133ab5573725bbfb4a17c26ad4283c246d862fafc49a382c093ee55dea44de"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -8971,8 +10343,8 @@
       "type": "library",
       "name": "helper-globals",
       "group": "@babel",
-      "version": "7.28.0",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-globals@7.28.0",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-globals@7.29.7",
       "author": "The Babel Team",
       "description": "A collection of JavaScript globals for Babel internal usage",
       "licenses": [
@@ -8983,7 +10355,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/helper-globals@7.28.0",
+      "purl": "pkg:npm/%40babel/helper-globals@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-helper-globals",
@@ -9001,12 +10373,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/helper-globals/-/helper-globals-7.28.0.tgz",
+          "url": "https://registry.npmjs.org/@babel/helper-globals/-/helper-globals-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "f96e9c21291715ad635ec0c475803c1de7af413fc550b871cd1f7da71a6196d65c55aba0a6ce774c709e89603c4a0bb1c694a9de028f8ae61f496a2990b43887"
+              "content": "de7415500b6f90a1fdcda85f5a0c3de8973fb853a68c0084d64433f3613696a5a61c1823cdb365b02db69ee4137da86659e42d4eae6743fe0d9ddd80d708f8cc"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -9027,8 +10399,8 @@
       "type": "library",
       "name": "helper-string-parser",
       "group": "@babel",
-      "version": "7.27.1",
-      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-string-parser@7.27.1",
+      "version": "7.29.7",
+      "bom-ref": "humphreys-transit@0.0.0|@babel/helper-string-parser@7.29.7",
       "author": "The Babel Team",
       "description": "A utility package to parse strings",
       "licenses": [
@@ -9039,7 +10411,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40babel/helper-string-parser@7.27.1",
+      "purl": "pkg:npm/%40babel/helper-string-parser@7.29.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/babel/babel.git#packages/babel-helper-string-parser",
@@ -9057,12 +10429,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.27.1.tgz",
+          "url": "https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.29.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "a8c952c4a6e946502b89d0c4c64f769d2a1bc837693e28d4ab60d6ea80e752a77488e1b19908f2aa13088a123dfb3bf82cfc997518ded9c6af58f6c26d69b778"
+              "content": "3dbe628cfad9f3d1831fcdb6dcbe143fc8ba400a56c6cd3845b3d02537960d5d3f91e476137e8c78a9f2afa2d899452fa91448f88bfced2b85d56e84ac837363"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -13594,61 +14966,6 @@
     },
     {
       "type": "library",
-      "name": "magic-string",
-      "version": "0.30.21",
-      "bom-ref": "humphreys-transit@0.0.0|magic-string@0.30.21",
-      "author": "Rich Harris",
-      "description": "Modify strings, generate sourcemaps",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/magic-string@0.30.21",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/Rich-Harris/magic-string.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/Rich-Harris/magic-string#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/Rich-Harris/magic-string/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "bddd85e1853211728670b1e8abe4c4c828f1b9e49e1e7171cb28cda7cd328345d5e2f5219c37abfe5bef96a33f6ab0796d740de4adbfde88a7c82472c7c4f609"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/magic-string"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "serialize-javascript",
       "version": "7.0.5",
       "bom-ref": "humphreys-transit@0.0.0|serialize-javascript@7.0.5",
@@ -15133,12 +16450,11 @@
     },
     {
       "type": "library",
-      "name": "sourcemap-codec",
-      "group": "@jridgewell",
-      "version": "1.5.5",
-      "bom-ref": "humphreys-transit@0.0.0|@jridgewell/sourcemap-codec@1.5.5",
-      "author": "Justin Ridgewell",
-      "description": "Encode/decode sourcemap mappings",
+      "name": "deep-eql",
+      "group": "@types",
+      "version": "4.0.2",
+      "bom-ref": "humphreys-transit@0.0.0|@types/deep-eql@4.0.2",
+      "description": "TypeScript definitions for deep-eql",
       "licenses": [
         {
           "license": {
@@ -15147,30 +16463,30 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40jridgewell/sourcemap-codec@1.5.5",
+      "purl": "pkg:npm/%40types/deep-eql@4.0.2",
       "externalReferences": [
         {
-          "url": "git+https://github.com/jridgewell/sourcemaps.git#packages/sourcemap-codec",
+          "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git#types/deep-eql",
           "type": "vcs",
           "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
         },
         {
-          "url": "https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec",
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/deep-eql",
           "type": "website",
           "comment": "as detected from PackageJson property \"homepage\""
         },
         {
-          "url": "https://github.com/jridgewell/sourcemaps/issues",
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues",
           "type": "issue-tracker",
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz",
+          "url": "https://registry.npmjs.org/@types/deep-eql/-/deep-eql-4.0.2.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "71843ddf5d20aeac6e7966e5f96b885086a251a0dc8fb58eab97d58449633558117ce52163d7f2db34ef7e8a96b2779b87c4a5ef45527056c80af2672ca0743a"
+              "content": "73d87d75554c8a030f7386f04ef0b9771aada8967040f78fb168cf96948e9e88dba2bea91aa764e78d657c0ec0a8542be6907505176ad23b98f5d6fcd41c3217"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -15183,7 +16499,62 @@
         },
         {
           "name": "cdx:npm:package:path",
-          "value": "node_modules/@jridgewell/sourcemap-codec"
+          "value": "node_modules/@types/deep-eql"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "assertion-error",
+      "version": "2.0.1",
+      "bom-ref": "humphreys-transit@0.0.0|assertion-error@2.0.1",
+      "author": "Jake Luer",
+      "description": "Error constructor for test and validation frameworks that implements standardized AssertionError specification.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/assertion-error@2.0.1",
+      "externalReferences": [
+        {
+          "url": "git+ssh://git@github.com/chaijs/assertion-error.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/chaijs/assertion-error#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/chaijs/assertion-error/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/assertion-error/-/assertion-error-2.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2338bc45071f7ea09e3558058a02a58b5b2c92521ba479c261ce809275c662807a82b26ac9e6f2ee3bf5d895108264c09c80e76dc935bb192c4f87733773d604"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/assertion-error"
         }
       ]
     },
@@ -22694,7 +24065,8 @@
         "humphreys-transit@0.0.0|react-dom@19.2.6",
         "humphreys-transit@0.0.0|react@19.2.6",
         "humphreys-transit@0.0.0|vite-plugin-pwa@1.3.0",
-        "humphreys-transit@0.0.0|vite@8.0.13"
+        "humphreys-transit@0.0.0|vite@8.0.16",
+        "humphreys-transit@0.0.0|vitest@4.1.9"
       ]
     },
     {
@@ -22719,14 +24091,14 @@
       "ref": "humphreys-transit@0.0.0|@vitejs/plugin-react@6.0.2",
       "dependsOn": [
         "humphreys-transit@0.0.0|@rolldown/pluginutils@1.0.1",
-        "humphreys-transit@0.0.0|vite@8.0.13"
+        "humphreys-transit@0.0.0|vite@8.0.16"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|eslint-plugin-react-hooks@7.1.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/parser@7.29.3",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/parser@7.29.7",
         "humphreys-transit@0.0.0|eslint@10.4.0",
         "humphreys-transit@0.0.0|hermes-parser@0.25.1",
         "humphreys-transit@0.0.0|zod-validation-error@4.0.2",
@@ -22795,21 +24167,46 @@
       "dependsOn": [
         "humphreys-transit@0.0.0|debug@4.4.3",
         "humphreys-transit@0.0.0|pretty-bytes@6.1.1",
-        "humphreys-transit@0.0.0|tinyglobby@0.2.16",
-        "humphreys-transit@0.0.0|vite@8.0.13",
+        "humphreys-transit@0.0.0|tinyglobby@0.2.17",
+        "humphreys-transit@0.0.0|vite@8.0.16",
         "humphreys-transit@0.0.0|workbox-build@7.4.1",
         "humphreys-transit@0.0.0|workbox-window@7.4.1"
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|vite@8.0.13",
+      "ref": "humphreys-transit@0.0.0|vite@8.0.16",
       "dependsOn": [
         "humphreys-transit@0.0.0|lightningcss@1.32.0",
         "humphreys-transit@0.0.0|picomatch@4.0.4",
-        "humphreys-transit@0.0.0|postcss@8.5.14",
-        "humphreys-transit@0.0.0|rolldown@1.0.1",
+        "humphreys-transit@0.0.0|postcss@8.5.15",
+        "humphreys-transit@0.0.0|rolldown@1.0.3",
         "humphreys-transit@0.0.0|terser@5.47.1",
-        "humphreys-transit@0.0.0|tinyglobby@0.2.16"
+        "humphreys-transit@0.0.0|tinyglobby@0.2.17"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|vitest@4.1.9",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|@vitest/expect@4.1.9",
+        "humphreys-transit@0.0.0|@vitest/mocker@4.1.9",
+        "humphreys-transit@0.0.0|@vitest/pretty-format@4.1.9",
+        "humphreys-transit@0.0.0|@vitest/runner@4.1.9",
+        "humphreys-transit@0.0.0|@vitest/snapshot@4.1.9",
+        "humphreys-transit@0.0.0|@vitest/spy@4.1.9",
+        "humphreys-transit@0.0.0|@vitest/utils@4.1.9",
+        "humphreys-transit@0.0.0|es-module-lexer@2.1.0",
+        "humphreys-transit@0.0.0|expect-type@1.4.0",
+        "humphreys-transit@0.0.0|magic-string@0.30.21",
+        "humphreys-transit@0.0.0|obug@2.1.3",
+        "humphreys-transit@0.0.0|pathe@2.0.3",
+        "humphreys-transit@0.0.0|picomatch@4.0.4",
+        "humphreys-transit@0.0.0|std-env@4.1.0",
+        "humphreys-transit@0.0.0|tinybench@2.9.0",
+        "humphreys-transit@0.0.0|tinyexec@1.2.4",
+        "humphreys-transit@0.0.0|tinyglobby@0.2.17",
+        "humphreys-transit@0.0.0|tinyrainbow@3.1.0",
+        "humphreys-transit@0.0.0|vite@8.0.16",
+        "humphreys-transit@0.0.0|why-is-node-running@2.3.0"
       ]
     },
     {
@@ -22819,17 +24216,17 @@
       "ref": "humphreys-transit@0.0.0|@rolldown/pluginutils@1.0.1"
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/core@7.29.0",
+      "ref": "humphreys-transit@0.0.0|@babel/core@7.29.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/code-frame@7.29.0",
-        "humphreys-transit@0.0.0|@babel/generator@7.29.1",
-        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.28.6",
-        "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.28.6",
-        "humphreys-transit@0.0.0|@babel/helpers@7.29.2",
-        "humphreys-transit@0.0.0|@babel/parser@7.29.3",
-        "humphreys-transit@0.0.0|@babel/template@7.28.6",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0",
-        "humphreys-transit@0.0.0|@babel/types@7.29.0",
+        "humphreys-transit@0.0.0|@babel/code-frame@7.29.7",
+        "humphreys-transit@0.0.0|@babel/generator@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helpers@7.29.7",
+        "humphreys-transit@0.0.0|@babel/parser@7.29.7",
+        "humphreys-transit@0.0.0|@babel/template@7.29.7",
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7",
+        "humphreys-transit@0.0.0|@babel/types@7.29.7",
         "humphreys-transit@0.0.0|@jridgewell/remapping@2.3.5",
         "humphreys-transit@0.0.0|convert-source-map@2.0.0",
         "humphreys-transit@0.0.0|debug@4.4.3",
@@ -22839,9 +24236,9 @@
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/parser@7.29.3",
+      "ref": "humphreys-transit@0.0.0|@babel/parser@7.29.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/types@7.29.0"
+        "humphreys-transit@0.0.0|@babel/types@7.29.7"
       ]
     },
     {
@@ -23035,7 +24432,7 @@
       "ref": "humphreys-transit@0.0.0|pretty-bytes@6.1.1"
     },
     {
-      "ref": "humphreys-transit@0.0.0|tinyglobby@0.2.16",
+      "ref": "humphreys-transit@0.0.0|tinyglobby@0.2.17",
       "dependsOn": [
         "humphreys-transit@0.0.0|fdir@6.5.0",
         "humphreys-transit@0.0.0|picomatch@4.0.4"
@@ -23045,7 +24442,7 @@
       "ref": "humphreys-transit@0.0.0|workbox-build@7.4.1",
       "dependsOn": [
         "humphreys-transit@0.0.0|workbox-build@7.4.1|@apideck/better-ajv-errors@0.3.7",
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/preset-env@7.29.5",
         "humphreys-transit@0.0.0|@babel/runtime@7.29.2",
         "humphreys-transit@0.0.0|@rollup/plugin-babel@6.1.0",
@@ -23124,18 +24521,18 @@
       "ref": "humphreys-transit@0.0.0|picomatch@4.0.4"
     },
     {
-      "ref": "humphreys-transit@0.0.0|postcss@8.5.14",
+      "ref": "humphreys-transit@0.0.0|postcss@8.5.15",
       "dependsOn": [
-        "humphreys-transit@0.0.0|nanoid@3.3.12",
+        "humphreys-transit@0.0.0|nanoid@3.3.13",
         "humphreys-transit@0.0.0|picocolors@1.1.1",
         "humphreys-transit@0.0.0|source-map-js@1.2.1"
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|rolldown@1.0.1",
+      "ref": "humphreys-transit@0.0.0|rolldown@1.0.3",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@oxc-project/types@0.130.0",
-        "humphreys-transit@0.0.0|@rolldown/binding-linux-x64-gnu@1.0.1",
+        "humphreys-transit@0.0.0|@oxc-project/types@0.133.0",
+        "humphreys-transit@0.0.0|@rolldown/binding-linux-x64-gnu@1.0.3",
         "humphreys-transit@0.0.0|@rolldown/pluginutils@1.0.1"
       ]
     },
@@ -23149,74 +24546,170 @@
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/code-frame@7.29.0",
+      "ref": "humphreys-transit@0.0.0|@vitest/expect@4.1.9",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.28.5",
+        "humphreys-transit@0.0.0|@standard-schema/spec@1.1.0",
+        "humphreys-transit@0.0.0|@types/chai@5.2.3",
+        "humphreys-transit@0.0.0|@vitest/spy@4.1.9",
+        "humphreys-transit@0.0.0|@vitest/utils@4.1.9",
+        "humphreys-transit@0.0.0|chai@6.2.2",
+        "humphreys-transit@0.0.0|tinyrainbow@3.1.0"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@vitest/mocker@4.1.9",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|@vitest/spy@4.1.9",
+        "humphreys-transit@0.0.0|@vitest/mocker@4.1.9|estree-walker@3.0.3",
+        "humphreys-transit@0.0.0|magic-string@0.30.21",
+        "humphreys-transit@0.0.0|vite@8.0.16"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@vitest/mocker@4.1.9|estree-walker@3.0.3",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|@types/estree@1.0.9"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@vitest/pretty-format@4.1.9",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|tinyrainbow@3.1.0"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@vitest/runner@4.1.9",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|@vitest/utils@4.1.9",
+        "humphreys-transit@0.0.0|pathe@2.0.3"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@vitest/snapshot@4.1.9",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|@vitest/pretty-format@4.1.9",
+        "humphreys-transit@0.0.0|@vitest/utils@4.1.9",
+        "humphreys-transit@0.0.0|magic-string@0.30.21",
+        "humphreys-transit@0.0.0|pathe@2.0.3"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@vitest/spy@4.1.9"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@vitest/utils@4.1.9",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|@vitest/pretty-format@4.1.9",
+        "humphreys-transit@0.0.0|convert-source-map@2.0.0",
+        "humphreys-transit@0.0.0|tinyrainbow@3.1.0"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|es-module-lexer@2.1.0"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|expect-type@1.4.0"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|magic-string@0.30.21",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|@jridgewell/sourcemap-codec@1.5.5"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|obug@2.1.3"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|pathe@2.0.3"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|std-env@4.1.0"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|tinybench@2.9.0"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|tinyexec@1.2.4"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|tinyrainbow@3.1.0"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|why-is-node-running@2.3.0",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|siginfo@2.0.0",
+        "humphreys-transit@0.0.0|stackback@0.0.2"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@babel/code-frame@7.29.7",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.29.7",
         "humphreys-transit@0.0.0|js-tokens@4.0.0",
         "humphreys-transit@0.0.0|picocolors@1.1.1"
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/generator@7.29.1",
+      "ref": "humphreys-transit@0.0.0|@babel/generator@7.29.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/parser@7.29.3",
-        "humphreys-transit@0.0.0|@babel/types@7.29.0",
+        "humphreys-transit@0.0.0|@babel/parser@7.29.7",
+        "humphreys-transit@0.0.0|@babel/types@7.29.7",
         "humphreys-transit@0.0.0|@jridgewell/gen-mapping@0.3.13",
         "humphreys-transit@0.0.0|@jridgewell/trace-mapping@0.3.31",
         "humphreys-transit@0.0.0|jsesc@3.1.0"
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.28.6",
+      "ref": "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.29.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/compat-data@7.29.3",
-        "humphreys-transit@0.0.0|@babel/helper-validator-option@7.27.1",
+        "humphreys-transit@0.0.0|@babel/compat-data@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-validator-option@7.29.7",
         "humphreys-transit@0.0.0|browserslist@4.28.2",
         "humphreys-transit@0.0.0|lru-cache@5.1.1",
         "humphreys-transit@0.0.0|semver@6.3.1"
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.28.6",
+      "ref": "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.29.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-module-imports@7.28.6",
-        "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.28.5",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-module-imports@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.29.7",
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/helpers@7.29.2",
+      "ref": "humphreys-transit@0.0.0|@babel/helpers@7.29.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/template@7.28.6",
-        "humphreys-transit@0.0.0|@babel/types@7.29.0"
+        "humphreys-transit@0.0.0|@babel/template@7.29.7",
+        "humphreys-transit@0.0.0|@babel/types@7.29.7"
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/template@7.28.6",
+      "ref": "humphreys-transit@0.0.0|@babel/template@7.29.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/code-frame@7.29.0",
-        "humphreys-transit@0.0.0|@babel/parser@7.29.3",
-        "humphreys-transit@0.0.0|@babel/types@7.29.0"
+        "humphreys-transit@0.0.0|@babel/code-frame@7.29.7",
+        "humphreys-transit@0.0.0|@babel/parser@7.29.7",
+        "humphreys-transit@0.0.0|@babel/types@7.29.7"
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/traverse@7.29.0",
+      "ref": "humphreys-transit@0.0.0|@babel/traverse@7.29.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/code-frame@7.29.0",
-        "humphreys-transit@0.0.0|@babel/generator@7.29.1",
-        "humphreys-transit@0.0.0|@babel/helper-globals@7.28.0",
-        "humphreys-transit@0.0.0|@babel/parser@7.29.3",
-        "humphreys-transit@0.0.0|@babel/template@7.28.6",
-        "humphreys-transit@0.0.0|@babel/types@7.29.0",
+        "humphreys-transit@0.0.0|@babel/code-frame@7.29.7",
+        "humphreys-transit@0.0.0|@babel/generator@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-globals@7.29.7",
+        "humphreys-transit@0.0.0|@babel/parser@7.29.7",
+        "humphreys-transit@0.0.0|@babel/template@7.29.7",
+        "humphreys-transit@0.0.0|@babel/types@7.29.7",
         "humphreys-transit@0.0.0|debug@4.4.3"
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/types@7.29.0",
+      "ref": "humphreys-transit@0.0.0|@babel/types@7.29.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/helper-string-parser@7.27.1",
-        "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.28.5"
+        "humphreys-transit@0.0.0|@babel/helper-string-parser@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.29.7"
       ]
     },
     {
@@ -23366,11 +24859,11 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/preset-env@7.29.5",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/compat-data@7.29.3",
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.28.6",
+        "humphreys-transit@0.0.0|@babel/compat-data@7.29.7",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
-        "humphreys-transit@0.0.0|@babel/helper-validator-option@7.27.1",
+        "humphreys-transit@0.0.0|@babel/helper-validator-option@7.29.7",
         "humphreys-transit@0.0.0|@babel/plugin-bugfix-firefox-class-in-computed-class-key@7.28.5",
         "humphreys-transit@0.0.0|@babel/plugin-bugfix-safari-class-field-initializer-scope@7.27.1",
         "humphreys-transit@0.0.0|@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression@7.27.1",
@@ -23446,8 +24939,8 @@
     {
       "ref": "humphreys-transit@0.0.0|@rollup/plugin-babel@6.1.0",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-module-imports@7.28.6",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-module-imports@7.29.7",
         "humphreys-transit@0.0.0|@rollup/pluginutils@5.3.0",
         "humphreys-transit@0.0.0|rollup@4.60.4"
       ]
@@ -23655,7 +25148,7 @@
       "ref": "humphreys-transit@0.0.0|lightningcss-linux-x64-gnu@1.32.0"
     },
     {
-      "ref": "humphreys-transit@0.0.0|nanoid@3.3.12"
+      "ref": "humphreys-transit@0.0.0|nanoid@3.3.13"
     },
     {
       "ref": "humphreys-transit@0.0.0|picocolors@1.1.1"
@@ -23664,10 +25157,10 @@
       "ref": "humphreys-transit@0.0.0|source-map-js@1.2.1"
     },
     {
-      "ref": "humphreys-transit@0.0.0|@oxc-project/types@0.130.0"
+      "ref": "humphreys-transit@0.0.0|@oxc-project/types@0.133.0"
     },
     {
-      "ref": "humphreys-transit@0.0.0|@rolldown/binding-linux-x64-gnu@1.0.1"
+      "ref": "humphreys-transit@0.0.0|@rolldown/binding-linux-x64-gnu@1.0.3"
     },
     {
       "ref": "humphreys-transit@0.0.0|@jridgewell/source-map@0.3.11",
@@ -23690,7 +25183,29 @@
       "ref": "humphreys-transit@0.0.0|source-map-support@0.5.21|source-map@0.6.1"
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.28.5"
+      "ref": "humphreys-transit@0.0.0|@standard-schema/spec@1.1.0"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@types/chai@5.2.3",
+      "dependsOn": [
+        "humphreys-transit@0.0.0|@types/deep-eql@4.0.2",
+        "humphreys-transit@0.0.0|assertion-error@2.0.1"
+      ]
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|chai@6.2.2"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@jridgewell/sourcemap-codec@1.5.5"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|siginfo@2.0.0"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|stackback@0.0.2"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.29.7"
     },
     {
       "ref": "humphreys-transit@0.0.0|js-tokens@4.0.0"
@@ -23713,10 +25228,10 @@
       "ref": "humphreys-transit@0.0.0|jsesc@3.1.0"
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/compat-data@7.29.3"
+      "ref": "humphreys-transit@0.0.0|@babel/compat-data@7.29.7"
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/helper-validator-option@7.27.1"
+      "ref": "humphreys-transit@0.0.0|@babel/helper-validator-option@7.29.7"
     },
     {
       "ref": "humphreys-transit@0.0.0|browserslist@4.28.2",
@@ -23735,17 +25250,17 @@
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/helper-module-imports@7.28.6",
+      "ref": "humphreys-transit@0.0.0|@babel/helper-module-imports@7.29.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0",
-        "humphreys-transit@0.0.0|@babel/types@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7",
+        "humphreys-transit@0.0.0|@babel/types@7.29.7"
       ]
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/helper-globals@7.28.0"
+      "ref": "humphreys-transit@0.0.0|@babel/helper-globals@7.29.7"
     },
     {
-      "ref": "humphreys-transit@0.0.0|@babel/helper-string-parser@7.27.1"
+      "ref": "humphreys-transit@0.0.0|@babel/helper-string-parser@7.29.7"
     },
     {
       "ref": "humphreys-transit@0.0.0|punycode@2.3.1"
@@ -23786,29 +25301,29 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-bugfix-firefox-class-in-computed-class-key@7.28.5",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-bugfix-safari-class-field-initializer-scope@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-bugfix-safari-rest-destructuring-rhs-array@7.29.3",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/helper-skip-transparent-expression-wrappers@7.27.1"
       ]
@@ -23816,7 +25331,7 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-bugfix-v8-spread-parameters-in-optional-chaining@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/helper-skip-transparent-expression-wrappers@7.27.1",
         "humphreys-transit@0.0.0|@babel/plugin-transform-optional-chaining@7.28.6"
@@ -23825,35 +25340,35 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-bugfix-v8-static-class-fields-redefine-readonly@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-proposal-private-property-in-object@7.21.0-placeholder-for-preset-env.2",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0"
+        "humphreys-transit@0.0.0|@babel/core@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-syntax-import-assertions@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-syntax-import-attributes@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-syntax-unicode-sets-regex@7.18.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-regexp-features-plugin@7.28.5",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -23861,24 +25376,24 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-arrow-functions@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-async-generator-functions@7.29.0",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/helper-remap-async-to-generator@7.27.1",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-async-to-generator@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-module-imports@7.28.6",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-module-imports@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/helper-remap-async-to-generator@7.27.1"
       ]
@@ -23886,21 +25401,21 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-block-scoped-functions@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-block-scoping@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-class-properties@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-class-features-plugin@7.29.3",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -23908,7 +25423,7 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-class-static-block@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-class-features-plugin@7.29.3",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -23916,35 +25431,35 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-classes@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-annotate-as-pure@7.27.3",
-        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.28.6",
-        "humphreys-transit@0.0.0|@babel/helper-globals@7.28.0",
+        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-globals@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/helper-replace-supers@7.28.6",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-computed-properties@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
-        "humphreys-transit@0.0.0|@babel/template@7.28.6"
+        "humphreys-transit@0.0.0|@babel/template@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-destructuring@7.28.5",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-dotall-regex@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-regexp-features-plugin@7.28.5",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -23952,14 +25467,14 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-duplicate-keys@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-duplicate-named-capturing-groups-regex@7.29.0",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-regexp-features-plugin@7.28.5",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -23967,14 +25482,14 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-dynamic-import@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-explicit-resource-management@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/plugin-transform-destructuring@7.28.5"
       ]
@@ -23982,21 +25497,21 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-exponentiation-operator@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-export-namespace-from@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-for-of@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/helper-skip-transparent-expression-wrappers@7.27.1"
       ]
@@ -24004,78 +25519,78 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-function-name@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.28.6",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-json-strings@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-literals@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-logical-assignment-operators@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-member-expression-literals@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-modules-amd@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.28.6",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-modules-commonjs@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.28.6",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-modules-systemjs@7.29.4",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.28.6",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
-        "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.28.5",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/helper-validator-identifier@7.29.7",
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-modules-umd@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.28.6",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-module-transforms@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-named-capturing-groups-regex@7.29.0",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-regexp-features-plugin@7.28.5",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -24083,39 +25598,39 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-new-target@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-nullish-coalescing-operator@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-numeric-separator@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-object-rest-spread@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.28.6",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/plugin-transform-destructuring@7.28.5",
         "humphreys-transit@0.0.0|@babel/plugin-transform-parameters@7.27.7",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-object-super@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/helper-replace-supers@7.28.6"
       ]
@@ -24123,14 +25638,14 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-optional-catch-binding@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-optional-chaining@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/helper-skip-transparent-expression-wrappers@7.27.1"
       ]
@@ -24138,14 +25653,14 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-parameters@7.27.7",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-private-methods@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-class-features-plugin@7.29.3",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -24153,7 +25668,7 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-private-property-in-object@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-annotate-as-pure@7.27.3",
         "humphreys-transit@0.0.0|@babel/helper-create-class-features-plugin@7.29.3",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
@@ -24162,21 +25677,21 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-property-literals@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-regenerator@7.29.0",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-regexp-modifiers@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-regexp-features-plugin@7.28.5",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -24184,21 +25699,21 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-reserved-words@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-shorthand-properties@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-spread@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|@babel/helper-skip-transparent-expression-wrappers@7.27.1"
       ]
@@ -24206,35 +25721,35 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-sticky-regex@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-template-literals@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-typeof-symbol@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-unicode-escapes@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-unicode-property-regex@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-regexp-features-plugin@7.28.5",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -24242,7 +25757,7 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-unicode-regex@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-regexp-features-plugin@7.28.5",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -24250,7 +25765,7 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/plugin-transform-unicode-sets-regex@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-create-regexp-features-plugin@7.28.5",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6"
       ]
@@ -24258,17 +25773,17 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/preset-modules@0.1.6-no-external-plugins",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
-        "humphreys-transit@0.0.0|@babel/types@7.29.0",
+        "humphreys-transit@0.0.0|@babel/types@7.29.7",
         "humphreys-transit@0.0.0|esutils@2.0.3"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|babel-plugin-polyfill-corejs2@0.4.17",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/compat-data@7.29.3",
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/compat-data@7.29.7",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-define-polyfill-provider@0.6.8",
         "humphreys-transit@0.0.0|semver@6.3.1"
       ]
@@ -24276,7 +25791,7 @@
     {
       "ref": "humphreys-transit@0.0.0|babel-plugin-polyfill-corejs3@0.14.2",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-define-polyfill-provider@0.6.8",
         "humphreys-transit@0.0.0|core-js-compat@3.49.0"
       ]
@@ -24284,7 +25799,7 @@
     {
       "ref": "humphreys-transit@0.0.0|babel-plugin-polyfill-regenerator@0.6.8",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-define-polyfill-provider@0.6.8"
       ]
     },
@@ -24319,12 +25834,6 @@
         "humphreys-transit@0.0.0|is-core-module@2.16.2",
         "humphreys-transit@0.0.0|path-parse@1.0.7",
         "humphreys-transit@0.0.0|supports-preserve-symlinks-flag@1.0.0"
-      ]
-    },
-    {
-      "ref": "humphreys-transit@0.0.0|magic-string@0.30.21",
-      "dependsOn": [
-        "humphreys-transit@0.0.0|@jridgewell/sourcemap-codec@1.5.5"
       ]
     },
     {
@@ -24450,7 +25959,10 @@
       "ref": "humphreys-transit@0.0.0|buffer-from@1.1.2"
     },
     {
-      "ref": "humphreys-transit@0.0.0|@jridgewell/sourcemap-codec@1.5.5"
+      "ref": "humphreys-transit@0.0.0|@types/deep-eql@4.0.2"
+    },
+    {
+      "ref": "humphreys-transit@0.0.0|assertion-error@2.0.1"
     },
     {
       "ref": "humphreys-transit@0.0.0|@jridgewell/resolve-uri@3.1.2"
@@ -24490,14 +26002,14 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/helper-skip-transparent-expression-wrappers@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0",
-        "humphreys-transit@0.0.0|@babel/types@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7",
+        "humphreys-transit@0.0.0|@babel/types@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/helper-create-regexp-features-plugin@7.28.5",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-annotate-as-pure@7.27.3",
         "humphreys-transit@0.0.0|regexpu-core@6.4.0",
         "humphreys-transit@0.0.0|semver@6.3.1"
@@ -24506,45 +26018,45 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/helper-remap-async-to-generator@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-annotate-as-pure@7.27.3",
         "humphreys-transit@0.0.0|@babel/helper-wrap-function@7.28.6",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/helper-create-class-features-plugin@7.29.3",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-annotate-as-pure@7.27.3",
         "humphreys-transit@0.0.0|@babel/helper-member-expression-to-functions@7.28.5",
         "humphreys-transit@0.0.0|@babel/helper-optimise-call-expression@7.27.1",
         "humphreys-transit@0.0.0|@babel/helper-replace-supers@7.28.6",
         "humphreys-transit@0.0.0|@babel/helper-skip-transparent-expression-wrappers@7.27.1",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0",
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7",
         "humphreys-transit@0.0.0|semver@6.3.1"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/helper-annotate-as-pure@7.27.3",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/types@7.29.0"
+        "humphreys-transit@0.0.0|@babel/types@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/helper-replace-supers@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-member-expression-to-functions@7.28.5",
         "humphreys-transit@0.0.0|@babel/helper-optimise-call-expression@7.27.1",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/helper-define-polyfill-provider@0.6.8",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/core@7.29.0",
-        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.28.6",
+        "humphreys-transit@0.0.0|@babel/core@7.29.7",
+        "humphreys-transit@0.0.0|@babel/helper-compilation-targets@7.29.7",
         "humphreys-transit@0.0.0|@babel/helper-plugin-utils@7.28.6",
         "humphreys-transit@0.0.0|debug@4.4.3",
         "humphreys-transit@0.0.0|lodash.debounce@4.0.8",
@@ -24766,22 +26278,22 @@
     {
       "ref": "humphreys-transit@0.0.0|@babel/helper-wrap-function@7.28.6",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/template@7.28.6",
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0",
-        "humphreys-transit@0.0.0|@babel/types@7.29.0"
+        "humphreys-transit@0.0.0|@babel/template@7.29.7",
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7",
+        "humphreys-transit@0.0.0|@babel/types@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/helper-member-expression-to-functions@7.28.5",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/traverse@7.29.0",
-        "humphreys-transit@0.0.0|@babel/types@7.29.0"
+        "humphreys-transit@0.0.0|@babel/traverse@7.29.7",
+        "humphreys-transit@0.0.0|@babel/types@7.29.7"
       ]
     },
     {
       "ref": "humphreys-transit@0.0.0|@babel/helper-optimise-call-expression@7.27.1",
       "dependsOn": [
-        "humphreys-transit@0.0.0|@babel/types@7.29.0"
+        "humphreys-transit@0.0.0|@babel/types@7.29.7"
       ]
     },
     {
