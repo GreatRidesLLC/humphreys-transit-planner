@@ -45,8 +45,8 @@ Pushed to `github.com/Bennoah/humphreys-transit-planner`. Full-history `gitleaks
 ### Deploy to Cloudflare Pages free tier
 Default subdomain `*.pages.dev`. `public/_headers` already configured. Domain registration (DNSSEC, CAA, registrar lock — `SECURITY.md` deferral) waits until a name is chosen.
 
-### Test framework + findTrips coverage
-No tests yet. `findTrips` is the heart of routing logic and refactor risk grows as schedule data lands. Add Vitest, write a fixture-driven suite covering: direct routes, transfer routes (validate the score-min transfer selection), service-hours filtering, day-of-week filtering, Gold PDF-sourced-departure path, edge cases (same from/to stop, no path). Run on pre-commit and in CI once remote is set up.
+### Test framework + findTrips coverage — ✅ shipped
+Pure routing logic extracted from `App.jsx` into `src/lib/routing.js` (`ROUTES`, `STOP_ROUTES`, `inService`, `serviceEndToday`, `nextScheduledDeparture`, `prevScheduledDeparture`, `findTrips`, geo helpers). Vitest wired via `npm test`. `src/lib/routing.test.js` covers: `inService` weekday/weekend/hours gating, `serviceEndToday`, route + stop index, GOLD PDF-sourced timetable at Bus Terminal, anchored heuristic for unverified routes, `findTrips` guards / direct / transfer / service-hours filter / overnight strand / arrive-by mode / clock-time ordering, walk-minute floor. CI build job now runs `npm test` after lint. Pre-commit hook still pending.
 
 ### User feedback channel
 No way for users to report wrong stops, missed buses, or "this route also stops at X". MVP: footer link to email or a hosted form (Tally / Formspree). Lower-effort than GitHub issues since most users aren't on GitHub. KATUSA / KSC feedback especially valuable for Korean string QA already flagged in shipped Korean MVP — promote ahead of telemetry.
