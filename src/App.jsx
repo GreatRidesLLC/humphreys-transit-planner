@@ -1362,15 +1362,17 @@ function MapaCard() {
 // One-time non-affiliation notice. Dismissal persisted in localStorage so it
 // shows once per device. Points to MAPA rather than away from it.
 function FirstRunNotice({ onAck }) {
-  const { t } = useT();
+  const en = STRINGS.en, ko = STRINGS.ko;
   return (
-    <div role="dialog" aria-modal="true" aria-label={t.noticeTitle}
+    <div role="dialog" aria-modal="true" aria-label={`${en.noticeTitle} / ${ko.noticeTitle}`}
       style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(4,6,10,.84)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}}>
-      <div style={{maxWidth:420,width:"100%",background:C.bgCard,border:`1px solid ${C.borderMain}`,borderRadius:14,padding:"22px 20px",boxShadow:"0 12px 48px rgba(0,0,0,.6)"}}>
-        <div style={{fontSize:18,fontWeight:700,color:C.gold,letterSpacing:1,textTransform:"uppercase",marginBottom:12}}>{t.noticeTitle}</div>
-        <div style={{fontSize:13,color:C.tan,lineHeight:1.7,marginBottom:16}}>{t.noticeBody}</div>
+      <div style={{maxWidth:420,width:"100%",background:C.bgCard,border:`1px solid ${C.borderMain}`,borderRadius:14,padding:"22px 20px",boxShadow:"0 12px 48px rgba(0,0,0,.6)",maxHeight:"90vh",overflowY:"auto"}}>
+        <div style={{fontSize:18,fontWeight:700,color:C.gold,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>{en.noticeTitle}</div>
+        <div style={{fontSize:15,fontWeight:700,color:C.gold,fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",marginBottom:12}} lang="ko">{ko.noticeTitle}</div>
+        <div style={{fontSize:13,color:C.tan,lineHeight:1.7,marginBottom:12}}>{en.noticeBody}</div>
+        <div style={{fontSize:13,color:C.tan,lineHeight:1.7,marginBottom:16,paddingTop:12,borderTop:`1px solid ${C.borderMain}`}} lang="ko">{ko.noticeBody}</div>
         <div style={{marginBottom:16}}><MapaStoreLinks/></div>
-        <button className="btn" onClick={onAck}>{t.noticeAck}</button>
+        <button className="btn" onClick={onAck}>{en.noticeAck} / <span lang="ko">{ko.noticeAck}</span></button>
       </div>
     </div>
   );
