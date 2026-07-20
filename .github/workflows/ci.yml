@@ -13,15 +13,19 @@ jobs:
   gitleaks:
     name: gitleaks
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]'
     permissions:
       contents: read
       pull-requests: read
     steps:
+      - name: Skip on dependabot (no secret access)
+        if: github.actor == 'dependabot[bot]'
+        run: echo "Dependabot PR — gitleaks scan skipped (no repo secrets available to bot runs)."
       - uses: actions/checkout@v4
+        if: github.actor != 'dependabot[bot]'
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
+        if: github.actor != 'dependabot[bot]'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
