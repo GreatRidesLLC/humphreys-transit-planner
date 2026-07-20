@@ -20,7 +20,7 @@ jobs:
       - name: Skip on dependabot (no secret access)
         if: github.actor == 'dependabot[bot]'
         run: echo "Dependabot PR — gitleaks scan skipped (no repo secrets available to bot runs)."
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: github.actor != 'dependabot[bot]'
         with:
           fetch-depth: 0
@@ -34,7 +34,7 @@ jobs:
     name: lint + test + audit + build + sbom
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
