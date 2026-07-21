@@ -54,6 +54,12 @@ Pure routing logic extracted from `App.jsx` into `src/lib/routing.js` (`ROUTES`,
 ### User feedback channel
 No way for users to report wrong stops, missed buses, or "this route also stops at X". MVP: footer link to email or a hosted form (Tally / Formspree). Lower-effort than GitHub issues since most users aren't on GitHub. KATUSA / KSC feedback especially valuable for Korean string QA already flagged in shipped Korean MVP — promote ahead of telemetry.
 
+### Korean string QA (KATUSA / KSC)
+First-draft translations flagged in shipped Korean MVP. Route + stop names stay English by design; long descriptive paragraphs on Off-Post remain English (out of MVP scope). Once the feedback channel ships, actively solicit a native reviewer.
+
+### GPS / BusWhere outreach
+Off-Post tab describes what real-time tracking would need. Actual outreach: Transportation (DSN 755-0424) about GPS trackers or BusWhere (already deployed at Osan Air Base) as a faster path than custom hardware. Requires G6/S6 + DoD-approved backend — long lead time; not blocking anything else.
+
 ### Privacy-respecting telemetry
 Currently zero signal on actual usage — roadmap priorities are guesses. Self-hosted Plausible or Umami → track route searches, stop usage, language split, tab activity. No PII, no third-party trackers (CSP already locks down `connect-src` and `script-src`). Required CSP update when added.
 
