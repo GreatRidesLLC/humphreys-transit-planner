@@ -4,10 +4,8 @@
     "polygon_osm_way": 245548245,
     "fetched_at": "2026-05-20T03:03:59.966122+00:00",
     "license": "ODbL 1.0 — © OpenStreetMap contributors",
-    "matched": 43,
-    "unmatched": [
-      "Family Housing Towers (15th Street)"
-    ],
+    "matched": 44,
+    "unmatched": [],
     "total_routes_stops": 44
   },
   "stops": {
@@ -112,6 +110,12 @@
       "lon": 127.0313897,
       "source": "osm bus_stop 13837939361",
       "name_ko": "미8군"
+    },
+    "Family Housing Towers (15th Street)": {
+      "lat": 36.9556,
+      "lon": 127.0158,
+      "source": "hand-pinned; OSM has no bus_stop node for this Pink-route trial stop; SW terminus of 15th Street way 1019688918",
+      "name_ko": null
     },
     "Family Housing Towers (Taro Ave)": {
       "lat": 36.9571955,
