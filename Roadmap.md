@@ -31,6 +31,8 @@ Planned improvements grouped into phases by effort and impact. Update this file 
 - Map view — fifth "📍 Map" tab. Leaflet + CARTO `dark_all` raster tiles for the tactical-night palette. Per-route polylines (straight lines between consecutive stops in `src/data/stop_coords.json`, coloured per `ROUTES[r].color`) plus circle markers at every stop, popup with route chips and "From / To" buttons that seed the Plan tab and switch. CSP updated to allow `https://*.basemaps.cartocdn.com` under `img-src`; `Permissions-Policy: geolocation=(self)` fixed (was `=()` which silently blocked the "📍 Nearest" button in production)
 - Legal-posture pass + rename to "Humphreys Transit Planner" — app title, manifest, HTML `<title>`, EN + KO `appTitle` / `appSubtitle` renamed. Universal footer disclaimer rendered on every tab (EN + KO). Off-Post tab gets a larger warning banner. User-facing copy scrubbed for endorsement / affiliation language: `pdfVerified` / `verifiedScheduleHeader` reworded to "PDF-sourced", `waitDisclaimer` repointed from "USAG Humphreys / MyArmyPost app" to "Transportation Office (DSN 755-0424)", route notes and OFFPOST `schedule` strings rephrased "publicly posted PDF" instead of "official PDF". Decision record + scrub checklist in `docs/legal-posture.md`; PAO-positive revert index in `docs/distribution-pivot.md`. Asset audit confirmed no Army / USAG / DoD imagery in committed icons
 - Favicon swap to brand mark — `public/favicon.svg` replaced with the same tactical-night "H" mark used by `public/icon.svg` (gold `#FFC83D` letterform on `#0a0e12` charcoal with cyan `#22D3EE` accent bar). Leftover template `public/icons.svg` removed
+- Family Housing Towers (15th St) stop coord — hand-pinned to `36.9556, 127.0158` (SW terminus of 15th Street OSM way 1019688918). Closes the last stop-coord gap; `_meta.matched` in `src/data/stop_coords.json` now 44/44. Enables Pink-route walk-leg haversine + Nearest-stop coverage. Test coverage added in `src/lib/routing.test.js`
+- Accurate `shuttleInfo` copy — old string only mentioned weekday routes + Gold, omitting Brown (Fri–Sat 1600–2200) and Pink (Fri–Sat 1700–2300). Korean version also had reversed range `일–월` (Sun–Mon) for Gold. New EN + KO strings list all four service buckets
 
 ## Phase 4 — Data-gated features
 
@@ -60,9 +62,6 @@ Mostly done: Gold/Brown/Pink consult `src/data/schedules.json` directly in `find
 
 ### Black / Orange headway + Blue / Green / Purple service-hour bounds
 Same Transportation Office ask as the per-route schedules above; combining them keeps it to one inquiry. ROUTES `freq` for Black (25) / Orange (30) is unverified; Blue / Green / Purple service-hour bounds still placeholder `0600–2200`.
-
-### Family Housing Towers (15th St) stop coord
-Lone gap in `src/data/stop_coords.json` (43 of 44 ROUTES stops have OSM coords). Newest Pink-route trial stop — hand-pin on satellite imagery.
 
 ### iOS-compatible PWA icons (PNG raster set)
 PWA manifest currently uses `public/icon.svg` for all icon entries. Chrome / Firefox / Edge render SVG icons fine. iOS Safari ignores SVG manifest icons and falls back to a generic glyph on home-screen install. Adding `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, and `apple-touch-icon.png` (180×180) would close the gap. Blocked locally because `sharp` segfaults on this WSL2 kernel (bus error on library load). Options when revisiting: generate icons on a non-WSL machine, install `@resvg/resvg-js` and retry, or use ImageMagick / Inkscape via shell.
@@ -113,6 +112,6 @@ If the Director declines, or the >90-day silence becomes definitive:
 - Blue / Green / Purple: headway confirmed 15 min, but service-hour bounds still placeholder `0600–2200`
 - Inter-garrison routes: PDFs need re-download (Incheon Airport schedule updated Feb 2026)
 - Building directory: 32 mapped in `BUILDINGS` (high-confidence stop assignments). 380 known to exist on-post per OSM; remaining ~350 are blocked on stop coordinates for a "nearest stop" heuristic. Many of those have OSM `name` tags (e.g. "Zoeckler Fitness Center", "Heartbreak Ridge Tower") that could be hand-assigned to a stop, but doing so without coordinates risks systematic errors
-- Stop coordinates: 43 of 44 ROUTES stops have OSM-sourced lat/lon in `src/data/stop_coords.json`. Family Housing Towers (15th Street) — the newest Pink-route stop — is the lone gap; needs hand-pinning on a satellite map
+- Stop coordinates: all 44 ROUTES stops have coords in `src/data/stop_coords.json` (43 OSM-sourced, 1 hand-pinned for the new Pink-route trial stop)
 - Holiday / training-holiday schedule variations: Brown/Pink panels capture them; other routes still treat training holidays as ordinary weekdays
 - New stops not yet in `BUILDINGS`: Downtown Plaza, Family Mini Mall / Gas Station, Family Housing Towers (15th Street) — building numbers unknown
