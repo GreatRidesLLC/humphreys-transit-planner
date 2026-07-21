@@ -5,6 +5,7 @@ import {
   nextScheduledDeparture, prevScheduledDeparture,
   findTrips,
   haversineMeters, walkMinutes,
+  STOP_COORDS, nearestStopTo,
 } from "./routing.js";
 
 // Reference dates: 2026-06-29 is a Monday, 2026-07-03 Friday, 2026-07-04 Saturday.
@@ -194,5 +195,28 @@ describe("geo helpers", () => {
   });
   it("walkMinutes floors at 3 min for missing data", () => {
     expect(walkMinutes(null, "Bus Terminal", null)).toBeGreaterThanOrEqual(3);
+  });
+
+  describe("Family Housing Towers (15th Street) coord", () => {
+    const stop = "Family Housing Towers (15th Street)";
+    it("has coords in STOP_COORDS", () => {
+      const s = STOP_COORDS[stop];
+      expect(s).toBeDefined();
+      expect(s.lat).toBeCloseTo(36.9556, 4);
+      expect(s.lon).toBeCloseTo(127.0158, 4);
+    });
+    it("is served by the Pink route", () => {
+      expect(ROUTES.PINK.stops).toContain(stop);
+    });
+    it("walkMinutes uses haversine (not 3-min floor) when user coords supplied", () => {
+      // ~555m north of the stop → ceil(555 / (5000/60)) ≈ 7 min, well above the floor.
+      const user = { lat: 36.9606, lon: 127.0158 };
+      expect(walkMinutes(null, stop, user)).toBeGreaterThan(3);
+    });
+    it("nearestStopTo returns this stop when user stands on it", () => {
+      const near = nearestStopTo({ lat: 36.9556, lon: 127.0158 });
+      expect(near.stop).toBe(stop);
+      expect(near.meters).toBeLessThan(50);
+    });
   });
 });
