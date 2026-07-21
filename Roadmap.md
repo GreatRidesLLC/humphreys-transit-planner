@@ -30,6 +30,7 @@ Planned improvements grouped into phases by effort and impact. Update this file 
 - Nearest stop from current location — "📍 Nearest" button next to the From input. On click, requests browser geolocation, finds the closest stop in `src/data/stop_coords.json`, and seeds the walk-leg haversine with the user's real lat/lon (not a building centroid). Permission only requested on click — never on page load. Falls back to alert on deny / timeout / no support
 - Map view — fifth "📍 Map" tab. Leaflet + CARTO `dark_all` raster tiles for the tactical-night palette. Per-route polylines (straight lines between consecutive stops in `src/data/stop_coords.json`, coloured per `ROUTES[r].color`) plus circle markers at every stop, popup with route chips and "From / To" buttons that seed the Plan tab and switch. CSP updated to allow `https://*.basemaps.cartocdn.com` under `img-src`; `Permissions-Policy: geolocation=(self)` fixed (was `=()` which silently blocked the "📍 Nearest" button in production)
 - Legal-posture pass + rename to "Humphreys Transit Planner" — app title, manifest, HTML `<title>`, EN + KO `appTitle` / `appSubtitle` renamed. Universal footer disclaimer rendered on every tab (EN + KO). Off-Post tab gets a larger warning banner. User-facing copy scrubbed for endorsement / affiliation language: `pdfVerified` / `verifiedScheduleHeader` reworded to "PDF-sourced", `waitDisclaimer` repointed from "USAG Humphreys / MyArmyPost app" to "Transportation Office (DSN 755-0424)", route notes and OFFPOST `schedule` strings rephrased "publicly posted PDF" instead of "official PDF". Decision record + scrub checklist in `docs/legal-posture.md`; PAO-positive revert index in `docs/distribution-pivot.md`. Asset audit confirmed no Army / USAG / DoD imagery in committed icons
+- Favicon swap to brand mark — `public/favicon.svg` replaced with the same tactical-night "H" mark used by `public/icon.svg` (gold `#FFC83D` letterform on `#0a0e12` charcoal with cyan `#22D3EE` accent bar). Leftover template `public/icons.svg` removed
 
 ## Phase 4 — Data-gated features
 
@@ -65,9 +66,6 @@ Lone gap in `src/data/stop_coords.json` (43 of 44 ROUTES stops have OSM coords).
 
 ### iOS-compatible PWA icons (PNG raster set)
 PWA manifest currently uses `public/icon.svg` for all icon entries. Chrome / Firefox / Edge render SVG icons fine. iOS Safari ignores SVG manifest icons and falls back to a generic glyph on home-screen install. Adding `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, and `apple-touch-icon.png` (180×180) would close the gap. Blocked locally because `sharp` segfaults on this WSL2 kernel (bus error on library load). Options when revisiting: generate icons on a non-WSL machine, install `@resvg/resvg-js` and retry, or use ImageMagick / Inkscape via shell.
-
-### Replace placeholder `public/favicon.svg`
-Audit (2026-05-28, recorded in `docs/legal-posture.md`) confirms the current favicon is a leftover purple-template SVG that does not match the brand mark in `public/icon.svg`. Swap it for the real brand mark before public ship. Also consider deleting `public/icons.svg` (unused social-glyph library from the same template).
 
 ### Semantic landmark refactor
 A11y pass added aria roles + states. Skipped: wrapping the header / nav / main / tab-panel regions in proper semantic elements (`<header>`, `<nav>`, `<main>`, `role="tabpanel"`). Requires touching the top-level layout in `App.jsx` and is best done as a separate commit to keep the diff reviewable.
