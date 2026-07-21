@@ -91,6 +91,7 @@ const STRINGS = {
     appTitle: "Humphreys Transit Planner",
     appSubtitle: "Community shuttle planner · Pyeongtaek",
     tabPlan: "🗺 Plan", tabNow: "⏱ Now", tabMap: "📍 Map", tabRoutes: "🚌 Routes", tabOffpost: "📡 Off-Post",
+    mainNav: "Main tabs",
     mapHint: "Tap a stop to set it as From or To.",
     favorites: "★ Favorites", recent: "↺ Recent",
     typePrompt: "Type a stop name or building number",
@@ -169,6 +170,7 @@ const STRINGS = {
     appTitle: "험프리스 교통 플래너",
     appSubtitle: "사용자 제작 셔틀 플래너 · 평택",
     tabPlan: "🗺 계획", tabNow: "⏱ 지금", tabMap: "📍 지도", tabRoutes: "🚌 노선", tabOffpost: "📡 기지 외",
+    mainNav: "메인 탭",
     mapHint: "정류장을 누르면 출발 또는 도착으로 설정됩니다.",
     favorites: "★ 즐겨찾기", recent: "↺ 최근",
     typePrompt: "정류장 이름 또는 건물 번호를 입력하세요",
@@ -1091,7 +1093,7 @@ export default function App() {
 
       {!noticeSeen && <FirstRunNotice onAck={()=>setNoticeSeen(true)}/>}
 
-      <div style={{background:`linear-gradient(180deg,${C.bgCard} 0%,${C.bgBase} 100%)`,borderBottom:`1px solid ${C.borderSub}`,padding:"18px 16px 14px"}}>
+      <header style={{background:`linear-gradient(180deg,${C.bgCard} 0%,${C.bgBase} 100%)`,borderBottom:`1px solid ${C.borderSub}`,padding:"18px 16px 14px"}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{width:48,height:48,background:`linear-gradient(135deg,${C.gold},${C.goldDark})`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:`0 4px 20px rgba(229,187,57,.4)`,flexShrink:0}}>🚌</div>
           <div style={{flex:1,minWidth:0}}>
@@ -1112,18 +1114,21 @@ export default function App() {
           ))}
         </div>
 
-        <div role="tablist" style={{display:"flex",gap:6}}>
-          {TABS.map(([id,lbl])=>(
-            <button key={id} className="tab" role="tab" aria-selected={tab===id} onClick={()=>{setTab(id);reset();}}
-              style={{background:tab===id?C.accent:C.bgSurface, color:tab===id?C.bgDeep:C.sage, border:`1px solid ${tab===id?C.accent:C.borderMain}`}}>
-              {lbl}
-            </button>
-          ))}
-        </div>
-      </div>
+        <nav aria-label={t.mainNav}>
+          <div role="tablist" style={{display:"flex",gap:6}}>
+            {TABS.map(([id,lbl])=>(
+              <button key={id} id={`tab-${id}`} className="tab" role="tab" aria-selected={tab===id} aria-controls={`panel-${id}`} onClick={()=>{setTab(id);reset();}}
+                style={{background:tab===id?C.accent:C.bgSurface, color:tab===id?C.bgDeep:C.sage, border:`1px solid ${tab===id?C.accent:C.borderMain}`}}>
+                {lbl}
+              </button>
+            ))}
+          </div>
+        </nav>
+      </header>
 
+      <main>
       {tab==="plan" && (
-        <div style={{padding:"16px 14px"}}>
+        <div id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" tabIndex={0} style={{padding:"16px 14px"}}>
           <MapaCard/>
           {(favorites.length>0 || recent.length>0) && (
             <div style={{marginBottom:12}}>
@@ -1287,12 +1292,20 @@ export default function App() {
         </div>
       )}
 
-      {tab==="now" && <NowTab/>}
+      {tab==="now" && (
+        <div id="panel-now" role="tabpanel" aria-labelledby="tab-now" tabIndex={0}>
+          <NowTab/>
+        </div>
+      )}
 
-      {tab==="map" && <MapTab onPickStop={pickStopFromMap} userCoords={fCoords}/>}
+      {tab==="map" && (
+        <div id="panel-map" role="tabpanel" aria-labelledby="tab-map" tabIndex={0}>
+          <MapTab onPickStop={pickStopFromMap} userCoords={fCoords}/>
+        </div>
+      )}
 
       {tab==="routes" && (
-        <div style={{padding:"16px 14px 24px"}}>
+        <div id="panel-routes" role="tabpanel" aria-labelledby="tab-routes" tabIndex={0} style={{padding:"16px 14px 24px"}}>
           <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"10px 14px",marginBottom:14}}>
             <div style={{fontSize:11,color:C.sage,lineHeight:1.6}}>
               {t.goldDotsInfo}
@@ -1302,12 +1315,17 @@ export default function App() {
         </div>
       )}
 
-      {tab==="offpost" && <OffPostTab/>}
+      {tab==="offpost" && (
+        <div id="panel-offpost" role="tabpanel" aria-labelledby="tab-offpost" tabIndex={0}>
+          <OffPostTab/>
+        </div>
+      )}
+      </main>
 
-      <div role="contentinfo" style={{borderTop:`1px solid ${C.borderSub}`,padding:"14px 16px 22px",marginTop:8,fontSize:10,color:C.oliveMute,lineHeight:1.6,textAlign:"center"}}>
+      <footer style={{borderTop:`1px solid ${C.borderSub}`,padding:"14px 16px 22px",marginTop:8,fontSize:10,color:C.oliveMute,lineHeight:1.6,textAlign:"center"}}>
         {t.disclaimer}
         <div style={{marginTop:8,color:C.oliveDim}}>{t.scheduleCredit}</div>
-      </div>
+      </footer>
     </div>
     </LangContext.Provider>
   );
