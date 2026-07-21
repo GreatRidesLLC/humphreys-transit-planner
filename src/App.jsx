@@ -154,7 +154,6 @@ const STRINGS = {
     interGarrisonWarnStrong: "not integrated",
     interGarrisonWarn2: " into the trip planner. Priority-based seating, fixed schedules, not connectable as transfers. Verify at:",
     pickupLabel: "Pick-up:",
-    todoHeader: "📋 Your To-Do List",
     disclaimer: "Community-built shuttle planner. Not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. Schedule data transcribed from publicly posted PDFs; verify with the Transportation Office (DSN 755-0424) before relying on it.",
     offpostBanner: "Unofficial planner. Inter-garrison schedules below are transcribed from publicly posted PDFs and may be out of date — always confirm departures before travel.",
     mapaCardTitle: "Looking for the official app?",
@@ -233,7 +232,6 @@ const STRINGS = {
     interGarrisonWarnStrong: "포함되지 않습니다",
     interGarrisonWarn2: ". 우선순위 좌석, 고정 시간표, 환승 불가. 확인:",
     pickupLabel: "탑승 지점:",
-    todoHeader: "📋 할 일 목록",
     disclaimer: "사용자 제작 셔틀 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 시간표는 공개된 PDF에서 옮긴 것입니다. 운행 전 교통과(DSN 755-0424)에 확인하세요.",
     offpostBanner: "비공식 플래너입니다. 아래의 기지 간 시간표는 공개 PDF에서 옮긴 것으로 변경되었을 수 있습니다. 이동 전 반드시 출발 시간을 확인하세요.",
     mapaCardTitle: "공식 앱을 찾으세요?",
@@ -931,23 +929,6 @@ function OffPostTab() {
           <div style={{fontSize:11,color:C.sage,fontStyle:"italic"}}>{r.schedule}</div>
         </div>
       ))}
-
-      <div style={{background:"#11100a",border:`1px solid #4a3e1a`,borderRadius:12,padding:"14px 16px",marginTop:12}}>
-        <div style={{fontSize:13,fontWeight:700,color:C.accent,marginBottom:10}}>{t.todoHeader}</div>
-        {[
-          "Download current inter-garrison PDFs from the post's public shuttle page (airport schedule updated Feb 2026)",
-          "Provide Brown & Pink route PDFs to verify their stops (currently estimated)",
-          "Obtain full building-number directory from DPW GIS / IGI&S office (Bldg 6140)",
-          "Contact Transportation (DSN 755-0424) about GPS tracker feasibility or BusWhere deployment",
-          "Confirm Blue/Black/Green/Orange/Purple schedule PDFs to replace estimated frequencies with exact timetables",
-          "Get KATUSA / KSC colleague to QA the Korean translation strings before public release",
-        ].map((task,i)=>(
-          <div key={i} style={{display:"flex",gap:8,marginBottom:10}}>
-            <span style={{color:C.accent,fontWeight:700,flexShrink:0,fontFamily:"'JetBrains Mono',monospace",fontSize:13}}>{i+1}.</span>
-            <div style={{fontSize:12,color:C.tan,lineHeight:1.6}}>{task}</div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
