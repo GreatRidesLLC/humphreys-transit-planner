@@ -1,10 +1,10 @@
 # Roadmap
 
-Planned improvements grouped into phases by effort and impact. Update this file as phases complete or priorities shift.
+Launch-focused. Target public release **~2026-08-26** (one month from 2026-07-26). Anything not on the Launch list is post-launch polish unless it becomes a blocker.
 
 ## Distribution posture
 
-**Status (2026-05-28):** PAO Director has not returned email outreach. Project proceeds on a standalone-PWA path until that changes. All design / copy choices that would change under MAPA integration are isolated and indexed in `docs/distribution-pivot.md`; the trademark / endorsement stance is recorded in `docs/legal-posture.md`. Roadmap phases below are labelled 5a (standalone-active, in progress), 5b (PAO-positive pivot — only if Director accepts MAPA), 5c (PAO-negative confirmation — long-term standalone).
+**Status (2026-06-19):** PAO Director Nagan approved standalone app on MAPA non-compete basis. Project proceeds on standalone-PWA path; MAPA pivot work is contingency only (do not start unless PAO re-opens the conversation). Trademark / endorsement stance recorded in `docs/legal-posture.md`; MAPA-pivot file index preserved in `docs/distribution-pivot.md`.
 
 ## ✅ Shipped
 
@@ -33,84 +33,95 @@ Planned improvements grouped into phases by effort and impact. Update this file 
 - Favicon swap to brand mark — `public/favicon.svg` replaced with the same tactical-night "H" mark used by `public/icon.svg` (gold `#FFC83D` letterform on `#0a0e12` charcoal with cyan `#22D3EE` accent bar). Leftover template `public/icons.svg` removed
 - Family Housing Towers (15th St) stop coord — hand-pinned to `36.9556, 127.0158` (SW terminus of 15th Street OSM way 1019688918). Closes the last stop-coord gap; `_meta.matched` in `src/data/stop_coords.json` now 44/44. Enables Pink-route walk-leg haversine + Nearest-stop coverage. Test coverage added in `src/lib/routing.test.js`
 - Accurate `shuttleInfo` copy — old string only mentioned weekday routes + Gold, omitting Brown (Fri–Sat 1600–2200) and Pink (Fri–Sat 1700–2300). Korean version also had reversed range `일–월` (Sun–Mon) for Gold. New EN + KO strings list all four service buckets
+- Semantic landmark refactor — top-level regions wrapped in `<header>`, `<nav>`, `<main>`, `role="tabpanel"` (shipped 2026-07-25)
+- Repo pushed to hosted remote — `github.com/GreatRidesLLC/humphreys-transit-planner`; full-history gitleaks scan clean; CI wires gitleaks, `npm audit --audit-level=high`, eslint, build, SBOM regen; Dependabot weekly npm + github-actions
+- Test framework + `findTrips` coverage — pure routing logic extracted to `src/lib/routing.js`; vitest wired via `npm test`; `src/lib/routing.test.js` covers `inService`, `serviceEndToday`, scheduled + heuristic departure, `findTrips` direct/transfer/service-hours/overnight/arrive-by/walk-floor. CI runs `npm test` after lint
 
-## Phase 4 — Data-gated features
+## Launch — target ~2026-08-26
 
-All Phase 4 items shipped. Map / offline / licensing follow-ups have been folded into Phase 5a (offline tiles, real route polylines reframed as 5c polish) and 5b (tile licensing under USAG branding).
+Ship-blockers only. Everything here must land (or be deliberately cut with a reason) before the public URL goes live.
 
-## Phase 5a — Standalone-active (in progress)
-
-Work that ships regardless of PAO outcome and benefits both distribution paths.
-
-### Push repo to hosted remote — ✅ shipped
-Pushed to `github.com/Bennoah/humphreys-transit-planner`. Full-history `gitleaks detect --log-opts="--all"` scan completed pre-push (38 commits, 0 leaks). CI workflow (`.github/workflows/ci.yml`) wires gitleaks, `npm audit --audit-level=high`, eslint, build, and SBOM regen + artifact upload. Dependabot config (`.github/dependabot.yml`) covers weekly npm + github-actions updates. Remaining: branch protection on `main` (admin token), Dependabot patch auto-merge, OIDC federation (deferred until Cloudflare Pages target is wired).
-
-### Deploy to Cloudflare Pages free tier
-Default subdomain `*.pages.dev`. `public/_headers` already configured. Domain registration (DNSSEC, CAA, registrar lock — `SECURITY.md` deferral) waits until a name is chosen.
-
-### Test framework + findTrips coverage — ✅ shipped
-Pure routing logic extracted from `App.jsx` into `src/lib/routing.js` (`ROUTES`, `STOP_ROUTES`, `inService`, `serviceEndToday`, `nextScheduledDeparture`, `prevScheduledDeparture`, `findTrips`, geo helpers). Vitest wired via `npm test`. `src/lib/routing.test.js` covers: `inService` weekday/weekend/hours gating, `serviceEndToday`, route + stop index, GOLD PDF-sourced timetable at Bus Terminal, anchored heuristic for unverified routes, `findTrips` guards / direct / transfer / service-hours filter / overnight strand / arrive-by mode / clock-time ordering, walk-minute floor. CI build job now runs `npm test` after lint. Pre-commit hook still pending.
+### Deploy to Cloudflare Pages (prod + preview)
+Default subdomain `*.pages.dev` for the standalone launch; custom domain deferred until a name is chosen. `wrangler.jsonc` at repo root drives Workers Builds (see [[cf_workers_config]]). Wire:
+- Production branch = `main` → `humphreys-transit.pages.dev` (or chosen prod subdomain)
+- Preview branch = `dev` → `dev.humphreys-transit.pages.dev` (or default `dev-<hash>.pages.dev`)
+- All other branches build previews on push, do not surface to end users
+- Verify `public/_headers` applies on both envs; smoke-test CSP, geolocation permission-policy, map tile fetch
+- Add production URL to `README.md` + repo About
 
 ### User feedback channel
-No way for users to report wrong stops, missed buses, or "this route also stops at X". MVP: footer link to email or a hosted form (Tally / Formspree). Lower-effort than GitHub issues since most users aren't on GitHub. KATUSA / KSC feedback especially valuable for Korean string QA already flagged in shipped Korean MVP — promote ahead of telemetry.
+No way for users to report wrong stops, missed buses, or "this route also stops at X". MVP: footer link to email or hosted form (Tally / Formspree). CSP update if the form loads external JS — prefer mailto or a link-only form to avoid a `connect-src` change. Ship before public URL is shared so early feedback has somewhere to land. Doubles as intake for Korean QA reviewers.
+
+### Transportation Office data inquiry (single email)
+One inquiry to DSN 755-0424 bundling three asks:
+1. Black / Orange headway (currently unverified `freq` of 25 / 30)
+2. Blue / Green / Purple service-hour bounds (currently placeholder `0600–2200`)
+3. Per-route PDFs for Blue / Black / Green / Orange / Purple
+
+Send week 1. If no reply by week 3 → ship with current `EST.` badges (already handled by the estimated-vs-verified UI). Do not block launch on reply.
+
+### iOS PWA PNG icons
+Manifest currently uses `public/icon.svg`; iOS Safari ignores SVG manifest icons and falls back to a generic glyph on home-screen install. Add `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` (180×180). `sharp` segfaults on this WSL kernel (see [[wsl_image_tooling]]); use ImageMagick / Inkscape via shell, `@resvg/resvg-js`, or generate on a non-WSL machine. Blocks iOS install polish — most of the user base is on phones, this is not optional.
+
+### Git workflow — prod-like with dev branch
+Establish before the first Cloudflare deploy so preview URLs behave predictably:
+
+```
+main       ← production (Cloudflare Pages prod build)
+  ↑ PR (release)
+dev        ← integration / preview (Cloudflare Pages preview build)
+  ↑ PR (feature)
+feat/*     ← short-lived feature branches
+```
+
+- Feature branches off `dev`, PR into `dev`
+- `dev` auto-deploys to a stable preview URL for smoke testing
+- Release = PR `dev` → `main`, squash-merge, tag `vX.Y.Z`
+- Hotfix = branch off `main`, PR → `main`, cherry-pick back to `dev`
+- Branch protection: both `main` + `dev` require PR + CI green (`main` currently protected; extend to `dev`)
+- See [[feedback_branching]] — never commit to `main` directly
+
+## Post-launch (v1.1+)
+
+Nice-to-haves that improve the app but do not gate launch.
 
 ### Korean string QA (KATUSA / KSC)
-First-draft translations flagged in shipped Korean MVP. Route + stop names stay English by design; long descriptive paragraphs on Off-Post remain English (out of MVP scope). Once the feedback channel ships, actively solicit a native reviewer.
-
-### GPS / BusWhere outreach
-Off-Post tab describes what real-time tracking would need. Actual outreach: Transportation (DSN 755-0424) about GPS trackers or BusWhere (already deployed at Osan Air Base) as a faster path than custom hardware. Requires G6/S6 + DoD-approved backend — long lead time; not blocking anything else.
+First-draft translations flagged in shipped Korean MVP. Route + stop names stay English by design; long descriptive paragraphs on Off-Post remain English (out of MVP scope). Actively solicit a native reviewer via the launched feedback channel. Label Korean toggle as beta in v1 if reviewer not yet secured.
 
 ### Privacy-respecting telemetry
-Currently zero signal on actual usage — roadmap priorities are guesses. Self-hosted Plausible or Umami → track route searches, stop usage, language split, tab activity. No PII, no third-party trackers (CSP already locks down `connect-src` and `script-src`). Required CSP update when added.
-
-### Per-route schedule lookup for Blue / Black / Green / Orange / Purple
-Mostly done: Gold/Brown/Pink consult `src/data/schedules.json` directly in `findTrips`. The remaining five routes still use the `:00`-anchor + 2-min/stop heuristic because the per-stop PNG schedules can't be reliably split per-route by tesseract (panels are colour-coded, not labelled with the route name in OCR'd text). Options to close the gap: (a) request per-route PDFs from the Transportation Office (DSN 755-0424) — bundle with the Black/Orange headway + Blue/Green/Purple service-hour ask, (b) use a per-panel image-crop pipeline (needs OpenCV / Pillow), or (c) manual transcription from the public shuttle page. Drop `goldDisclaimer` string once all eight routes have data.
-
-### Black / Orange headway + Blue / Green / Purple service-hour bounds
-Same Transportation Office ask as the per-route schedules above; combining them keeps it to one inquiry. ROUTES `freq` for Black (25) / Orange (30) is unverified; Blue / Green / Purple service-hour bounds still placeholder `0600–2200`.
-
-### iOS-compatible PWA icons (PNG raster set)
-PWA manifest currently uses `public/icon.svg` for all icon entries. Chrome / Firefox / Edge render SVG icons fine. iOS Safari ignores SVG manifest icons and falls back to a generic glyph on home-screen install. Adding `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, and `apple-touch-icon.png` (180×180) would close the gap. Blocked locally because `sharp` segfaults on this WSL2 kernel (bus error on library load). Options when revisiting: generate icons on a non-WSL machine, install `@resvg/resvg-js` and retry, or use ImageMagick / Inkscape via shell.
-
-### Semantic landmark refactor
-A11y pass added aria roles + states. Skipped: wrapping the header / nav / main / tab-panel regions in proper semantic elements (`<header>`, `<nav>`, `<main>`, `role="tabpanel"`). Requires touching the top-level layout in `App.jsx` and is best done as a separate commit to keep the diff reviewable.
+Currently zero signal on actual usage — priorities are guesses. Self-hosted Plausible or Umami → track route searches, stop usage, language split, tab activity. No PII, no third-party trackers (CSP already locks down `connect-src` and `script-src`). Required CSP update when added. High-value once real users show up.
 
 ### Offline map tile caching
-CARTO tiles fetch at runtime. App still installs offline; the map shows a grey panel until network returns. A workbox `runtimeCaching` entry would cache visited tiles. Add when complaints arrive — low priority while user base is small.
+CARTO tiles fetch at runtime. App still installs offline; map shows a grey panel until network returns. Workbox `runtimeCaching` entry would cache visited tiles. Add when complaints arrive.
 
-### Loop directionality (low priority)
-Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes you can travel either direction. Correcting this requires authoritative direction data from the schedule PDFs, and the payoff is low (edge cases only). Park until someone reports a wrong-direction bug.
+### GPS / BusWhere outreach
+Off-Post tab describes what real-time tracking would need. Actual outreach: Transportation (DSN 755-0424) about GPS trackers or BusWhere (deployed at Osan Air Base) as a faster path than custom hardware. Requires G6/S6 + DoD-approved backend — long lead time. Fire off inquiry post-launch; treat responses as bonus.
 
-## Phase 5b — PAO-positive pivot (only triggered if Director accepts MAPA)
+### Per-route schedule fallback for the five unverified routes
+If Transportation Office does not supply per-route PDFs in the launch inquiry: (a) per-panel image-crop pipeline (needs OpenCV / Pillow) on the public per-stop PNGs, or (b) manual transcription. Drop `goldDisclaimer` string once all eight routes have real schedule data.
 
-Work that only makes sense if the PAO Director responds positively and accepts MyArmyPost App integration. File / line index lives in `docs/distribution-pivot.md`; do not start any of these until PAO outcome is confirmed.
+### Loop directionality
+Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes bidirectional travel. Correcting requires authoritative direction data from schedule PDFs; payoff is edge cases only. Park until a wrong-direction bug is reported.
 
-### Rename revert + disclaimer softening
-"Humphreys Transit Planner" → "Humphreys Transit". Universal footer copy replaced with PAO-supplied attribution. Off-Post tab banner removed. "PDF-sourced" tooltip wording flipped back to "PDF-verified". One commit, all string changes. See `docs/distribution-pivot.md` for the file / line table.
+### Real route polylines
+Overpass `route=bus` query to replace straight-line polygons on the Map tab. Straight lines convey topology fine; upgrade is pure polish.
 
-### MAPA embed chrome (`?embed=1`)
-Single conditional in `App.jsx`: read `URLSearchParams(window.location.search).get('embed')`, skip header + tabs row + universal footer when set. Lets MAPA WebView path go live without re-architecting.
+### Custom domain + DNS hardening
+Register non-`.army.mil` domain (e.g. `humphreys-transit.app`); apply DNSSEC, CAA, registrar lock. Deferred from launch to avoid a name-lock decision under time pressure. Standalone `*.pages.dev` is fine for v1.
 
-### CSP `frame-ancestors` swap + `X-Frame-Options` removal
-`public/_headers`: `frame-ancestors 'none'` → `frame-ancestors <MAPA origin>`. Remove `X-Frame-Options: DENY` (legacy header conflicts with `frame-ancestors`). Updates `SECURITY.md` "Trademark / endorsement posture" subsection in tandem.
+### Standalone "About" page
+Promote universal disclaimer footer into a standalone About page or section (currently inline-only in the footer).
 
-### Map tile licensing review
-CARTO `dark_all` is free for non-commercial use with attribution (now in the leaflet attribution control). If MAPA ships under USAG branding, the licence note needs an update — possibly a paid CARTO plan or switch to a self-hosted basemap.
+## Contingency — MAPA re-open
 
-### ATO / RMF / STIG paperwork
-Triggered only when MAPA path goes live and the host system requires an Authority to Operate package. Tracked in `SECURITY.md` "Controls deferred to MAPA-positive branch". Could be weeks of paperwork; defer until truly needed.
+Do NOT start unless PAO re-opens the MAPA-integration conversation. Nagan approved standalone on non-compete basis 2026-06-19 (see [[nagan_mapa_coexistence]]); this branch of work is preserved for optionality only. File / line index lives in `docs/distribution-pivot.md`.
 
-### Brand verification with PAO
-Tactical-night + signal-cyan palette shipped. PAO buy-in needed before MAPA chrome integration — confirm the look meets DoD brand regs once integration is on the table.
-
-## Phase 5c — PAO-negative confirmation (long-term standalone)
-
-If the Director declines, or the >90-day silence becomes definitive:
-
-- Lock in standalone posture; remove "PAO-positive pivot" tasks from active tracking.
-- Register a non-`.army.mil` domain (e.g. `humphreys-transit.app`); apply DNS hardening (DNSSEC, CAA, registrar lock).
-- Promote the universal disclaimer footer into a standalone "About" page or section (currently inline-only).
-- Real route polylines (Overpass `route=bus` query) become more worth-it for long-term polish — straight lines convey topology fine but a polished standalone PWA can justify the work.
+- Rename revert + disclaimer softening (Humphreys Transit Planner → Humphreys Transit; footer copy per PAO attribution)
+- MAPA embed chrome (`?embed=1` conditional in `App.jsx` skips header + tabs + footer)
+- CSP `frame-ancestors` swap + `X-Frame-Options` removal
+- Map tile licensing review (CARTO paid plan or self-hosted basemap under USAG branding)
+- ATO / RMF / STIG paperwork
+- Brand verification with PAO
 
 ## Known data gaps
 
