@@ -23,6 +23,8 @@ const MAPA_LINKS = {
   android: "https://play.google.com/store/apps/details?id=mil.aswf.garrison",
 };
 
+const FEEDBACK_URL = "https://tally.so/r/dWGWEN";
+
 const C = {
   bgDeep:    "#06080c",
   bgBase:    "#0a0e12",
@@ -161,6 +163,7 @@ const STRINGS = {
     mapaAppStore: "App Store",
     mapaPlayStore: "Google Play",
     scheduleCredit: "Route schedules sourced from publicly posted USAG Humphreys PDFs.",
+    feedbackLink: "Report an issue or suggest a fix",
     noticeTitle: "Before you start",
     noticeBody: "This is an unofficial, community-built trip planner. It is not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. For official garrison information, use MAPA (My Army Post App), the official U.S. Army app:",
     noticeAck: "I understand — continue",
@@ -239,6 +242,7 @@ const STRINGS = {
     mapaAppStore: "App Store",
     mapaPlayStore: "Google Play",
     scheduleCredit: "노선 시간표는 공개된 USAG 험프리스 PDF에서 가져왔습니다.",
+    feedbackLink: "오류 신고 또는 수정 제안",
     noticeTitle: "시작하기 전에",
     noticeBody: "이 앱은 비공식 사용자 제작 교통 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 공식 기지 정보는 미 육군 공식 앱 MAPA(My Army Post App)를 이용하세요:",
     noticeAck: "확인했습니다 — 계속",
@@ -1306,6 +1310,12 @@ export default function App() {
       <footer style={{borderTop:`1px solid ${C.borderSub}`,padding:"14px 16px 22px",marginTop:8,fontSize:10,color:C.oliveMute,lineHeight:1.6,textAlign:"center"}}>
         {t.disclaimer}
         <div style={{marginTop:8,color:C.oliveDim}}>{t.scheduleCredit}</div>
+        <div style={{marginTop:10}}>
+          <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
+             style={{color:C.accent,textDecoration:"underline",fontSize:11}}>
+            {t.feedbackLink}
+          </a>
+        </div>
       </footer>
     </div>
     </LangContext.Provider>
