@@ -36,7 +36,8 @@ Launch-focused. Target public release **~2026-08-26** (one month from 2026-07-26
 - Semantic landmark refactor — top-level regions wrapped in `<header>`, `<nav>`, `<main>`, `role="tabpanel"` (shipped 2026-07-25)
 - Repo pushed to hosted remote — `github.com/GreatRidesLLC/humphreys-transit-planner`; full-history gitleaks scan clean; CI wires gitleaks, `npm audit --audit-level=high`, eslint, build, SBOM regen; Dependabot weekly npm + github-actions
 - Test framework + `findTrips` coverage — pure routing logic extracted to `src/lib/routing.js`; vitest wired via `npm test`; `src/lib/routing.test.js` covers `inService`, `serviceEndToday`, scheduled + heuristic departure, `findTrips` direct/transfer/service-hours/overnight/arrive-by/walk-floor. CI runs `npm test` after lint
-- User feedback channel — Tally hosted form (https://tally.so/r/dWGWEN) linked from footer on every tab in both EN + KO (`feedbackLink` string). Opens in new tab (`target="_blank" rel="noopener noreferrer"`); no CSP change required (no iframe, no fetch). Form fields still to be polished in Tally UI (URL stays stable across edits). Doubles as Korean-string QA intake ahead of formal KATUSA/KSC review
+- User feedback channel (wire-up only) — Tally hosted form (https://tally.so/r/dWGWEN) linked from footer on every tab in both EN + KO (`feedbackLink` string). Opens in new tab (`target="_blank" rel="noopener noreferrer"`); no CSP change required (no iframe, no fetch). **Form itself is not yet operational** — fields still to be authored in the Tally dashboard before the URL is shared with users; tracked as a Launch blocker below
+- iOS PWA PNG icons — `public/icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` (180×180) generated from `public/icon.svg` via `scripts/gen_icons.sh` (rsvg-convert / librsvg2-bin — `sharp` still segfaults on WSL2 kernel). Maskable variant uses a padded SVG (`public/icon-maskable.svg`) scaled to 60% inside a solid charcoal bg to survive all mask shapes. Manifest + `apple-touch-icon` `<link>` repointed to PNG; SVG kept as fallback. Workbox `globPatterns` extended to precache `*.png`
 
 ## Launch — target ~2026-08-26
 
@@ -50,6 +51,21 @@ Default subdomain `*.pages.dev` for the standalone launch; custom domain deferre
 - Verify `public/_headers` applies on both envs; smoke-test CSP, geolocation permission-policy, map tile fetch
 - Add production URL to `README.md` + repo About
 
+### Domain (custom)
+No domain yet. `*.pages.dev` fallback works but is not shareable-friendly for KATUSA / KSC / soldier audiences. Pick a name, register, wire DNS to Cloudflare Pages, apply DNS hardening (DNSSEC, CAA, registrar lock — see `SECURITY.md`). Candidate names to compare: `humphreys-transit.app`, `humphreysbus.app`, `humphreys-shuttle.app`, or a Korean-friendly variant. Blocks launch: cannot share a `.pages.dev` URL publicly.
+
+### Feedback form fields (Tally)
+Form URL is wired into the footer (`FEEDBACK_URL` in `src/App.jsx`) but the Tally form itself has no fields yet. Author in the Tally dashboard before sharing the URL publicly:
+- Type of feedback — multi-choice: Wrong stop / Missed bus / Add a route or stop / Translation fix / Other
+- Route (optional) — short text
+- Stop (optional) — short text
+- Details — long text, required
+- Language / 언어 — multi-choice: English / 한국어, required
+- Spam protection (reCAPTCHA / hCaptcha) enabled
+- Notifications: email-on-submit to project inbox
+
+Editing questions in Tally does not change the form URL, so no code redeploy is needed.
+
 ### Transportation Office data inquiry (single email)
 One inquiry to DSN 755-0424 bundling three asks:
 1. Black / Orange headway (currently unverified `freq` of 25 / 30)
@@ -57,9 +73,6 @@ One inquiry to DSN 755-0424 bundling three asks:
 3. Per-route PDFs for Blue / Black / Green / Orange / Purple
 
 Send week 1. If no reply by week 3 → ship with current `EST.` badges (already handled by the estimated-vs-verified UI). Do not block launch on reply.
-
-### iOS PWA PNG icons
-Manifest currently uses `public/icon.svg`; iOS Safari ignores SVG manifest icons and falls back to a generic glyph on home-screen install. Add `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` (180×180). `sharp` segfaults on this WSL kernel (see [[wsl_image_tooling]]); use ImageMagick / Inkscape via shell, `@resvg/resvg-js`, or generate on a non-WSL machine. Blocks iOS install polish — most of the user base is on phones, this is not optional.
 
 ### Git workflow — prod-like with dev branch
 Establish before the first Cloudflare deploy so preview URLs behave predictably:
