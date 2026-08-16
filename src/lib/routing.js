@@ -51,22 +51,47 @@ export function nearestStopTo(coords) {
 }
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
+// `schedule` (optional) is preferred over legacy `days` + `hours`. Each window
+// is `{ dow:[0..6], from:"HH:MM", to:"HH:MM", freq? }` where `to` may exceed
+// "24:00" to express overnight service (e.g. Fri 19:00 → Sat 01:30 → to:"25:30").
+// `freq` per window overrides the route-level `freq`.
+const hhmmToMin = s => parseInt(s.slice(0,2),10)*60 + parseInt(s.slice(3,5),10);
+
 export const ROUTES = {
   BLUE:  { id:"BLUE",  name:"Blue Route",   color:"#5bb8ff", freq:15, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","TMP / Driver's Licensing","Airfield Operations","Talon Cafe DFAC","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Post Office","Main Exchange (PX)","Pittman DFAC","Sitman Fitness Center","2ID Sustainment","Central Issue Facility"] },
   BLACK: { id:"BLACK", name:"Black Route",  color:"#8090a0", freq:25, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","Pacific Victors Chapel","Commissary","LTG Maude Hall (9th St)","Spartan DFAC"] },
-  GREEN: { id:"GREEN", name:"Green Route",  color:"#4dde88", freq:15, hours:"0600–2200", days:"Mon–Fri",
+  GREEN: { id:"GREEN", name:"Green Route",  color:"#4dde88", freq:15,
+    verified:true,
+    schedule:[
+      { dow:[1,2,3,4,5], from:"07:00", to:"22:00", freq:15 },
+      { dow:[6,0],       from:"07:00", to:"23:00", freq:30 },
+    ],
+    note:"PDF-sourced. Weekend headway is 30 min. Skips Barracks (6000s Block) before 08:00 on duty days (Marne Ave PT closure).",
     stops:["Pedestrian Gate","Provider Grill DFAC","Desiderio ATC Tower","Law Enforcement Center (DES)","Bus Terminal","Lodging","KTO Museum","MSG Jenkins Medical Clinic","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Talon Cafe DFAC","Airfield Operations","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Exchange (PX)","Balboni Sports Field (5th St)"] },
   ORANGE:{ id:"ORANGE",name:"Orange Route", color:"#ff8c3a", freq:30, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","TMP / Driver's Licensing","Eighth Army HQ"] },
-  PURPLE:{ id:"PURPLE",name:"Purple Route", color:"#c47aff", freq:15, hours:"0600–2200", days:"Mon–Fri",
+  PURPLE:{ id:"PURPLE",name:"Purple Route", color:"#c47aff", freq:15,
+    verified:true,
+    schedule:[
+      { dow:[1,2,3,4], from:"19:00", to:"22:45" },
+      { dow:[5],       from:"19:00", to:"25:30" },
+      { dow:[6],       from:"09:00", to:"25:30" },
+      { dow:[0],       from:"09:00", to:"22:15" },
+    ],
+    note:"PDF-sourced (Exhibit #0022). Mon–Thu evenings only; Fri/Sat run past midnight; Sun daytime.",
     stops:["Brian D. Allgood Hospital","Bus Terminal","Collier Fitness Center","Turner Fitness Center","TMP / Driver's Licensing","Spartan DFAC","Sitman Fitness Center","Barracks (6800s & 6900s Block)","Balboni Sports Field (5th St)","Pittman DFAC"] },
   GOLD:  { id:"GOLD",  name:"Gold Route",   color:"#FFD040", freq:20, hours:"0900–2100", days:"Mon–Sun",
     verified:true, note:"Departs Bus Terminal :00 :20 :40 each hour (from publicly posted July 2023 PDF)",
     stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course"] },
-  BROWN: { id:"BROWN", name:"Brown Route",  color:"#e8944a", freq:30, hours:"1600–2200", days:"Fri–Sat",
-    verified:true, note:"Transcribed from publicly posted PDF (15 July 2023). Friday evening + Saturday/Training Holiday only.",
+  BROWN: { id:"BROWN", name:"Brown Route",  color:"#e8944a", freq:30,
+    verified:true,
+    schedule:[
+      { dow:[5], from:"19:00", to:"22:00" },
+      { dow:[6], from:"16:00", to:"22:00" },
+    ],
+    note:"PDF-sourced (15 July 2023). Trial run. Friday evenings + Saturday/Training Holiday.",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Pacific Victors Chapel","Downtown Plaza","Balboni Sports Field (Marne Ave)","Balboni Sports Field (5th St)","Pittman DFAC","Spartan DFAC","TMP / Driver's Licensing","Airfield Operations","Family Housing Towers (Tropic Lightning Ave)","Collier Fitness Center","Bus Terminal"] },
   PINK:  { id:"PINK",  name:"Pink Route",   color:"#ff6bb5", freq:15, hours:"1700–2300", days:"Fri–Sat",
     verified:true, note:"Transcribed from publicly posted PDF (15 July 2023). Trial-run route; Friday/Training Holiday + Saturday only.",
@@ -80,7 +105,23 @@ for (const [id, r] of Object.entries(ROUTES))
 export const ALL_STOPS = [...new Set(Object.values(ROUTES).flatMap(r=>r.stops))].sort();
 
 // ─── Service-hours / day-of-week filter ──────────────────────────────────────
+function activeWindow(r, d) {
+  if (!r.schedule) return null;
+  const dow = d.getDay();
+  const mins = d.getHours() * 60 + d.getMinutes();
+  for (const w of r.schedule) {
+    const from = hhmmToMin(w.from), to = hhmmToMin(w.to);
+    if (w.dow.includes(dow) && mins >= from && mins <= Math.min(to, 1439)) return w;
+    if (to > 1440) {
+      const yesterday = (dow + 6) % 7;
+      if (w.dow.includes(yesterday) && mins <= (to - 1440)) return w;
+    }
+  }
+  return null;
+}
+
 export const inService = (r, d) => {
+  if (r.schedule) return activeWindow(r, d) !== null;
   const dow = d.getDay();
   if (r.days === "Mon–Fri" && (dow === 0 || dow === 6)) return false;
   if (r.days === "Fri–Sat" && !(dow === 5 || dow === 6)) return false;
@@ -93,6 +134,13 @@ export const inService = (r, d) => {
 
 export const serviceEndToday = (r, ref) => {
   const dow = ref.getDay();
+  if (r.schedule) {
+    const w = r.schedule.find(x => x.dow.includes(dow));
+    if (!w) return null;
+    const em = hhmmToMin(w.to);
+    const d = new Date(ref); d.setHours(0, 0, 0, 0); d.setMinutes(em);
+    return d;
+  }
   if (r.days === "Mon–Fri" && (dow === 0 || dow === 6)) return null;
   if (r.days === "Fri–Sat" && !(dow === 5 || dow === 6)) return null;
   const [, e] = r.hours.split("–");
@@ -102,6 +150,11 @@ export const serviceEndToday = (r, ref) => {
   d.setMinutes(em);
   return d;
 };
+
+function freqAt(r, d) {
+  const w = activeWindow(r, d);
+  return (w && w.freq) || r.freq;
+}
 
 // ─── Scheduled-departure lookup ──────────────────────────────────────────────
 export const ROUTE_SCHEDULE_INDEX = (() => {
@@ -184,15 +237,16 @@ function anchoredHeuristic(R, stop, ref, step) {
     const anchor = new Date(probe);
     anchor.setHours(0, 0, 0, 0);
     const diffMin = (probe - anchor) / 60000;
+    const freq = freqAt(R, probe);
     const k = step > 0
-      ? Math.max(0, Math.ceil((diffMin - offsetMin) / R.freq))
-      : Math.floor((diffMin - offsetMin) / R.freq);
+      ? Math.max(0, Math.ceil((diffMin - offsetMin) / freq))
+      : Math.floor((diffMin - offsetMin) / freq);
     if (step < 0 && k < 0) {
       probe = new Date(anchor.getTime() - 60000);
       continue;
     }
     const cand = new Date(anchor);
-    cand.setMinutes(offsetMin + k * R.freq);
+    cand.setMinutes(offsetMin + k * freq);
     cand.setSeconds(0, 0);
     if (inService(R, cand)) return cand;
     probe = new Date(cand.getTime() + step * 60000);
