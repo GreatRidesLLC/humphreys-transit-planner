@@ -51,10 +51,13 @@ export function nearestStopTo(coords) {
 }
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
-// `schedule` (optional) is preferred over legacy `days` + `hours`. Each window
-// is `{ dow:[0..6], from:"HH:MM", to:"HH:MM", freq? }` where `to` may exceed
-// "24:00" to express overnight service (e.g. Fri 19:00 → Sat 01:30 → to:"25:30").
-// `freq` per window overrides the route-level `freq`.
+// `schedule` (optional) is the source of truth for routing logic when present.
+// Each window is `{ dow:[0..6], from:"HH:MM", to:"HH:MM", freq? }` where `to`
+// may exceed "24:00" to express overnight service (e.g. Fri 19:00 → Sat 01:30
+// → to:"25:30"). `freq` per window overrides the route-level `freq`.
+// `days` + `hours` are also kept on schedule-based routes as human-facing
+// display strings (rendered in the Routes tab + Now tab) — they are NOT read
+// by inService / serviceEndToday / anchoredHeuristic.
 const hhmmToMin = s => parseInt(s.slice(0,2),10)*60 + parseInt(s.slice(3,5),10);
 
 export const ROUTES = {
@@ -64,6 +67,7 @@ export const ROUTES = {
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","Pacific Victors Chapel","Commissary","LTG Maude Hall (9th St)","Spartan DFAC"] },
   GREEN: { id:"GREEN", name:"Green Route",  color:"#4dde88", freq:15,
     verified:true,
+    days:"Mon–Sun", hours:"Mon–Fri 0700–2200 · Sat–Sun 0700–2300",
     schedule:[
       { dow:[1,2,3,4,5], from:"07:00", to:"22:00", freq:15 },
       { dow:[6,0],       from:"07:00", to:"23:00", freq:30 },
@@ -74,11 +78,12 @@ export const ROUTES = {
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","TMP / Driver's Licensing","Eighth Army HQ"] },
   PURPLE:{ id:"PURPLE",name:"Purple Route", color:"#c47aff", freq:15,
     verified:true,
+    days:"Mon–Sun", hours:"Mon–Thu 1900–2245 · Fri 1900–0130 · Sat 0900–0130 · Sun 0900–2245",
     schedule:[
       { dow:[1,2,3,4], from:"19:00", to:"22:45" },
       { dow:[5],       from:"19:00", to:"25:30" },
       { dow:[6],       from:"09:00", to:"25:30" },
-      { dow:[0],       from:"09:00", to:"22:15" },
+      { dow:[0],       from:"09:00", to:"22:45" },
     ],
     note:"PDF-sourced (Exhibit #0022). Mon–Thu evenings only; Fri/Sat run past midnight; Sun daytime.",
     stops:["Brian D. Allgood Hospital","Bus Terminal","Collier Fitness Center","Turner Fitness Center","TMP / Driver's Licensing","Spartan DFAC","Sitman Fitness Center","Barracks (6800s & 6900s Block)","Balboni Sports Field (5th St)","Pittman DFAC"] },
@@ -87,6 +92,7 @@ export const ROUTES = {
     stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course"] },
   BROWN: { id:"BROWN", name:"Brown Route",  color:"#e8944a", freq:30,
     verified:true,
+    days:"Fri–Sat", hours:"Fri 1900–2200 · Sat 1600–2200",
     schedule:[
       { dow:[5], from:"19:00", to:"22:00" },
       { dow:[6], from:"16:00", to:"22:00" },

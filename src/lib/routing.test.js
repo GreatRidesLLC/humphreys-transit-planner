@@ -201,7 +201,7 @@ describe("inService — multi-window schedule", () => {
   it("PURPLE runs Sat 00:30 via Fri overnight overflow", () => {
     expect(inService(ROUTES.PURPLE, satAt(0, 30))).toBe(true);
   });
-  it("PURPLE runs Sun 12:00 (Sun 09:00–22:15)", () => {
+  it("PURPLE runs Sun 12:00 (Sun 09:00–22:45)", () => {
     expect(inService(ROUTES.PURPLE, sunAt(12, 0))).toBe(true);
   });
   it("GREEN now runs Sat midday (weekend window added)", () => {
