@@ -126,7 +126,8 @@ describe("findTrips — transfer", () => {
   it("finds a 1-transfer route when no direct exists", () => {
     // Brian D. Allgood Hospital is PURPLE-only; Pedestrian Gate is on
     // BLUE/BLACK/GREEN/ORANGE/BROWN. Shared hub: Bus Terminal (PURPLE+GREEN).
-    const r = findTrips("Brian D. Allgood Hospital", "Pedestrian Gate", monAt(10, 0), "depart");
+    // Purple runs Sat 09:00–25:30, Green Sat 07:00–23:00 — both in service at noon Sat.
+    const r = findTrips("Brian D. Allgood Hospital", "Pedestrian Gate", satAt(12, 0), "depart");
     expect(r.trips.length).toBeGreaterThan(0);
     expect(r.trips.every(t => t.type === "xfer")).toBe(true);
     const xferLeg = r.trips[0].legs.find(l => l.k === "xfer");
@@ -173,19 +174,47 @@ describe("findTrips — arrive-by mode", () => {
 });
 
 describe("findTrips — Gold honors PDF schedule on direct trip", () => {
-  it("boardAt matches first MONDAY-SATURDAY time >= refTime+walk", () => {
-    // Sunday so only GOLD/inter-garrison serve these. GOLD runs Mon-Sun.
-    const r = findTrips("Bus Terminal", "Main Exchange (PX)", sunAt(10, 0), "depart");
+  it("boardAt matches first SUNDAY time >= refTime+walk", () => {
+    // Morning Calm Center is a GOLD-only stop, so the direct trip is
+    // guaranteed to be Gold regardless of what else runs on Sunday.
+    const r = findTrips("Bus Terminal", "Morning Calm Center", sunAt(10, 0), "depart");
     const goldTrip = r.trips.find(
       t => t.type === "direct" && t.legs.some(l => l.k === "bus" && l.rid === "GOLD")
     );
     expect(goldTrip).toBeTruthy();
     const busLeg = goldTrip.legs.find(l => l.k === "bus");
-    // Walk leg adds 3 min minimum → arrives at stop at 10:03 → next SUNDAY
-    // entry from schedules.json should follow. Just assert boardAt comes from
-    // the PDF block (minute is one of the published times, not :00/:15/:30/:45).
     expect(busLeg.boardAt).toBeInstanceOf(Date);
     expect(busLeg.boardAt >= goldTrip.departAt).toBe(true);
+  });
+});
+
+describe("inService — multi-window schedule", () => {
+  it("PURPLE runs Mon evening (Mon–Thu 19:00–22:45)", () => {
+    expect(inService(ROUTES.PURPLE, monAt(20, 0))).toBe(true);
+  });
+  it("PURPLE does not run Mon midday", () => {
+    expect(inService(ROUTES.PURPLE, monAt(12, 0))).toBe(false);
+  });
+  it("PURPLE runs Fri 23:00 (Fri window 19:00–25:30)", () => {
+    expect(inService(ROUTES.PURPLE, friAt(23, 0))).toBe(true);
+  });
+  it("PURPLE runs Sat 00:30 via Fri overnight overflow", () => {
+    expect(inService(ROUTES.PURPLE, satAt(0, 30))).toBe(true);
+  });
+  it("PURPLE runs Sun 12:00 (Sun 09:00–22:45)", () => {
+    expect(inService(ROUTES.PURPLE, sunAt(12, 0))).toBe(true);
+  });
+  it("GREEN now runs Sat midday (weekend window added)", () => {
+    expect(inService(ROUTES.GREEN, satAt(10, 0))).toBe(true);
+  });
+  it("BROWN Fri does not run at 17:00 (Fri starts 19:00)", () => {
+    expect(inService(ROUTES.BROWN, friAt(17, 0))).toBe(false);
+  });
+  it("BROWN Fri runs at 20:00", () => {
+    expect(inService(ROUTES.BROWN, friAt(20, 0))).toBe(true);
+  });
+  it("BROWN Sat runs at 17:00 (Sat starts 16:00)", () => {
+    expect(inService(ROUTES.BROWN, satAt(17, 0))).toBe(true);
   });
 });
 
