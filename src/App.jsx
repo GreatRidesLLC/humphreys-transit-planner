@@ -143,7 +143,7 @@ const STRINGS = {
     pickStopHint: "Pick a stop to see the next bus on every route that serves it. The page auto-refreshes once a minute.",
     outOfService1: "Out of", outOfService2: "service",
     inMin: m => `in ${m} min`, nowWord: "now", estAvg: "EST. AVG",
-    goldDotsInfo: "Gold dots next to stop names = transfer points served by multiple routes.",
+    transferInfo: "Cyan route names beside a stop = transfer points where you can switch to another route.",
     routeMeta: (freq,n,days,hours) => `Every ${freq} min · ${n} stops · ${days} · ${hours}`,
     pdfVerified: "✓ PDF-sourced schedule",
     verifiedScheduleHeader: "PDF-SOURCED SCHEDULE",
@@ -222,7 +222,7 @@ const STRINGS = {
     pickStopHint: "정류장을 선택하면 해당 정류장의 모든 노선의 다음 버스를 볼 수 있습니다. 1분마다 자동 갱신됩니다.",
     outOfService1: "운행", outOfService2: "종료",
     inMin: m => `${m}분 후`, nowWord: "지금", estAvg: "추정 평균",
-    goldDotsInfo: "정류장 이름 옆 금색 점 = 여러 노선이 정차하는 환승 지점.",
+    transferInfo: "정류장 옆 청록색 노선명 = 다른 노선으로 환승 가능한 지점.",
     routeMeta: (freq,n,days,hours) => `${freq}분 간격 · 정류장 ${n}개 · ${days} · ${hours}`,
     pdfVerified: "✓ PDF 기반 시간표",
     verifiedScheduleHeader: "PDF 기반 시간표",
@@ -1293,7 +1293,7 @@ export default function App() {
         <div id="panel-routes" role="tabpanel" aria-labelledby="tab-routes" tabIndex={0} style={{padding:"16px 14px 24px"}}>
           <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"10px 14px",marginBottom:14}}>
             <div style={{fontSize:11,color:C.sage,lineHeight:1.6}}>
-              {t.goldDotsInfo}
+              {t.transferInfo}
             </div>
           </div>
           {Object.values(ROUTES).map(r=><RouteCard key={r.id} route={r}/>)}
