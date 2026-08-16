@@ -188,6 +188,26 @@ describe("findTrips — Gold honors PDF schedule on direct trip", () => {
   });
 });
 
+describe("PURPLE PDF-sourced schedule (schedules.json)", () => {
+  it("Bus Terminal Mon 20:00 → 20:00", () => {
+    const d = nextScheduledDeparture(ROUTES.PURPLE, "Bus Terminal", monAt(20, 0));
+    expect(d.getHours()).toBe(20); expect(d.getMinutes()).toBe(0);
+  });
+  it("Brian D. Allgood Fri 22:00 → 22:12 (BT 21:45 + 27-min loop)", () => {
+    const d = nextScheduledDeparture(ROUTES.PURPLE, "Brian D. Allgood Hospital", friAt(22, 0));
+    expect(d.getHours()).toBe(22); expect(d.getMinutes()).toBe(12);
+  });
+  it("Bus Terminal Sat 00:00 finds Fri-overnight departure (00:00)", () => {
+    const d = nextScheduledDeparture(ROUTES.PURPLE, "Bus Terminal", satAt(0, 0));
+    expect(d.getDate()).toBe(satAt(0, 0).getDate());
+    expect(d.getHours()).toBe(0); expect(d.getMinutes()).toBe(0);
+  });
+  it("Bus Terminal Sat 06:00 skips to 09:00 (gap between overnight end and daytime start)", () => {
+    const d = nextScheduledDeparture(ROUTES.PURPLE, "Bus Terminal", satAt(6, 0));
+    expect(d.getHours()).toBe(9); expect(d.getMinutes()).toBe(0);
+  });
+});
+
 describe("inService — multi-window schedule", () => {
   it("PURPLE runs Mon evening (Mon–Thu 19:00–22:45)", () => {
     expect(inService(ROUTES.PURPLE, monAt(20, 0))).toBe(true);
