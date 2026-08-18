@@ -23,6 +23,8 @@ const MAPA_LINKS = {
   android: "https://play.google.com/store/apps/details?id=mil.aswf.garrison",
 };
 
+const FEEDBACK_URL = "https://tally.so/r/dWGWEN";
+
 const C = {
   bgDeep:    "#06080c",
   bgBase:    "#0a0e12",
@@ -141,7 +143,7 @@ const STRINGS = {
     pickStopHint: "Pick a stop to see the next bus on every route that serves it. The page auto-refreshes once a minute.",
     outOfService1: "Out of", outOfService2: "service",
     inMin: m => `in ${m} min`, nowWord: "now", estAvg: "EST. AVG",
-    goldDotsInfo: "Gold dots next to stop names = transfer points served by multiple routes.",
+    transferInfo: "Cyan route names beside a stop = transfer points where you can switch to another route.",
     routeMeta: (freq,n,days,hours) => `Every ${freq} min · ${n} stops · ${days} · ${hours}`,
     pdfVerified: "✓ PDF-sourced schedule",
     verifiedScheduleHeader: "PDF-SOURCED SCHEDULE",
@@ -161,6 +163,7 @@ const STRINGS = {
     mapaAppStore: "App Store",
     mapaPlayStore: "Google Play",
     scheduleCredit: "Route schedules sourced from publicly posted USAG Humphreys PDFs.",
+    feedbackLink: "Report an issue or suggest a fix",
     noticeTitle: "Before you start",
     noticeBody: "This is an unofficial, community-built trip planner. It is not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. For official garrison information, use MAPA (My Army Post App), the official U.S. Army app:",
     noticeAck: "I understand — continue",
@@ -219,7 +222,7 @@ const STRINGS = {
     pickStopHint: "정류장을 선택하면 해당 정류장의 모든 노선의 다음 버스를 볼 수 있습니다. 1분마다 자동 갱신됩니다.",
     outOfService1: "운행", outOfService2: "종료",
     inMin: m => `${m}분 후`, nowWord: "지금", estAvg: "추정 평균",
-    goldDotsInfo: "정류장 이름 옆 금색 점 = 여러 노선이 정차하는 환승 지점.",
+    transferInfo: "정류장 옆 청록색 노선명 = 다른 노선으로 환승 가능한 지점.",
     routeMeta: (freq,n,days,hours) => `${freq}분 간격 · 정류장 ${n}개 · ${days} · ${hours}`,
     pdfVerified: "✓ PDF 기반 시간표",
     verifiedScheduleHeader: "PDF 기반 시간표",
@@ -239,6 +242,7 @@ const STRINGS = {
     mapaAppStore: "App Store",
     mapaPlayStore: "Google Play",
     scheduleCredit: "노선 시간표는 공개된 USAG 험프리스 PDF에서 가져왔습니다.",
+    feedbackLink: "오류 신고 또는 수정 제안",
     noticeTitle: "시작하기 전에",
     noticeBody: "이 앱은 비공식 사용자 제작 교통 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 공식 기지 정보는 미 육군 공식 앱 MAPA(My Army Post App)를 이용하세요:",
     noticeAck: "확인했습니다 — 계속",
@@ -1289,7 +1293,7 @@ export default function App() {
         <div id="panel-routes" role="tabpanel" aria-labelledby="tab-routes" tabIndex={0} style={{padding:"16px 14px 24px"}}>
           <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"10px 14px",marginBottom:14}}>
             <div style={{fontSize:11,color:C.sage,lineHeight:1.6}}>
-              {t.goldDotsInfo}
+              {t.transferInfo}
             </div>
           </div>
           {Object.values(ROUTES).map(r=><RouteCard key={r.id} route={r}/>)}
@@ -1306,6 +1310,12 @@ export default function App() {
       <footer style={{borderTop:`1px solid ${C.borderSub}`,padding:"14px 16px 22px",marginTop:8,fontSize:10,color:C.oliveMute,lineHeight:1.6,textAlign:"center"}}>
         {t.disclaimer}
         <div style={{marginTop:8,color:C.oliveDim}}>{t.scheduleCredit}</div>
+        <div style={{marginTop:10}}>
+          <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
+             style={{color:C.accent,textDecoration:"underline",fontSize:11}}>
+            {t.feedbackLink}
+          </a>
+        </div>
       </footer>
     </div>
     </LangContext.Provider>

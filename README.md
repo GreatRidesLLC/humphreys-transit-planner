@@ -26,7 +26,7 @@ After cloning, also bootstrap the gitleaks pre-commit hook once:
 | `src/App.jsx` | Whole app — single component file by design. See "Where to look for X" below. |
 | `src/main.jsx` | React entry point. |
 | `public/fonts/` | Self-hosted Rajdhani / JetBrains Mono / Noto Sans KR (no Google CDN). |
-| `public/_headers` | Static security headers (CSP, HSTS, etc.) applied at the edge by Cloudflare Pages / Netlify. |
+| `public/_headers` | Static security headers (CSP, HSTS, etc.) applied at the edge by Cloudflare Workers Static Assets. |
 | `public/favicon.svg` | App icon source. |
 | `scripts/setup-hooks.sh` | Wires `core.hooksPath=.githooks` so the gitleaks pre-commit hook runs. |
 | `.githooks/pre-commit` | Runs `gitleaks` against staged changes. |
@@ -37,6 +37,8 @@ After cloning, also bootstrap the gitleaks pre-commit hook once:
 | `Roadmap.md` | Phased improvement queue and rationale. |
 | `docs/legal-posture.md` | Trademark / endorsement stance, name choice, text-scrub checklist, asset audit, PAO-positive revert path. |
 | `docs/distribution-pivot.md` | File / line index for flipping from standalone to MAPA-integrated if PAO accepts. |
+| `docs/deploy.md` | Cloudflare Workers Static Assets setup (dashboard steps, branch mapping, verification, rollback). |
+| `wrangler.jsonc` | Cloudflare Workers config: `assets.directory=./dist` + SPA fallback. |
 
 ## Updating data
 
@@ -97,14 +99,15 @@ Remove-NetFirewallRule -DisplayName "Vite Dev 5173"
 
 ## Deployment
 
-Target: Cloudflare Pages or Netlify (static-site host that respects `public/_headers`).
+Target: Cloudflare Workers Static Assets (Workers Builds path — dashboard git connection). `wrangler.jsonc` at repo root pins `assets.directory=./dist` and SPA fallback. Full setup, branch mapping, and verification steps in `docs/deploy.md`.
+
+Local build:
 
 1. `npm run build` — output goes to `dist/`.
-2. Upload `dist/` to the chosen host, or point the host at the git repo.
-3. Verify headers post-deploy with [securityheaders.com](https://securityheaders.com).
-4. Regenerate `sbom.json` on each release (`npm run sbom`) and commit alongside the version bump.
+2. Regenerate `sbom.json` on each release (`npm run sbom`) and commit alongside the version bump.
+3. Post-deploy: verify headers with [securityheaders.com](https://securityheaders.com).
 
-CI gates (gitleaks, `npm audit --audit-level=high`, SBOM upload, Dependabot, branch protection) are deferred until the repo is pushed to a hosted remote — see `SECURITY.md`. Pushing the repo is the next Phase 5a milestone in `Roadmap.md`.
+CI (`.github/workflows/ci.yml`) runs lint + tests + `npm audit --audit-level=high` + build + SBOM upload on every push. Gitleaks scans PRs. Dependabot is active. Cloudflare Workers Builds picks up pushes to `main` (prod) and `dev` (preview) directly — no CI-side deploy step.
 
 ## Security ops
 

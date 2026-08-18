@@ -29,3 +29,6 @@ scripts/cache/
 
 # wrangler runtime
 .wrangler
+
+# personal working notes (drafts, outreach prep) — not for commit
+notes/
