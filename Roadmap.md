@@ -64,7 +64,7 @@ No domain yet. `*.pages.dev` fallback works but is not shareable-friendly for KA
 One inquiry to DSN 755-0424 bundling three asks:
 1. Black / Orange headway (currently unverified `freq` of 25 / 30)
 2. Blue service-hour bounds (currently placeholder `0600–2200`). Green + Purple resolved via on-post posters (see Shipped)
-3. Per-route PDFs for Blue / Black / Orange (Green + Purple posters photographed on-site; Gold Mon–Fri Exhibit #0019 still needs per-stop transcription)
+3. Per-route PDFs for Blue / Black / Orange (Gold Exhibit #0019 + Green + Purple posters photographed on-site)
 
 Send week 1. If no reply by week 3 → ship with current `EST.` badges (already handled by the estimated-vs-verified UI). Do not block launch on reply.
 
@@ -103,7 +103,7 @@ CARTO tiles fetch at runtime. App still installs offline; map shows a grey panel
 Off-Post tab describes what real-time tracking would need. Actual outreach: Transportation (DSN 755-0424) about GPS trackers or BusWhere (deployed at Osan Air Base) as a faster path than custom hardware. Requires G6/S6 + DoD-approved backend — long lead time. Fire off inquiry post-launch; treat responses as bonus.
 
 ### Per-route schedule fallback for the remaining unverified routes
-If Transportation Office does not supply per-route PDFs in the launch inquiry: (a) per-panel image-crop pipeline (needs OpenCV / Pillow) on the public per-stop PNGs, or (b) manual transcription. Green + Purple already resolved from on-post posters; Blue / Black / Orange remain. Gold weekday per-stop transcription (Exhibit #0019) also outstanding. Drop `goldDisclaimer` string once all eight routes have real schedule data.
+If Transportation Office does not supply per-route PDFs in the launch inquiry: (a) per-panel image-crop pipeline (needs OpenCV / Pillow) on the public per-stop PNGs, or (b) manual transcription. Gold weekday + Green + Purple resolved from on-post posters (Green BT only; per-stop pending). Blue / Black / Orange remain fully unverified. Drop `goldDisclaimer` string once all eight routes have real schedule data.
 
 ### Loop directionality
 Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes bidirectional travel. Correcting requires authoritative direction data from schedule PDFs; payoff is edge cases only. Park until a wrong-direction bug is reported.
