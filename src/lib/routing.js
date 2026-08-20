@@ -87,8 +87,15 @@ export const ROUTES = {
     ],
     note:"PDF-sourced (Exhibit #0022). Mon–Thu evenings only; Fri/Sat run past midnight; Sun daytime.",
     stops:["Brian D. Allgood Hospital","Bus Terminal","Collier Fitness Center","Turner Fitness Center","TMP / Driver's Licensing","Spartan DFAC","Sitman Fitness Center","Barracks (6800s & 6900s Block)","Balboni Sports Field (5th St)","Pittman DFAC"] },
-  GOLD:  { id:"GOLD",  name:"Gold Route",   color:"#FFD040", freq:20, hours:"0900–2100", days:"Mon–Sun",
-    verified:true, note:"Departs Bus Terminal :00 :20 :40 each hour (from publicly posted July 2023 PDF)",
+  GOLD:  { id:"GOLD",  name:"Gold Route",   color:"#FFD040", freq:20,
+    verified:true,
+    days:"Mon–Sun", hours:"Mon–Fri 0900–2045 · Sat 0900–2045 · Sun 0900–1905",
+    schedule:[
+      { dow:[1,2,3,4,5], from:"09:00", to:"20:45" },
+      { dow:[6],         from:"09:00", to:"20:45" },
+      { dow:[0],         from:"09:00", to:"19:05" },
+    ],
+    note:"PDF-sourced (Exhibit #0019). Mon–Fri: 30-min headway 09-16, 15-min 16-20. Sat/Sun: 20-min uniform.",
     stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course"] },
   BROWN: { id:"BROWN", name:"Brown Route",  color:"#e8944a", freq:30,
     verified:true,
@@ -109,6 +116,19 @@ for (const [id, r] of Object.entries(ROUTES))
   for (const s of r.stops) { if (!STOP_ROUTES[s]) STOP_ROUTES[s]=[]; STOP_ROUTES[s].push(id); }
 
 export const ALL_STOPS = [...new Set(Object.values(ROUTES).flatMap(r=>r.stops))].sort();
+
+// Alternate names used on posters / by riders. Search matches on any alias
+// but resolves to the canonical stop name (the key). Add here when a poster
+// or user reports uses a different label than the ROUTES canonical form.
+export const STOP_ALIASES = {
+  "Barracks (700s Block)":            ["Barrack 700s", "700s Barracks"],
+  "Morning Calm Center":              ["Morning Calm"],
+  "Collier Fitness Center":           ["Collier Gym"],
+  "Main Exchange (PX)":               ["New PX", "PX"],
+  "Balboni Sports Field (Marne Ave)": ["Balboni Sports Field"],
+  "Barracks (6800s Block)":           ["Barrack 6800s"],
+  "River Bend Golf Course":           ["Riverbend Golf Course"],
+};
 
 // ─── Service-hours / day-of-week filter ──────────────────────────────────────
 function activeWindow(r, d) {

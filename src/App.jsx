@@ -5,7 +5,7 @@ import BUILDINGS_OSM_JSON from "./data/buildings_osm.json";
 import {
   pad2,
   STOP_COORDS, nearestStopTo,
-  ROUTES, STOP_ROUTES, ALL_STOPS,
+  ROUTES, STOP_ROUTES, ALL_STOPS, STOP_ALIASES,
   inService,
   nextScheduledDeparture,
   findTrips,
@@ -330,6 +330,9 @@ function useLocalStorage(key, initial) {
 
 const SEARCH_INDEX = [
   ...ALL_STOPS.map(s => ({ label:s, stop:s, sub:"Bus stop" })),
+  ...Object.entries(STOP_ALIASES).flatMap(([canonical, aliases]) =>
+    aliases.map(a => ({ label:a, stop:canonical, sub:`Also known as ${canonical}` }))
+  ),
   ...Object.entries(BUILDINGS).map(([num,b]) => ({
     label:`Bldg ${num} – ${b.name}`, stop:b.stop, sub:`Nearest stop: ${b.stop}`, isBuilding:true, bldg:num
   })),

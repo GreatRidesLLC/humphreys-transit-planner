@@ -67,11 +67,19 @@ describe("STOP_ROUTES + ALL_STOPS index", () => {
 });
 
 describe("nextScheduledDeparture / prevScheduledDeparture", () => {
-  it("GOLD honors PDF-sourced :00 :20 :40 timetable at Bus Terminal", () => {
-    const d = nextScheduledDeparture(ROUTES.GOLD, "Bus Terminal", monAt(9, 30));
+  it("GOLD honors PDF-sourced Mon–Fri 30-min timetable at Bus Terminal", () => {
+    // Photo (Exhibit #0019, table 4): Mon–Fri BT dispatches 09:00, 09:30,
+    // 10:00 … 15:30, then 16:00 every 15 min. After 09:31 → 10:00.
+    const d = nextScheduledDeparture(ROUTES.GOLD, "Bus Terminal", monAt(9, 31));
     expect(d).not.toBeNull();
-    expect(d.getHours()).toBe(9);
-    expect(d.getMinutes()).toBe(40);
+    expect(d.getHours()).toBe(10);
+    expect(d.getMinutes()).toBe(0);
+  });
+  it("GOLD Mon–Fri switches to 15-min headway after 16:00", () => {
+    // After 16:00 dispatches are :00 :15 :30 :45. From 16:01 → 16:15.
+    const d = nextScheduledDeparture(ROUTES.GOLD, "Bus Terminal", monAt(16, 1));
+    expect(d.getHours()).toBe(16);
+    expect(d.getMinutes()).toBe(15);
   });
   it("GOLD prev <= 10:00 returns 10:00 (inclusive)", () => {
     const d = prevScheduledDeparture(ROUTES.GOLD, "Bus Terminal", monAt(10, 0));
