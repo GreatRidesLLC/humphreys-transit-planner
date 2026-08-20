@@ -99,10 +99,10 @@ export const ROUTES = {
     stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course"] },
   BROWN: { id:"BROWN", name:"Brown Route",  color:"#e8944a", freq:30,
     verified:true,
-    days:"Fri–Sat", hours:"Fri 1900–2200 · Sat 1600–2200",
+    days:"Fri–Sat", hours:"Fri 1900–2315 · Sat 1600–2315",
     schedule:[
-      { dow:[5], from:"19:00", to:"22:00" },
-      { dow:[6], from:"16:00", to:"22:00" },
+      { dow:[5], from:"19:00", to:"23:15" },
+      { dow:[6], from:"16:00", to:"23:15" },
     ],
     note:"PDF-sourced (15 July 2023). Trial run. Friday evenings + Saturday/Training Holiday.",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Pacific Victors Chapel","Downtown Plaza","Balboni Sports Field (Marne Ave)","Balboni Sports Field (5th St)","Pittman DFAC","Spartan DFAC","TMP / Driver's Licensing","Airfield Operations","Family Housing Towers (Tropic Lightning Ave)","Collier Fitness Center","Bus Terminal"] },
