@@ -112,6 +112,12 @@ Overpass `route=bus` query to replace straight-line polygons on the Map tab. Str
 ### Standalone "About" page
 Promote universal disclaimer footer into a standalone About page or section (currently inline-only in the footer).
 
+### Google Play Store listing (via TWA)
+Wrap the PWA as a Trusted Web Activity using Google's `bubblewrap` CLI, publish to Play Console. One-time $25 Play developer account. Update flow stays push-to-deploy for the app itself — the store binary is only rebuilt on version bumps. Trigger: post-launch traction data shows KATUSA / soldier / KSC users searching "Humphreys" in the Play Store and not finding the PWA install prompt. Watch-out: a Play listing sitting next to MAPA (`mil.aswf.garrison`) in store search may re-open the PAO non-compete conversation Nagan closed 2026-06-19 (see `docs/legal-posture.md`, [[nagan_mapa_coexistence]]); do not proceed without re-confirming standalone posture with PAO. Trademark exposure also higher on a public store listing than on a URL — endorsement-scrub already applied to user copy, but the store listing itself (title, short description, screenshots) needs the same pass before submission.
+
+### Apple App Store — deferred indefinitely
+Higher friction than Play (native wrapper required per Apple Guideline 4.2 — pure WebViews rejected; Capacitor / WKWebView + minimal native code needed), $99/yr Apple Developer account, 1–7 day review per update. iOS PWA install (Safari → Add to Home Screen → runs standalone with the shipped `apple-touch-icon`) already covers the core install path for iOS users. Revisit only if a specific iOS-heavy user cluster surfaces via feedback and Safari install is proven insufficient. Also inherits the trademark + MAPA non-compete watch-outs above.
+
 ## Contingency — MAPA re-open
 
 Do NOT start unless PAO re-opens the MAPA-integration conversation. Nagan approved standalone on non-compete basis 2026-06-19 (see [[nagan_mapa_coexistence]]); this branch of work is preserved for optionality only. File / line index lives in `docs/distribution-pivot.md`.
