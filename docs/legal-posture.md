@@ -110,7 +110,7 @@ If the Director explicitly declines or is unreachable for >90 days (current stat
 
 - Keep current standalone posture indefinitely.
 - Re-emphasize disclaimer in About copy.
-- Optional: register a non-`.army.mil` domain (e.g. `humphreys-transit.app`) — Cloudflare Pages free tier serves on `*.pages.dev` until then.
+- Non-`.army.mil` production domain registered 2026-08-21: `humphreysbus.app` via Cloudflare Registrar. Clearly signals a community project (not a `.mil` / `.army.mil` official host) while staying short and mobile-friendly for the KATUSA / KSC / soldier audience.
 - Optional: add explicit "Report inaccurate schedule" footer link once feedback channel ships (Roadmap Phase 5a).
 
 ## Related

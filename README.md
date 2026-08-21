@@ -2,6 +2,8 @@
 
 Mobile-first React app for planning shuttle trips around the U.S. Army installation in Pyeongtaek, South Korea. Community-built; not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. See `docs/legal-posture.md` for the full posture statement.
 
+**Live:** <https://humphreysbus.app>
+
 ## Quick start
 
 ```bash

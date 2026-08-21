@@ -44,21 +44,19 @@ Launch-focused. Target public release **~2026-08-26** (one month from 2026-07-26
 - Test framework + `findTrips` coverage — pure routing logic extracted to `src/lib/routing.js`; vitest wired via `npm test`; `src/lib/routing.test.js` covers `inService`, `serviceEndToday`, scheduled + heuristic departure, `findTrips` direct/transfer/service-hours/overnight/arrive-by/walk-floor. CI runs `npm test` after lint
 - User feedback channel — Tally hosted form (https://tally.so/r/dWGWEN) linked from footer on every tab in both EN + KO (`feedbackLink` string). Opens in new tab (`target="_blank" rel="noopener noreferrer"`); no CSP change required (no iframe, no fetch). Form authored 2026-08-19 with 6 bilingual fields (EN + KO labels): Type of feedback (multi-choice, required), Route (short text), Stop (short text), Details (long text, required), Language (multi-choice, required), Email (optional). Title "Humphreys Transit Planner — Feedback / 피드백"; description carries the non-affiliation disclaimer; CAPTCHA + email-on-submit to project inbox enabled
 - iOS PWA PNG icons — `public/icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` (180×180) generated from `public/icon.svg` via `scripts/gen_icons.sh` (rsvg-convert / librsvg2-bin — `sharp` still segfaults on WSL2 kernel). Maskable variant uses a padded SVG (`public/icon-maskable.svg`) scaled to 60% inside a solid charcoal bg to survive all mask shapes. Manifest + `apple-touch-icon` `<link>` repointed to PNG; SVG kept as fallback. Workbox `globPatterns` extended to precache `*.png`
+- Custom domain + DNS hardening (2026-08-21) — `humphreysbus.app` registered via Cloudflare Registrar (~$14/yr, WHOIS privacy on by default). Attached to the `humphreys-transit-planner` Workers project as an apex Custom Domain; CF-issued edge cert from Google Trust Services (`.app` TLD default). CF Edge Certificate Authority pinned to Google Trust Services to prevent silent CA rotation. DNSSEC enabled — DS pushed to the `.app` registry, resolver returns `ad` flag confirming validation. CAA records restrict issuance to `pki.goog` (matches pinned CA) and `letsencrypt.org` (backup) with `iodef mailto:emmanuel.bayere@gmail.com` for violation reports. Registrar transfer-lock on (CF Registrar default). `README.md`, `docs/deploy.md`, `docs/distribution-pivot.md`, `docs/legal-posture.md`, `SECURITY.md` updated to reflect the live URL and hardening posture
 
 ## Launch — target ~2026-08-26
 
 Ship-blockers only. Everything here must land (or be deliberately cut with a reason) before the public URL goes live.
 
 ### Deploy to Cloudflare Pages (prod + preview)
-Default subdomain `*.pages.dev` for the standalone launch; custom domain deferred until a name is chosen. `wrangler.jsonc` at repo root drives Workers Builds (see [[cf_workers_config]]). Wire:
-- Production branch = `main` → `humphreys-transit.pages.dev` (or chosen prod subdomain)
-- Preview branch = `dev` → `dev.humphreys-transit.pages.dev` (or default `dev-<hash>.pages.dev`)
+Custom domain `humphreysbus.app` live on the `main` branch (see Shipped). `wrangler.jsonc` at repo root drives Workers Builds (see [[cf_workers_config]]). Wire:
+- Production branch = `main` → `https://humphreysbus.app`
+- Preview branch = `dev` → `dev.humphreys-transit-planner.<subdomain>.workers.dev`
 - All other branches build previews on push, do not surface to end users
 - Verify `public/_headers` applies on both envs; smoke-test CSP, geolocation permission-policy, map tile fetch
 - Add production URL to `README.md` + repo About
-
-### Domain (custom)
-No domain yet. `*.pages.dev` fallback works but is not shareable-friendly for KATUSA / KSC / soldier audiences. Pick a name, register, wire DNS to Cloudflare Pages, apply DNS hardening (DNSSEC, CAA, registrar lock — see `SECURITY.md`). Candidate names to compare: `humphreys-transit.app`, `humphreysbus.app`, `humphreys-shuttle.app`, or a Korean-friendly variant. Blocks launch: cannot share a `.pages.dev` URL publicly.
 
 ### Transportation Office data inquiry (single email)
 One inquiry to DSN 755-0424 bundling three asks:
@@ -110,9 +108,6 @@ Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes bidir
 
 ### Real route polylines
 Overpass `route=bus` query to replace straight-line polygons on the Map tab. Straight lines convey topology fine; upgrade is pure polish.
-
-### Custom domain + DNS hardening
-Register non-`.army.mil` domain (e.g. `humphreys-transit.app`); apply DNSSEC, CAA, registrar lock. Deferred from launch to avoid a name-lock decision under time pressure. Standalone `*.pages.dev` is fine for v1.
 
 ### Standalone "About" page
 Promote universal disclaimer footer into a standalone About page or section (currently inline-only in the footer).
