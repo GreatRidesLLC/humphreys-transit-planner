@@ -81,7 +81,7 @@ feat/*     ← short-lived feature branches
 - `dev` auto-deploys to a stable preview URL for smoke testing
 - Release = PR `dev` → `main`, squash-merge, tag `vX.Y.Z`
 - Hotfix = branch off `main`, PR → `main`, cherry-pick back to `dev`
-- Branch protection: both `main` + `dev` require PR + CI green (`main` currently protected; extend to `dev`)
+- Branch protection: both `main` + `dev` require PR + CI green (both protected as of 2026-08-21)
 - See [[feedback_branching]] — never commit to `main` directly
 
 ## Post-launch (v1.1+)
