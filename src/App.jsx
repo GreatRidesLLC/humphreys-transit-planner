@@ -1,8 +1,7 @@
 import { useState, useMemo, useRef, useEffect, createContext, useContext } from "react";
-import BUILDINGS_OSM_JSON from "./data/buildings_osm.json";
 import {
   pad2,
-  STOP_COORDS, nearestStopTo,
+  nearestStopTo,
   ROUTES, STOP_ROUTES, ALL_STOPS, STOP_ALIASES,
   inService,
   nextScheduledDeparture,
@@ -160,6 +159,9 @@ const STRINGS = {
     noticeTitle: "Before you start",
     noticeBody: "This is an unofficial, community-built trip planner. It is not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. For official garrison information, use MAPA (My Army Post App), the official U.S. Army app:",
     noticeAck: "I understand — continue",
+    feedbackNudgeQuestion: "Was this trip info right?",
+    feedbackNudgeButton: "Give feedback",
+    feedbackNudgeDismiss: "Close feedback prompt",
   },
   ko: {
     appTitle: "험프리스 교통 플래너",
@@ -234,6 +236,9 @@ const STRINGS = {
     noticeTitle: "시작하기 전에",
     noticeBody: "이 앱은 비공식 사용자 제작 교통 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 공식 기지 정보는 미 육군 공식 앱 MAPA(My Army Post App)를 이용하세요:",
     noticeAck: "확인했습니다 — 계속",
+    feedbackNudgeQuestion: "이 여정 정보가 정확했나요?",
+    feedbackNudgeButton: "피드백 남기기",
+    feedbackNudgeDismiss: "피드백 메시지 닫기",
   },
 };
 const LangContext = createContext({ lang: "en", t: STRINGS.en });
@@ -803,6 +808,17 @@ export default function App() {
   // First-run non-affiliation notice. Shown once per device until acknowledged.
   const [noticeSeen, setNoticeSeen] = useLocalStorage("humphreys.noticeSeen", false);
 
+  // Feedback nudge: track plan count and snooze status
+  const [planCount, setPlanCount] = useLocalStorage("htp_planCount", 0);
+  const [nudgeSnoozedUntil, setNudgeSnoozedUntil] = useLocalStorage("htp_nudgeSnoozedUntil", null);
+
+    // Increment plan count when displaying results
+  useEffect(() => {
+    if (searched && results && results.trips && results.trips.length > 0) {
+      setPlanCount(prev => prev + 1);
+    }
+  }, [searched, results, setPlanCount]);
+
   const search=()=>{
     const ref = tMode === "now" ? new Date() : parseHMD(tTime, tDate);
     const mode = tMode === "arrive" ? "arrive" : "depart";
@@ -1044,6 +1060,26 @@ export default function App() {
                     {results.filtered.length>0 && <span style={{color:C.gold,marginLeft:8,textTransform:"none",letterSpacing:0}}>· {t.routesOOS(results.filtered.length)}</span>}
                   </div>
                   {results.trips.map((trip,i)=><TripCard key={trip.id} trip={trip} rank={i}/>)}
+                  {(() => {
+                    // eslint-disable-next-line react-hooks/purity
+                    const shouldShow = planCount >= 3 && (!nudgeSnoozedUntil || nudgeSnoozedUntil < Date.now());
+                    if (!shouldShow) return null;
+                    const handleDismiss = () => setNudgeSnoozedUntil(Date.now() + 60 * 24 * 60 * 60 * 1000);
+                    const handleFeedback = () => setNudgeSnoozedUntil(Date.now() + 21 * 24 * 60 * 60 * 1000);
+                    return (
+                      <div style={{background:C.bgSurface,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:12,marginTop:14,display:"flex",gap:10,alignItems:"flex-start",fontSize:13}}>
+                        <div style={{flex:1,color:C.tan}}>{t.feedbackNudgeQuestion}</div>
+                        <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" onClick={handleFeedback}
+                           style={{color:C.accent,fontWeight:500,whiteSpace:"nowrap",cursor:"pointer",textDecoration:"none"}}>
+                          {t.feedbackNudgeButton}
+                        </a>
+                        <button onClick={handleDismiss} aria-label={t.feedbackNudgeDismiss}
+                           style={{background:"none",border:"none",color:C.oliveDim,cursor:"pointer",padding:0,fontSize:14}}>
+                          ×
+                        </button>
+                      </div>
+                    );
+                  })()}
                   <div style={{fontSize:11,color:C.oliveMute,textAlign:"center",marginTop:8,lineHeight:1.6}}>{t.waitDisclaimer}</div>
                 </>
               )}
