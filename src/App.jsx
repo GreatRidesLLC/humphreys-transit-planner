@@ -1,6 +1,4 @@
 import { useState, useMemo, useRef, useEffect, createContext, useContext } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import BUILDINGS_OSM_JSON from "./data/buildings_osm.json";
 import {
   pad2,
@@ -92,9 +90,8 @@ const STRINGS = {
   en: {
     appTitle: "Humphreys Transit Planner",
     appSubtitle: "Community shuttle planner · Pyeongtaek",
-    tabPlan: "🗺 Plan", tabNow: "⏱ Now", tabMap: "📍 Map", tabRoutes: "🚌 Routes", tabOffpost: "📡 Off-Post",
+    tabPlan: "🗺 Plan", tabNow: "⏱ Now", tabRoutes: "🚌 Routes", tabOffpost: "📡 Off-Post",
     mainNav: "Main tabs",
-    mapHint: "Tap a stop to set it as From or To.",
     favorites: "★ Favorites", recent: "↺ Recent",
     typePrompt: "Type a stop name or building number",
     from: "From", to: "To", atStop: "At stop",
@@ -147,10 +144,6 @@ const STRINGS = {
     routeMeta: (freq,n,days,hours) => `Every ${freq} min · ${n} stops · ${days} · ${hours}`,
     pdfVerified: "✓ PDF-sourced schedule",
     verifiedScheduleHeader: "PDF-SOURCED SCHEDULE",
-    liveGps: "Live GPS Tracking",
-    futureFeatureLabel: "FUTURE FEATURE · WHAT IT REQUIRES",
-    gpsAction: "Action:",
-    gpsActionText: " Contact Transportation (DSN 755-0424) and DPW GIS/IGI&S (Bldg 6140) to explore GPS trackers or a BusWhere deployment for the post.",
     interGarrisonHeader: "Inter-Garrison Routes",
     interGarrisonWarn1: "⚠️ Inter-garrison buses are ",
     interGarrisonWarnStrong: "not integrated",
@@ -171,9 +164,8 @@ const STRINGS = {
   ko: {
     appTitle: "험프리스 교통 플래너",
     appSubtitle: "사용자 제작 셔틀 플래너 · 평택",
-    tabPlan: "🗺 계획", tabNow: "⏱ 지금", tabMap: "📍 지도", tabRoutes: "🚌 노선", tabOffpost: "📡 기지 외",
+    tabPlan: "🗺 계획", tabNow: "⏱ 지금", tabRoutes: "🚌 노선", tabOffpost: "📡 기지 외",
     mainNav: "메인 탭",
-    mapHint: "정류장을 누르면 출발 또는 도착으로 설정됩니다.",
     favorites: "★ 즐겨찾기", recent: "↺ 최근",
     typePrompt: "정류장 이름 또는 건물 번호를 입력하세요",
     from: "출발", to: "도착", atStop: "정류장",
@@ -226,10 +218,6 @@ const STRINGS = {
     routeMeta: (freq,n,days,hours) => `${freq}분 간격 · 정류장 ${n}개 · ${days} · ${hours}`,
     pdfVerified: "✓ PDF 기반 시간표",
     verifiedScheduleHeader: "PDF 기반 시간표",
-    liveGps: "실시간 GPS 추적",
-    futureFeatureLabel: "추후 기능 · 필요 요건",
-    gpsAction: "조치:",
-    gpsActionText: " 교통과(DSN 755-0424) 및 DPW GIS/IGI&S(6140동)에 문의하여 GPS 추적기 또는 BusWhere 도입을 검토하세요.",
     interGarrisonHeader: "기지 간 노선",
     interGarrisonWarn1: "⚠️ 기지 간 버스는 노선 검색에 ",
     interGarrisonWarnStrong: "포함되지 않습니다",
@@ -552,34 +540,42 @@ function RouteCard({route:r}) {
       <div role="button" tabIndex={0} aria-expanded={open} aria-label={open?t.collapseRoute:t.expandRoute}
         onClick={()=>setOpen(o=>!o)}
         onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(o=>!o);}}}
-        style={{padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <div style={{width:14,height:14,borderRadius:"50%",background:r.color,boxShadow:`0 0 10px ${r.color}88`,flexShrink:0}}/>
-          <div>
-            <div style={{fontSize:16,fontWeight:700,color:C.khaki}}>{r.name}</div>
-            <div style={{fontSize:11,color:C.oliveDim}}>{t.routeMeta(r.freq, r.stops.length, r.days, r.hours)}</div>
-            {r.verified && <div style={{fontSize:10,color:"#4dde88",marginTop:2}}>{t.pdfVerified}</div>}
-          </div>
+        style={{padding:"14px 16px",display:"grid",gridTemplateColumns:"14px 1fr auto",columnGap:12,alignItems:"center",cursor:"pointer",minHeight:64}}>
+        <div style={{width:14,height:14,borderRadius:"50%",background:r.color,boxShadow:`0 0 10px ${r.color}88`}}/>
+        <div style={{minWidth:0}}>
+          <div style={{fontSize:16,fontWeight:700,color:C.khaki,lineHeight:1.2}}>{r.name}</div>
+          <div style={{fontSize:11,color:C.oliveDim,fontVariantNumeric:"tabular-nums",marginTop:2}}>{t.routeMeta(r.freq, r.stops.length, r.days, r.hours)}</div>
         </div>
-        <span aria-hidden="true" style={{color:C.oliveDim,fontSize:13}}>{open?"▲":"▼"}</span>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          {r.verified && (
+            <span style={{fontSize:9,fontWeight:700,color:"#4dde88",border:"1px solid #4dde8855",background:"#4dde8811",padding:"3px 7px",borderRadius:20,letterSpacing:0.5,whiteSpace:"nowrap"}}>
+              {t.pdfVerified}
+            </span>
+          )}
+          <span aria-hidden="true" style={{color:C.oliveDim,fontSize:13,width:12,textAlign:"center"}}>{open?"▲":"▼"}</span>
+        </div>
       </div>
       {open && (
-        <div style={{padding:"0 16px 14px",borderTop:`1px solid ${r.color}22`}}>
-          {r.stops.map((s,i)=>(
-            <div key={s} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-              <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:20,flexShrink:0}}>
-                <div style={{width:8,height:8,borderRadius:"50%",background:i===0||i===r.stops.length-1?r.color:C.borderMain,border:`2px solid ${r.color}`,marginTop:8,flexShrink:0}}/>
-                {i<r.stops.length-1 && <div style={{width:2,height:22,background:r.color+"44"}}/>}
+        <div style={{padding:"12px 16px 14px",borderTop:`1px solid ${r.color}22`}}>
+          {r.stops.map((s,i)=>{
+            const isEnd=i===0||i===r.stops.length-1;
+            const isLast=i===r.stops.length-1;
+            return (
+              <div key={s} style={{display:"flex",gap:12,alignItems:"stretch",minHeight:isLast?"auto":28}}>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:12,flexShrink:0}}>
+                  <div style={{width:10,height:10,borderRadius:"50%",background:isEnd?r.color:C.bgCard,border:`2px solid ${r.color}`,marginTop:6,flexShrink:0}}/>
+                  {!isLast && <div style={{width:2,flex:1,background:r.color+"44",marginTop:2,marginBottom:2}}/>}
+                </div>
+                <div style={{padding:isLast?"2px 0 0":"2px 0 12px",fontSize:13,lineHeight:1.4,color:isEnd?C.khaki:C.tan,fontWeight:isEnd?600:400,flex:1,minWidth:0}}>
+                  {s}
+                  {(STOP_ROUTES[s]||[]).length>1 &&
+                    <span style={{marginLeft:6,fontSize:10,color:C.accent}}>
+                      {(STOP_ROUTES[s]||[]).filter(x=>x!==r.id).map(x=>ROUTES[x].name.split(" ")[0]).join(" +")}
+                    </span>}
+                </div>
               </div>
-              <div style={{padding:"4px 0 14px",fontSize:13,color:i===0||i===r.stops.length-1?C.khaki:C.tan,fontWeight:i===0||i===r.stops.length-1?600:400}}>
-                {s}
-                {(STOP_ROUTES[s]||[]).length>1 &&
-                  <span style={{marginLeft:6,fontSize:10,color:C.accent}}>
-                    {(STOP_ROUTES[s]||[]).filter(x=>x!==r.id).map(x=>ROUTES[x].name.split(" ")[0]).join(" +")}
-                  </span>}
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {r.verified && (
             <div style={{background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:8,padding:"10px 12px",marginTop:4}}>
               <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:4}}>{t.verifiedScheduleHeader}</div>
@@ -692,188 +688,6 @@ function NowTab() {
     </div>
   );
 }
-// ─── Map Tab ──────────────────────────────────────────────────────────────────
-// Leaflet map with stop markers + per-route polylines. Tile source is CARTO
-// "dark all" to match the tactical-night palette; the CSP in public/_headers
-// allows `https://*.basemaps.cartocdn.com` under img-src.
-//
-// Tap a marker → popup shows the stop name, the routes that serve it, and
-// "Use as From / To" buttons that seed the Plan tab and switch tabs.
-// Amenities from buildings_osm.json that we want to surface as POI pins
-// (smaller, neutral-coloured, no route info). Mirrors what MAPA shows.
-const POI_AMENITIES = new Set([
-  "clinic","dentist","place_of_worship","post_office","library",
-  "school","fuel","fast_food","restaurant","fire_station","police",
-  "community_centre","veterinary",
-]);
-const POI_EMOJI = {
-  clinic:"🏥", dentist:"🦷", place_of_worship:"⛪", post_office:"📮",
-  library:"📚", school:"🏫", fuel:"⛽", fast_food:"🍔", restaurant:"🍴",
-  fire_station:"🚒", police:"🚓", community_centre:"🏛", veterinary:"🐾",
-};
-
-// Tiny DOM-builder. Uses textContent for the value so OSM-sourced strings
-// (b.name, b.amenity) can never break out of the popup body — defense in
-// depth on top of CSP `script-src 'self'`.
-function el(tag, style, text) {
-  const n = document.createElement(tag);
-  if (style) n.style.cssText = style;
-  if (text != null) n.textContent = text;
-  return n;
-}
-
-function MapTab({ onPickStop, userCoords }) {
-  const { t } = useT();
-  const containerRef = useRef(null);
-  const mapRef = useRef(null);
-  const userMarkerRef = useRef(null);
-
-  useEffect(() => {
-    if (mapRef.current || !containerRef.current) return;
-    const now = new Date();
-    const map = L.map(containerRef.current, {
-      center: [36.967, 127.033], zoom: 14, zoomControl: true,
-      preferCanvas: true, attributionControl: true,
-    });
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png", {
-      attribution: "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> © <a href='https://carto.com/attributions'>CARTO</a>",
-      subdomains: "abcd",
-      maxZoom: 19,
-    }).addTo(map);
-
-    // Per-route polylines, drawn underneath markers.
-    for (const r of Object.values(ROUTES)) {
-      const pts = r.stops
-        .map(s => STOP_COORDS[s])
-        .filter(s => s && s.lat != null)
-        .map(s => [s.lat, s.lon]);
-      if (pts.length < 2) continue;
-      L.polyline(pts, { color: r.color, weight: 3, opacity: 0.65 }).addTo(map);
-    }
-
-    // Secondary POI markers (chapels, clinics, post offices, etc.).
-    const buildings = BUILDINGS_OSM_JSON.buildings || {};
-    for (const [num, b] of Object.entries(buildings)) {
-      if (!b.amenity || !POI_AMENITIES.has(b.amenity)) continue;
-      if (b.lat == null) continue;
-      const emoji = POI_EMOJI[b.amenity] || "•";
-      const icon = L.divIcon({
-        className: "poi-marker",
-        html: `<div style="font-size:14px;filter:drop-shadow(0 0 2px #000)">${emoji}</div>`,
-        iconSize: [18, 18], iconAnchor: [9, 9],
-      });
-      const poiPopup = el("div", "font-family:Rajdhani,'Noto Sans KR',sans-serif");
-      poiPopup.append(
-        el("div", "font-weight:700;font-size:13px;color:#111", b.name || `Bldg ${num}`),
-        el("div", "font-size:11px;color:#666;margin-top:2px", `Bldg ${num} · ${b.amenity}`),
-      );
-      L.marker([b.lat, b.lon], { icon, opacity: 0.85 })
-        .bindPopup(poiPopup)
-        .addTo(map);
-    }
-
-    // Stop markers with route chips, From/To buttons, and live next-departure
-    // list. Markers added last so they sit on top of the polylines/POIs.
-    const stopBounds = [];
-    for (const [name, s] of Object.entries(STOP_COORDS)) {
-      if (s.lat == null) continue;
-      stopBounds.push([s.lat, s.lon]);
-      const servingRids = STOP_ROUTES[name] || [];
-      const primaryColor = servingRids.length
-        ? ROUTES[servingRids[0]].color
-        : "#22D3EE";
-      const m = L.circleMarker([s.lat, s.lon], {
-        radius: 7, color: "#06080c", weight: 1.5,
-        fillColor: primaryColor, fillOpacity: 0.95,
-      }).addTo(map);
-
-      const popup = el("div", "font-family:Rajdhani,'Noto Sans KR',sans-serif;min-width:190px");
-      popup.append(el("div", "font-weight:700;font-size:14px;margin-bottom:4px;color:#111", name));
-
-      const chipRow = el("div", "margin-bottom:8px");
-      for (const rid of servingRids) {
-        const color = ROUTES[rid].color;
-        chipRow.append(el(
-          "span",
-          `background:${color};color:#06080c;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;margin-right:4px`,
-          ROUTES[rid].name.replace(" Route",""),
-        ));
-      }
-      popup.append(chipRow);
-
-      // Build next-departure list from in-service routes that serve this stop.
-      const liveRows = [];
-      for (const rid of servingRids) {
-        const info = nextDepartureInfo(rid, name, now);
-        if (info.kind === "oos") continue;
-        const when = info.mins === 0 ? "now" : `${info.mins} min`;
-        const row = el("div", "display:flex;justify-content:space-between;gap:8px;font-size:11px;margin-top:3px");
-        row.append(
-          el("span", `color:${ROUTES[rid].color};font-weight:700`, ROUTES[rid].name.replace(" Route","")),
-          el("span", "color:#333;font-family:'JetBrains Mono',monospace", `${fmt(info.at)} · ${when}`),
-        );
-        liveRows.push(row);
-      }
-      if (liveRows.length) {
-        const live = el("div", "border-top:1px solid #ddd;padding-top:6px;margin-bottom:8px");
-        live.append(...liveRows);
-        popup.append(live);
-      } else {
-        popup.append(el("div", "font-size:11px;color:#888;margin-bottom:8px", "All routes here are out of service."));
-      }
-
-      const btnRow = el("div", "display:flex;gap:6px");
-      const fromBtn = el("button", "flex:1;background:#22D3EE;color:#06080c;border:none;border-radius:4px;padding:6px 10px;font-weight:700;font-size:11px;letter-spacing:1px;cursor:pointer", t.from.toUpperCase());
-      const toBtn = el("button", "flex:1;background:#0EA5B7;color:#06080c;border:none;border-radius:4px;padding:6px 10px;font-weight:700;font-size:11px;letter-spacing:1px;cursor:pointer", t.to.toUpperCase());
-      fromBtn.addEventListener("click", () => { onPickStop(name, "from"); map.closePopup(); });
-      toBtn.addEventListener("click", () => { onPickStop(name, "to"); map.closePopup(); });
-      btnRow.append(fromBtn, toBtn);
-      popup.append(btnRow);
-
-      m.bindPopup(popup);
-    }
-
-    // Auto-fit to bounds of all stop markers on first render.
-    if (stopBounds.length) {
-      map.fitBounds(stopBounds, { padding: [24, 24], maxZoom: 16 });
-    }
-
-    mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
-  }, [onPickStop, t]);
-
-  // "You are here" pulsing marker — only when the user has already shared
-  // their location (via the "📍 Nearest" flow in Plan tab). No re-prompt here.
-  useEffect(() => {
-    if (!mapRef.current) return;
-    if (userMarkerRef.current) {
-      mapRef.current.removeLayer(userMarkerRef.current);
-      userMarkerRef.current = null;
-    }
-    if (userCoords && userCoords.lat != null) {
-      const halo = L.circleMarker([userCoords.lat, userCoords.lon], {
-        radius: 14, color: "#22D3EE", weight: 2, fillColor: "#22D3EE",
-        fillOpacity: 0.15,
-      }).addTo(mapRef.current);
-      const dot = L.circleMarker([userCoords.lat, userCoords.lon], {
-        radius: 5, color: "#fff", weight: 1.5, fillColor: "#22D3EE",
-        fillOpacity: 1,
-      }).addTo(mapRef.current);
-      userMarkerRef.current = L.layerGroup([halo, dot]).addTo(mapRef.current);
-    }
-  }, [userCoords]);
-
-  return (
-    <div style={{padding:"8px 8px 0"}}>
-      <div ref={containerRef} role="application" aria-label={t.tabMap}
-        style={{height:"calc(100vh - 200px)",minHeight:380,width:"100%",borderRadius:10,overflow:"hidden",border:`1px solid ${C.borderMain}`}}/>
-      <div style={{fontSize:10,color:C.oliveMute,textAlign:"center",margin:"8px 0 16px",lineHeight:1.6}}>
-        {t.mapHint}
-      </div>
-    </div>
-  );
-}
-
 // ─── Off-Post Tab ─────────────────────────────────────────────────────────────
 // Long English descriptive paragraphs here intentionally left English: MVP scope
 // for the Korean toggle is UI chrome only. Long-form reference content can be
@@ -886,41 +700,15 @@ function OffPostTab() {
         <span style={{fontSize:16,flexShrink:0}}>⚠️</span>
         <div style={{fontSize:12,color:C.khaki,lineHeight:1.6}}>{t.offpostBanner}</div>
       </div>
-      <div style={{background:`linear-gradient(135deg,${C.bgCard},#142a19)`,border:`1px solid ${C.borderMain}`,borderRadius:14,padding:18,marginBottom:20}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-          <span style={{fontSize:22}}>📡</span>
-          <div>
-            <div style={{fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",fontSize:17,fontWeight:700,color:C.accent,letterSpacing:1}}>{t.liveGps}</div>
-            <div style={{fontSize:11,color:C.oliveDim,letterSpacing:.5}}>{t.futureFeatureLabel}</div>
-          </div>
-        </div>
-        {[
-          ["🔧","Bus Hardware","GPS + cellular modem units on every bus. ~$200–500 each. Procured through DPW/Transportation office."],
-          ["🖥️","Backend Server","Receives GPS pings every 5–10 sec from each bus and exposes an API. Needs DoD-compatible hosting (AWS GovCloud or on-prem USFK server)."],
-          ["🔐","Security Approval","All data must traverse DoD-approved networks with authenticated APIs. Requires G6/S6 and likely USFK IT coordination."],
-          ["📱","App Integration","This app polls the API every 5–10 sec and moves bus icons on a live map. Map tiles must be licensed for on-post use."],
-          ["💡","Fastest Path","BusWhere is already deployed at Osan Air Base. Requesting the same system for Humphreys may be quicker than building custom."],
-        ].map(([icon,title,desc])=>(
-          <div key={title} style={{display:"flex",gap:10,marginBottom:10,paddingBottom:10,borderBottom:`1px solid ${C.borderDim}`}}>
-            <span style={{fontSize:15,flexShrink:0,marginTop:2}}>{icon}</span>
-            <div>
-              <div style={{fontSize:13,fontWeight:700,color:C.tan,marginBottom:2}}>{title}</div>
-              <div style={{fontSize:12,color:C.sage,lineHeight:1.6}}>{desc}</div>
-            </div>
-          </div>
-        ))}
-        <div style={{background:"#091610",border:"1px solid #2d5a30",borderRadius:8,padding:"10px 12px"}}>
-          <div style={{fontSize:11,color:"#5dde88",lineHeight:1.6}}>
-            <strong style={{color:"#4dde88"}}>{t.gpsAction}</strong>{t.gpsActionText}
-          </div>
-        </div>
-      </div>
-
-      <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:10}}>{t.interGarrisonHeader}</div>
+      <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginTop:4,marginBottom:10}}>{t.interGarrisonHeader}</div>
       <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
         <div style={{fontSize:12,color:C.sage,lineHeight:1.7}}>
           {t.interGarrisonWarn1}<strong style={{color:C.tan}}>{t.interGarrisonWarnStrong}</strong>{t.interGarrisonWarn2}<br/>
-          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.accent}}>home.army.mil/humphreys → Inter-Garrison Bus Service</span>
+          <a href="https://home.army.mil/humphreys/my-usag-humphreys/inter-garrison-bus-service"
+             target="_blank" rel="noopener noreferrer"
+             style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.accent,textDecoration:"underline"}}>
+            home.army.mil/humphreys → Inter-Garrison Bus Service
+          </a>
         </div>
       </div>
       {OFFPOST.map(r=>(
@@ -1065,14 +853,7 @@ export default function App() {
   const removeRecent=idx=>setRecent(prev=>prev.filter((_,i)=>i!==idx));
   const applyFavorite=f=>{setFS(f.stop);setFL(f.label);setFB(f.bldg||null);reset();};
   const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setFB(r.fBldg||null);setTS(r.tStop);setTL(r.tLbl);setTB(r.tBldg||null);reset();};
-  const TABS=[["plan",t.tabPlan],["now",t.tabNow],["map",t.tabMap],["routes",t.tabRoutes],["offpost",t.tabOffpost]];
-
-  const pickStopFromMap = (stopName, slot) => {
-    if (slot === "from") { setFS(stopName); setFL(stopName); setFB(null); setFC(null); }
-    else { setTS(stopName); setTL(stopName); setTB(null); }
-    setTab("plan");
-    reset();
-  };
+  const TABS=[["plan",t.tabPlan],["now",t.tabNow],["routes",t.tabRoutes],["offpost",t.tabOffpost]];
 
   return (
     <LangContext.Provider value={{ lang, t }}>
@@ -1283,12 +1064,6 @@ export default function App() {
       {tab==="now" && (
         <div id="panel-now" role="tabpanel" aria-labelledby="tab-now" tabIndex={0}>
           <NowTab/>
-        </div>
-      )}
-
-      {tab==="map" && (
-        <div id="panel-map" role="tabpanel" aria-labelledby="tab-map" tabIndex={0}>
-          <MapTab onPickStop={pickStopFromMap} userCoords={fCoords}/>
         </div>
       )}
 

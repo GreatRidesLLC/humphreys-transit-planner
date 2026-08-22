@@ -7,7 +7,7 @@ A mobile-first, community-built React app for planning shuttle trips around the 
 - React 18 + Vite
 - No external state management — local component state only
 - No CSS framework — inline styles via a shared color palette object (`C`) plus a small `<style>{CSS}</style>` block for shared rules (form elements, animations, scrollbar)
-- Leaflet for the Map tab (raster tiles from CARTO `dark_all`; circleMarker only, no default Marker icons to avoid Vite-bundling traps)
+- No map library. An earlier Leaflet-based Map tab (CARTO `dark_all` tiles + straight-line route polylines) was retired 2026-08-22 as half-baked; implementation parked on branch `archive/map-tab` for future revival if a coherent map story (real polylines, live positions, or an on-post basemap) materializes
 
 ## Audience
 
