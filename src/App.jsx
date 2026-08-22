@@ -552,34 +552,42 @@ function RouteCard({route:r}) {
       <div role="button" tabIndex={0} aria-expanded={open} aria-label={open?t.collapseRoute:t.expandRoute}
         onClick={()=>setOpen(o=>!o)}
         onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(o=>!o);}}}
-        style={{padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <div style={{width:14,height:14,borderRadius:"50%",background:r.color,boxShadow:`0 0 10px ${r.color}88`,flexShrink:0}}/>
-          <div>
-            <div style={{fontSize:16,fontWeight:700,color:C.khaki}}>{r.name}</div>
-            <div style={{fontSize:11,color:C.oliveDim}}>{t.routeMeta(r.freq, r.stops.length, r.days, r.hours)}</div>
-            {r.verified && <div style={{fontSize:10,color:"#4dde88",marginTop:2}}>{t.pdfVerified}</div>}
-          </div>
+        style={{padding:"14px 16px",display:"grid",gridTemplateColumns:"14px 1fr auto",columnGap:12,alignItems:"center",cursor:"pointer",minHeight:64}}>
+        <div style={{width:14,height:14,borderRadius:"50%",background:r.color,boxShadow:`0 0 10px ${r.color}88`}}/>
+        <div style={{minWidth:0}}>
+          <div style={{fontSize:16,fontWeight:700,color:C.khaki,lineHeight:1.2}}>{r.name}</div>
+          <div style={{fontSize:11,color:C.oliveDim,fontVariantNumeric:"tabular-nums",marginTop:2}}>{t.routeMeta(r.freq, r.stops.length, r.days, r.hours)}</div>
         </div>
-        <span aria-hidden="true" style={{color:C.oliveDim,fontSize:13}}>{open?"▲":"▼"}</span>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          {r.verified && (
+            <span style={{fontSize:9,fontWeight:700,color:"#4dde88",border:"1px solid #4dde8855",background:"#4dde8811",padding:"3px 7px",borderRadius:20,letterSpacing:0.5,whiteSpace:"nowrap"}}>
+              {t.pdfVerified}
+            </span>
+          )}
+          <span aria-hidden="true" style={{color:C.oliveDim,fontSize:13,width:12,textAlign:"center"}}>{open?"▲":"▼"}</span>
+        </div>
       </div>
       {open && (
-        <div style={{padding:"0 16px 14px",borderTop:`1px solid ${r.color}22`}}>
-          {r.stops.map((s,i)=>(
-            <div key={s} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-              <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:20,flexShrink:0}}>
-                <div style={{width:8,height:8,borderRadius:"50%",background:i===0||i===r.stops.length-1?r.color:C.borderMain,border:`2px solid ${r.color}`,marginTop:8,flexShrink:0}}/>
-                {i<r.stops.length-1 && <div style={{width:2,height:22,background:r.color+"44"}}/>}
+        <div style={{padding:"12px 16px 14px",borderTop:`1px solid ${r.color}22`}}>
+          {r.stops.map((s,i)=>{
+            const isEnd=i===0||i===r.stops.length-1;
+            const isLast=i===r.stops.length-1;
+            return (
+              <div key={s} style={{display:"flex",gap:12,alignItems:"stretch",minHeight:isLast?"auto":28}}>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:12,flexShrink:0}}>
+                  <div style={{width:10,height:10,borderRadius:"50%",background:isEnd?r.color:C.bgCard,border:`2px solid ${r.color}`,marginTop:6,flexShrink:0}}/>
+                  {!isLast && <div style={{width:2,flex:1,background:r.color+"44",marginTop:2,marginBottom:2}}/>}
+                </div>
+                <div style={{padding:isLast?"2px 0 0":"2px 0 12px",fontSize:13,lineHeight:1.4,color:isEnd?C.khaki:C.tan,fontWeight:isEnd?600:400,flex:1,minWidth:0}}>
+                  {s}
+                  {(STOP_ROUTES[s]||[]).length>1 &&
+                    <span style={{marginLeft:6,fontSize:10,color:C.accent}}>
+                      {(STOP_ROUTES[s]||[]).filter(x=>x!==r.id).map(x=>ROUTES[x].name.split(" ")[0]).join(" +")}
+                    </span>}
+                </div>
               </div>
-              <div style={{padding:"4px 0 14px",fontSize:13,color:i===0||i===r.stops.length-1?C.khaki:C.tan,fontWeight:i===0||i===r.stops.length-1?600:400}}>
-                {s}
-                {(STOP_ROUTES[s]||[]).length>1 &&
-                  <span style={{marginLeft:6,fontSize:10,color:C.accent}}>
-                    {(STOP_ROUTES[s]||[]).filter(x=>x!==r.id).map(x=>ROUTES[x].name.split(" ")[0]).join(" +")}
-                  </span>}
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {r.verified && (
             <div style={{background:C.bgSurface,border:`1px solid ${C.borderMain}`,borderRadius:8,padding:"10px 12px",marginTop:4}}>
               <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:4}}>{t.verifiedScheduleHeader}</div>
