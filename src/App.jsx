@@ -147,10 +147,6 @@ const STRINGS = {
     routeMeta: (freq,n,days,hours) => `Every ${freq} min · ${n} stops · ${days} · ${hours}`,
     pdfVerified: "✓ PDF-sourced schedule",
     verifiedScheduleHeader: "PDF-SOURCED SCHEDULE",
-    liveGps: "Live GPS Tracking",
-    futureFeatureLabel: "FUTURE FEATURE · WHAT IT REQUIRES",
-    gpsAction: "Action:",
-    gpsActionText: " Contact Transportation (DSN 755-0424) and DPW GIS/IGI&S (Bldg 6140) to explore GPS trackers or a BusWhere deployment for the post.",
     interGarrisonHeader: "Inter-Garrison Routes",
     interGarrisonWarn1: "⚠️ Inter-garrison buses are ",
     interGarrisonWarnStrong: "not integrated",
@@ -226,10 +222,6 @@ const STRINGS = {
     routeMeta: (freq,n,days,hours) => `${freq}분 간격 · 정류장 ${n}개 · ${days} · ${hours}`,
     pdfVerified: "✓ PDF 기반 시간표",
     verifiedScheduleHeader: "PDF 기반 시간표",
-    liveGps: "실시간 GPS 추적",
-    futureFeatureLabel: "추후 기능 · 필요 요건",
-    gpsAction: "조치:",
-    gpsActionText: " 교통과(DSN 755-0424) 및 DPW GIS/IGI&S(6140동)에 문의하여 GPS 추적기 또는 BusWhere 도입을 검토하세요.",
     interGarrisonHeader: "기지 간 노선",
     interGarrisonWarn1: "⚠️ 기지 간 버스는 노선 검색에 ",
     interGarrisonWarnStrong: "포함되지 않습니다",
@@ -894,37 +886,7 @@ function OffPostTab() {
         <span style={{fontSize:16,flexShrink:0}}>⚠️</span>
         <div style={{fontSize:12,color:C.khaki,lineHeight:1.6}}>{t.offpostBanner}</div>
       </div>
-      <div style={{background:`linear-gradient(135deg,${C.bgCard},#142a19)`,border:`1px solid ${C.borderMain}`,borderRadius:14,padding:18,marginBottom:20}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-          <span style={{fontSize:22}}>📡</span>
-          <div>
-            <div style={{fontFamily:"'Rajdhani','Noto Sans KR',sans-serif",fontSize:17,fontWeight:700,color:C.accent,letterSpacing:1}}>{t.liveGps}</div>
-            <div style={{fontSize:11,color:C.oliveDim,letterSpacing:.5}}>{t.futureFeatureLabel}</div>
-          </div>
-        </div>
-        {[
-          ["🔧","Bus Hardware","GPS + cellular modem units on every bus. ~$200–500 each. Procured through DPW/Transportation office."],
-          ["🖥️","Backend Server","Receives GPS pings every 5–10 sec from each bus and exposes an API. Needs DoD-compatible hosting (AWS GovCloud or on-prem USFK server)."],
-          ["🔐","Security Approval","All data must traverse DoD-approved networks with authenticated APIs. Requires G6/S6 and likely USFK IT coordination."],
-          ["📱","App Integration","This app polls the API every 5–10 sec and moves bus icons on a live map. Map tiles must be licensed for on-post use."],
-          ["💡","Fastest Path","BusWhere is already deployed at Osan Air Base. Requesting the same system for Humphreys may be quicker than building custom."],
-        ].map(([icon,title,desc])=>(
-          <div key={title} style={{display:"flex",gap:10,marginBottom:10,paddingBottom:10,borderBottom:`1px solid ${C.borderDim}`}}>
-            <span style={{fontSize:15,flexShrink:0,marginTop:2}}>{icon}</span>
-            <div>
-              <div style={{fontSize:13,fontWeight:700,color:C.tan,marginBottom:2}}>{title}</div>
-              <div style={{fontSize:12,color:C.sage,lineHeight:1.6}}>{desc}</div>
-            </div>
-          </div>
-        ))}
-        <div style={{background:"#091610",border:"1px solid #2d5a30",borderRadius:8,padding:"10px 12px"}}>
-          <div style={{fontSize:11,color:"#5dde88",lineHeight:1.6}}>
-            <strong style={{color:"#4dde88"}}>{t.gpsAction}</strong>{t.gpsActionText}
-          </div>
-        </div>
-      </div>
-
-      <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginBottom:10}}>{t.interGarrisonHeader}</div>
+      <div style={{fontSize:11,color:C.oliveMute,letterSpacing:1.5,textTransform:"uppercase",marginTop:4,marginBottom:10}}>{t.interGarrisonHeader}</div>
       <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
         <div style={{fontSize:12,color:C.sage,lineHeight:1.7}}>
           {t.interGarrisonWarn1}<strong style={{color:C.tan}}>{t.interGarrisonWarnStrong}</strong>{t.interGarrisonWarn2}<br/>
