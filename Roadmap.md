@@ -34,7 +34,7 @@ Launch-focused. Target public release **~2026-08-26** (one month from 2026-07-26
 - Bus-stop coordinates — `scripts/fetch_stop_coords.py` reads OSM `highway=bus_stop` nodes tagged `operator=USAG Humphreys`. 43 of 44 ROUTES stops matched to a tagged node (only `Family Housing Towers (15th Street)`, the newest Pink trial-route stop, is missing from OSM). Output: `src/data/stop_coords.json`
 - Real walk time in `findTrips` — origin/destination walk legs use `haversine(building, stop)` from the OSM-sourced coords when the user picks a "Bldg N – Name" entry. Floored at 3 min for the "find the stop, board" buffer. Wait time accuracy improves directly because user-at-stop time is grounded in real distance instead of a flat 3-min mock
 - Nearest stop from current location — "📍 Nearest" button next to the From input. On click, requests browser geolocation, finds the closest stop in `src/data/stop_coords.json`, and seeds the walk-leg haversine with the user's real lat/lon (not a building centroid). Permission only requested on click — never on page load. Falls back to alert on deny / timeout / no support
-- Map view — fifth "📍 Map" tab. Leaflet + CARTO `dark_all` raster tiles for the tactical-night palette. Per-route polylines (straight lines between consecutive stops in `src/data/stop_coords.json`, coloured per `ROUTES[r].color`) plus circle markers at every stop, popup with route chips and "From / To" buttons that seed the Plan tab and switch. CSP updated to allow `https://*.basemaps.cartocdn.com` under `img-src`; `Permissions-Policy: geolocation=(self)` fixed (was `=()` which silently blocked the "📍 Nearest" button in production)
+- Map view — fifth "📍 Map" tab. Leaflet + CARTO `dark_all` raster tiles for the tactical-night palette. Per-route polylines (straight lines between consecutive stops in `src/data/stop_coords.json`, coloured per `ROUTES[r].color`) plus circle markers at every stop, popup with route chips and "From / To" buttons that seed the Plan tab and switch. CSP updated to allow `https://*.basemaps.cartocdn.com` under `img-src`; `Permissions-Policy: geolocation=(self)` fixed (was `=()` which silently blocked the "📍 Nearest" button in production). **Retired 2026-08-22** — pulled as half-baked (straight-line polylines convey nothing beyond topology, on-post tile licensing unresolved, no live bus positions). Implementation parked on branch `archive/map-tab` (see `PARKED.md` on that branch). Leaflet dep removed; CSP tightened to drop the CARTO origin; `Permissions-Policy: geolocation=(self)` retained for the Plan tab's "📍 Nearest" button
 - Legal-posture pass + rename to "Humphreys Transit Planner" — app title, manifest, HTML `<title>`, EN + KO `appTitle` / `appSubtitle` renamed. Universal footer disclaimer rendered on every tab (EN + KO). Off-Post tab gets a larger warning banner. User-facing copy scrubbed for endorsement / affiliation language: `pdfVerified` / `verifiedScheduleHeader` reworded to "PDF-sourced", `waitDisclaimer` repointed from "USAG Humphreys / MyArmyPost app" to "Transportation Office (DSN 755-0424)", route notes and OFFPOST `schedule` strings rephrased "publicly posted PDF" instead of "official PDF". Decision record + scrub checklist in `docs/legal-posture.md`; PAO-positive revert index in `docs/distribution-pivot.md`. Asset audit confirmed no Army / USAG / DoD imagery in committed icons
 - Favicon swap to brand mark — `public/favicon.svg` replaced with the same tactical-night "H" mark used by `public/icon.svg` (gold `#FFC83D` letterform on `#0a0e12` charcoal with cyan `#22D3EE` accent bar). Leftover template `public/icons.svg` removed
 - Family Housing Towers (15th St) stop coord — hand-pinned to `36.9556, 127.0158` (SW terminus of 15th Street OSM way 1019688918). Closes the last stop-coord gap; `_meta.matched` in `src/data/stop_coords.json` now 44/44. Enables Pink-route walk-leg haversine + Nearest-stop coverage. Test coverage added in `src/lib/routing.test.js`
@@ -94,9 +94,6 @@ First-draft translations flagged in shipped Korean MVP. Route + stop names stay 
 ### Privacy-respecting telemetry
 Currently zero signal on actual usage — priorities are guesses. Self-hosted Plausible or Umami → track route searches, stop usage, language split, tab activity. No PII, no third-party trackers (CSP already locks down `connect-src` and `script-src`). Required CSP update when added. High-value once real users show up.
 
-### Offline map tile caching
-CARTO tiles fetch at runtime. App still installs offline; map shows a grey panel until network returns. Workbox `runtimeCaching` entry would cache visited tiles. Add when complaints arrive.
-
 ### GPS / BusWhere outreach
 Off-Post tab describes what real-time tracking would need. Actual outreach: Transportation (DSN 755-0424) about GPS trackers or BusWhere (deployed at Osan Air Base) as a faster path than custom hardware. Requires G6/S6 + DoD-approved backend — long lead time. Fire off inquiry post-launch; treat responses as bonus.
 
@@ -105,9 +102,6 @@ If Transportation Office does not supply per-route PDFs in the launch inquiry: (
 
 ### Loop directionality
 Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes bidirectional travel. Correcting requires authoritative direction data from schedule PDFs; payoff is edge cases only. Park until a wrong-direction bug is reported.
-
-### Real route polylines
-Overpass `route=bus` query to replace straight-line polygons on the Map tab. Straight lines convey topology fine; upgrade is pure polish.
 
 ### Standalone "About" page
 Promote universal disclaimer footer into a standalone About page or section (currently inline-only in the footer).
