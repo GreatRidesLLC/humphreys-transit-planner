@@ -890,7 +890,11 @@ function OffPostTab() {
       <div style={{background:C.bgCard,border:`1px solid ${C.borderSub}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
         <div style={{fontSize:12,color:C.sage,lineHeight:1.7}}>
           {t.interGarrisonWarn1}<strong style={{color:C.tan}}>{t.interGarrisonWarnStrong}</strong>{t.interGarrisonWarn2}<br/>
-          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.accent}}>home.army.mil/humphreys → Inter-Garrison Bus Service</span>
+          <a href="https://home.army.mil/humphreys/my-usag-humphreys/inter-garrison-bus-service"
+             target="_blank" rel="noopener noreferrer"
+             style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.accent,textDecoration:"underline"}}>
+            home.army.mil/humphreys → Inter-Garrison Bus Service
+          </a>
         </div>
       </div>
       {OFFPOST.map(r=>(
