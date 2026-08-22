@@ -1,5 +1,5 @@
 // Pure routing + scheduling logic, extracted from App.jsx so it can be
-// unit-tested without pulling React / Leaflet / DOM into the test runner.
+// unit-tested without pulling React / DOM into the test runner.
 // Everything here is side-effect free and depends only on JSON data and Date.
 
 import SCHEDULES_JSON from "../data/schedules.json";

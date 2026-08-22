@@ -45,17 +45,19 @@ Launch-focused. Target public release **~2026-08-26** (one month from 2026-07-26
 - User feedback channel — Tally hosted form (https://tally.so/r/dWGWEN) linked from footer on every tab in both EN + KO (`feedbackLink` string). Opens in new tab (`target="_blank" rel="noopener noreferrer"`); no CSP change required (no iframe, no fetch). Form authored 2026-08-19 with 6 bilingual fields (EN + KO labels): Type of feedback (multi-choice, required), Route (short text), Stop (short text), Details (long text, required), Language (multi-choice, required), Email (optional). Title "Humphreys Transit Planner — Feedback / 피드백"; description carries the non-affiliation disclaimer; CAPTCHA + email-on-submit to project inbox enabled
 - iOS PWA PNG icons — `public/icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` (180×180) generated from `public/icon.svg` via `scripts/gen_icons.sh` (rsvg-convert / librsvg2-bin — `sharp` still segfaults on WSL2 kernel). Maskable variant uses a padded SVG (`public/icon-maskable.svg`) scaled to 60% inside a solid charcoal bg to survive all mask shapes. Manifest + `apple-touch-icon` `<link>` repointed to PNG; SVG kept as fallback. Workbox `globPatterns` extended to precache `*.png`
 - Custom domain + DNS hardening (2026-08-21) — `humphreysbus.app` registered via Cloudflare Registrar (~$14/yr, WHOIS privacy on by default). Attached to the `humphreys-transit-planner` Workers project as an apex Custom Domain; CF-issued edge cert from Google Trust Services (`.app` TLD default). CF Edge Certificate Authority pinned to Google Trust Services to prevent silent CA rotation. DNSSEC enabled — DS pushed to the `.app` registry, resolver returns `ad` flag confirming validation. CAA records restrict issuance to `pki.goog` (matches pinned CA) and `letsencrypt.org` (backup) with `iodef mailto:emmanuel.bayere@gmail.com` for violation reports. Registrar transfer-lock on (CF Registrar default). `README.md`, `docs/deploy.md`, `docs/distribution-pivot.md`, `docs/legal-posture.md`, `SECURITY.md` updated to reflect the live URL and hardening posture
+- Throttled post-trip feedback nudge (2026-08-22) — dismissible strip under Plan-tab results linking the Tally form; shows only after ≥3 successful plans, snoozes 21 days on click / 60 days on dismiss (`htp_planCount` / `htp_nudgeSnoozedUntil` in localStorage). Bilingual strings; no CSP change. CI also now runs on `dev` pushes + PRs (was `main`-only), making the dev branch-protection check real
+- Static-first backend decision (2026-08-22) — Convex evaluated and rejected; app stays a fully static PWA. See `docs/adr/0001-static-first-no-backend.md`
 
 ## Launch — target ~2026-08-26
 
 Ship-blockers only. Everything here must land (or be deliberately cut with a reason) before the public URL goes live.
 
-### Deploy to Cloudflare Pages (prod + preview)
+### Deploy to Cloudflare Workers Static Assets (prod + preview)
 Custom domain `humphreysbus.app` live on the `main` branch (see Shipped). `wrangler.jsonc` at repo root drives Workers Builds (see [[cf_workers_config]]). Wire:
 - Production branch = `main` → `https://humphreysbus.app`
 - Preview branch = `dev` → `dev.humphreys-transit-planner.<subdomain>.workers.dev`
 - All other branches build previews on push, do not surface to end users
-- Verify `public/_headers` applies on both envs; smoke-test CSP, geolocation permission-policy, map tile fetch
+- Verify `public/_headers` applies on both envs; smoke-test CSP, geolocation permission-policy
 - Add production URL to `README.md` + repo About
 
 ### Transportation Office data inquiry (single email)
@@ -70,9 +72,9 @@ Send week 1. If no reply by week 3 → ship with current `EST.` badges (already 
 Establish before the first Cloudflare deploy so preview URLs behave predictably:
 
 ```
-main       ← production (Cloudflare Pages prod build)
+main       ← production (Cloudflare Workers Builds prod)
   ↑ PR (release)
-dev        ← integration / preview (Cloudflare Pages preview build)
+dev        ← integration / preview (Cloudflare Workers Builds preview)
   ↑ PR (feature)
 feat/*     ← short-lived feature branches
 ```
