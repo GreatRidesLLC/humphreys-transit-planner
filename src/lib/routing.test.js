@@ -3,6 +3,7 @@ import {
   ROUTES, ALL_STOPS, STOP_ROUTES,
   inService, serviceEndToday,
   nextScheduledDeparture, prevScheduledDeparture,
+  nextDeparture, freqAt, nextServiceStart,
   findTrips,
   haversineMeters, walkMinutes,
   STOP_COORDS, nearestStopTo,
@@ -275,5 +276,44 @@ describe("geo helpers", () => {
       expect(near.stop).toBe(stop);
       expect(near.meters).toBeLessThan(50);
     });
+  });
+});
+
+describe("nextDeparture source", () => {
+  it("reports pdf for a stop with a transcribed timetable", () => {
+    const d = nextDeparture(ROUTES.GOLD, "Bus Terminal", satAt(12, 0));
+    expect(d).not.toBeNull();
+    expect(d.source).toBe("pdf");
+  });
+
+  it("reports heuristic for a verified route at a stop the PDF never covered", () => {
+    // Green is verified:true but schedules.json only carries Bus Terminal.
+    const d = nextDeparture(ROUTES.GREEN, "Pedestrian Gate", satAt(14, 10));
+    expect(d).not.toBeNull();
+    expect(d.source).toBe("heuristic");
+  });
+
+  it("uses the active window's freq, not the route default", () => {
+    // Green is 15 min Mon-Fri but 30 min at the weekend, so the :00-anchored
+    // estimate at its first stop lands on 14:30, not 14:15.
+    expect(freqAt(ROUTES.GREEN, monAt(14, 10))).toBe(15);
+    expect(freqAt(ROUTES.GREEN, satAt(14, 10))).toBe(30);
+    const d = nextDeparture(ROUTES.GREEN, "Pedestrian Gate", satAt(14, 10));
+    expect(d.time.getHours()).toBe(14);
+    expect(d.time.getMinutes()).toBe(30);
+  });
+});
+
+describe("nextServiceStart", () => {
+  it("finds today's opening for a route that has not started yet", () => {
+    const d = nextServiceStart(ROUTES.BROWN, satAt(9, 0));
+    expect(d.getDay()).toBe(6);
+    expect(d.getHours()).toBe(16);
+  });
+
+  it("rolls to the next service day when today is finished", () => {
+    const d = nextServiceStart(ROUTES.BLUE, satAt(9, 0));
+    expect(d.getDay()).toBe(1);
+    expect(d.getHours()).toBe(6);
   });
 });
