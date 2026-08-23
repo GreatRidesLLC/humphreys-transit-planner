@@ -1,10 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#0a0e12"/>
-  <rect x="48" y="48" width="416" height="416" rx="64" fill="#111820" stroke="#2a3a50" stroke-width="6"/>
-  <g fill="#FFC83D">
-    <rect x="128" y="176" width="32" height="160" rx="6"/>
-    <rect x="352" y="176" width="32" height="160" rx="6"/>
-    <rect x="128" y="240" width="256" height="32" rx="6"/>
-  </g>
-  <rect x="112" y="368" width="288" height="14" rx="7" fill="#22D3EE"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <rect width="32" height="32" rx="7.04" fill="#FFC83D"/>
+  <rect x="7.4" y="5.4" width="17.2" height="21.2" rx="4.2" fill="#1f2328"/>
+  <rect x="9.7" y="10.4" width="12.6" height="8.4" rx="2.4" fill="#FFC83D"/>
+  <circle cx="11.8" cy="23" r="2" fill="#FFC83D"/>
+  <circle cx="20.2" cy="23" r="2" fill="#FFC83D"/>
 </svg>
