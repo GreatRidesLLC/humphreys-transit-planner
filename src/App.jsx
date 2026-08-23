@@ -493,7 +493,7 @@ function intermediateStops(leg) {
 // Handoff specs that recur across the ported surface. Registry components own
 // their own look; these only carry the deltas the design calls for.
 const INPUT_CLS =
-  "h-auto rounded-md bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-faint dark:bg-card " +
+  "h-auto rounded-md bg-card px-3 py-2.5 text-base text-foreground md:text-sm placeholder:text-faint dark:bg-card " +
   // Registry focus is a 3px ring at 50% of --ring on top of a --ring border,
   // which reads as a double grey halo. The handoff wants one flat scrim ring.
   "focus-visible:ring-0 focus-visible:shadow-[shadow:var(--focus-ring)]";
@@ -647,11 +647,13 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [] }) {
     <div ref={ref} className="relative">
       {dot}
       <Input className={cn(INPUT_CLS, dot && "pl-7")} aria-label={label} placeholder={t.stopPh(label)} value={q}
+        autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="off" enterKeyHint="search"
         onChange={e=>{setQ(e.target.value);setHi(0);setOpen(true);if(!e.target.value)onChange("","",null);}}
         onFocus={()=>setOpen(true)} onKeyDown={onKey} />
       {open && rect && (showQuick || filtered.length>0 || q.trim()) && createPortal(
         <div ref={listRef} role="listbox" aria-label={label} className={DROPDOWN_CLS}
-          style={{ top: rect.bottom + 4, left: rect.left, width: rect.width }}>
+          style={{ top: rect.bottom + 4, left: rect.left, width: rect.width,
+            maxHeight: `min(40vh, calc(100dvh - ${Math.round(rect.bottom) + 12}px - env(safe-area-inset-bottom)))` }}>
           {showQuick
             ? (() => { let n = -1; return quickPicks.filter(sec=>sec.items.length).map(sec=>(
                 <div key={sec.key} role="group" aria-label={sec.label}>
@@ -1471,7 +1473,7 @@ export default function App() {
 
   return (
     <LangContext.Provider value={{ lang, t }}>
-    <div className="mx-auto min-h-screen max-w-[480px] bg-background text-left text-body">
+    <div className="mx-auto min-h-dvh max-w-[480px] bg-background pb-[max(0px,env(safe-area-inset-bottom))] text-left text-body">
 
       {!noticeSeen && <FirstRunNotice onAck={()=>setNoticeSeen(true)}/>}
 
@@ -1483,7 +1485,7 @@ export default function App() {
             <Label htmlFor="fav-name" className="block pt-4 pb-1.5 text-[11.5px] font-semibold text-muted-foreground">
               {t.favNameLabel}
             </Label>
-            <Input id="fav-name" autoFocus value={favName} className={INPUT_CLS}
+            <Input id="fav-name" autoFocus value={favName} className={INPUT_CLS} enterKeyHint="done"
               onChange={e=>setFavName(e.target.value)}/>
             <DialogFooter className="gap-2 pt-4">
               <Button type="button" variant="outline" onClick={()=>setFavOpen(false)}
@@ -1511,7 +1513,7 @@ export default function App() {
       </Dialog>
 
       <Tabs value={tab} onValueChange={v=>{setTab(v);reset();}} className="gap-0">
-      <header className="border-b bg-card px-5 pt-4 pb-3.5">
+      <header className="border-b bg-card px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-3.5">
         <div className="flex items-center gap-2.5">
           <BrandMark size={28} className="shrink-0"/>
           <div className="min-w-0 flex-1">

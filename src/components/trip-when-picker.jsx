@@ -16,7 +16,9 @@ import {
 // the overwhelmingly common case. App lazy-loads this module so a rider who
 // just wants the next bus never downloads a calendar.
 const TIME_TRIGGER =
-  "h-11 w-[62px] justify-center gap-1 rounded-md border-border bg-card px-2 font-mono text-sm " +
+  // h-11 alone loses to the registry's data-[size=default]:h-9 — an override
+  // has to repeat the generated class's modifier to win the cascade.
+  "data-[size=default]:h-11 w-[62px] justify-center gap-1 rounded-md border-border bg-card px-2 font-mono text-base md:text-sm " +
   "text-foreground dark:bg-card [&>svg]:size-3";
 
 export default function TripWhenPicker({ lang, t, date, time, onDate, onTime }) {
