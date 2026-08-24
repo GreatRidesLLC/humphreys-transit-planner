@@ -5,7 +5,8 @@
     "fetched_at": "2026-05-20T03:03:59.966122+00:00",
     "license": "ODbL 1.0 — © OpenStreetMap contributors",
     "matched": 44,
-    "unmatched": ["SOCKOR HQ"],
+    "estimated": ["SOCKOR HQ"],
+    "unmatched": [],
     "total_routes_stops": 45
   },
   "stops": {
@@ -250,9 +251,9 @@
       "name_ko": "싯맨 피트니스 센터"
     },
     "SOCKOR HQ": {
-      "lat": null,
-      "lon": null,
-      "source": "pending — added 2026-08-24 from Blue Route poster; OSM bus_stop node not yet identified",
+      "lat": 36.9756,
+      "lon": 126.9872,
+      "source": "estimated 2026-08-24 by interpolating Blue-route offsets (2ID Sustainment min 33 → SOCKOR HQ min 34 → Central Issue Facility min 36 → 1/3 of the way from 2ID to CIF); OSM has no bus_stop node, office, or building named SOCKOR on-post as of 2026-08-24",
       "name_ko": null
     },
     "Spartan DFAC": {
