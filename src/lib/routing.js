@@ -140,16 +140,51 @@ for (const [id, r] of Object.entries(ROUTES))
 export const ALL_STOPS = [...new Set(Object.values(ROUTES).flatMap(r=>r.stops))].sort();
 
 // Alternate names used on posters / by riders. Search matches on any alias
-// but resolves to the canonical stop name (the key). Add here when a poster
-// or user reports uses a different label than the ROUTES canonical form.
+// but resolves to the canonical stop name (the key). Search is already
+// case-insensitive (App.jsx lowercases both sides), so add aliases in
+// natural title case — no need for lowercase duplicates.
+// Add here when a poster or user reports uses a different label than the
+// ROUTES canonical form.
 export const STOP_ALIASES = {
+  "Pedestrian Gate":                  ["Walk-in Gate", "Walk In Gate", "Walk-in"],
+  "Eighth Army HQ":                   ["8th Army", "8th Army HQ", "Eighth Army"],
+  "Bus Terminal":                     ["BT", "Terminal"],
+  "Brian D. Allgood Hospital":        ["BDAACH", "Allgood", "Hospital", "Army Hospital"],
+  "Central Issue Facility":           ["CIF"],
+  "2ID Sustainment":                  ["2ID"],
+  "Corps of Engineers":               ["COE", "Engineers"],
+  "Main Post Office":                 ["Post Office", "MPO"],
+  "Law Enforcement Center (DES)":     ["DES", "MP Station"],
+  "MSG Jenkins Medical Clinic":       ["Jenkins Clinic", "Medical Clinic", "Clinic"],
+  "Airfield Operations":              ["Airfield Ops", "Airfield"],
+  "TMP / Driver's Licensing":         ["TMP", "Driver's License", "Drivers License", "DMV"],
+  "Provider Grill DFAC":              ["Provider Grill", "Provider"],
+  "Spartan DFAC":                     ["Spartan"],
+  "Pittman DFAC":                     ["Pittman"],
+  "Talon Cafe DFAC":                  ["Talon Cafe", "Talon"],
+  "Sitman Fitness Center":            ["Sitman Gym", "Sitman"],
+  "Turner Fitness Center":            ["Turner Gym", "Turner"],
   "Barracks (700s Block)":            ["Barrack 700s", "700s Barracks"],
-  "Morning Calm Center":              ["Morning Calm"],
-  "Collier Fitness Center":           ["Collier Gym"],
-  "Main Exchange (PX)":               ["New PX", "PX"],
-  "Balboni Sports Field (Marne Ave)": ["Balboni Sports Field"],
+  "Barracks (6000s Block)":           ["Barrack 6000s", "6000s Barracks"],
   "Barracks (6800s Block)":           ["Barrack 6800s"],
-  "River Bend Golf Course":           ["Riverbend Golf Course"],
+  "Barracks (6800s & 6900s Block)":   ["Barrack 6800s 6900s", "6800s Barracks", "6900s Barracks"],
+  "SLQs (12200s Block)":              ["SLQs", "12200s Block"],
+  "Morning Calm Center":              ["Morning Calm"],
+  "Collier Fitness Center":           ["Collier Gym", "Collier"],
+  "Main Exchange (PX)":               ["New PX", "PX", "Main PX", "Exchange"],
+  "Balboni Sports Field (Marne Ave)": ["Balboni Sports Field", "Balboni"],
+  "Balboni Sports Field (5th St)":    ["Balboni 5th Street"],
+  "River Bend Golf Course":           ["Riverbend Golf Course", "Golf Course"],
+  "KTO Museum":                       ["Korean Theater of Operations", "Korean Theater of Operations Museum", "KTO"],
+  "Freedom Chapel":                   ["Freedom"],
+  "Pacific Victors Chapel":           ["Pacific Victors", "PV Chapel"],
+  "Family Housing Towers (Tropic Lightning Ave)": ["Tropic Lightning Towers", "Tropic Lightning"],
+  "Family Housing Towers (Taro Ave)": ["Taro Towers", "Taro Ave"],
+  "Family Housing Towers (15th Street)": ["15th Street Towers", "15th Street"],
+  "Family Mini Mall / Gas Station":   ["Family Mini Mall", "Gas Station"],
+  "Sentry Village Burger King":       ["Burger King", "Sentry Village BK"],
+  "Sentry Village Mini Mall":         ["Sentry Mini Mall"],
+  "SOCKOR HQ":                        ["SOCKOR", "Special Operations Command Korea"],
 };
 
 // ─── Service-hours / day-of-week filter ──────────────────────────────────────
