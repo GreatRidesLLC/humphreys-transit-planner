@@ -67,13 +67,17 @@ describe("inService", () => {
   it("Orange Sun 01:00 (rollover from Sat) is in service", () => {
     expect(inService(ROUTES.ORANGE, sunAt(1, 0))).toBe(true);
   });
+  it("Blue closes at 19:51 (last PDF loop arrival), not 22:00", () => {
+    expect(inService(ROUTES.BLUE, monAt(19, 50))).toBe(true);
+    expect(inService(ROUTES.BLUE, monAt(19, 52))).toBe(false);
+  });
 });
 
 describe("serviceEndToday", () => {
   it("returns service-end Date on a running day", () => {
     const end = serviceEndToday(ROUTES.BLUE, monAt(10, 0));
-    expect(end.getHours()).toBe(22);
-    expect(end.getMinutes()).toBe(0);
+    expect(end.getHours()).toBe(19);
+    expect(end.getMinutes()).toBe(51);
   });
   it("returns null on a non-running day", () => {
     expect(serviceEndToday(ROUTES.BLUE, satAt(10, 0))).toBeNull();
@@ -98,6 +102,10 @@ describe("STOP_ROUTES + ALL_STOPS index", () => {
   });
   it("ALL_STOPS contains a known stop", () => {
     expect(ALL_STOPS).toContain("Main Exchange (PX)");
+  });
+  it("SOCKOR HQ is registered as a Blue-only stop", () => {
+    expect(ALL_STOPS).toContain("SOCKOR HQ");
+    expect(STOP_ROUTES["SOCKOR HQ"]).toEqual(["BLUE"]);
   });
 });
 
@@ -192,13 +200,13 @@ describe("findTrips — service-hours filter", () => {
 
 describe("findTrips — overnight detection", () => {
   it("records an overnight strand when a bus leg lands past service-end", () => {
-    // 21:59 Mon from Pedestrian Gate to Central Issue Facility on Blue:
-    // ride is 18 stops * 2 min = 36 min → alightAt past 22:30, but boardAt
-    // already past 22:00 service end → next scheduled departure jumps to
-    // Tue, exceeding endToday → overnight strand recorded.
+    // 19:25 Mon Central Issue Facility → Pedestrian Gate on Blue: Blue is
+    // still in service (closes 19:51) but CIF's last PDF arrival is 19:21,
+    // so nextScheduledDeparture jumps to Tue 08:36 — past today's endToday →
+    // overnight strand recorded.
     const r = findTrips(
-      "Pedestrian Gate", "Central Issue Facility",
-      monAt(21, 59), "depart"
+      "Central Issue Facility", "Pedestrian Gate",
+      monAt(19, 25), "depart"
     );
     expect(r.trips).toEqual([]);
     expect(r.overnight.length).toBeGreaterThan(0);
@@ -350,6 +358,6 @@ describe("nextServiceStart", () => {
   it("rolls to the next service day when today is finished", () => {
     const d = nextServiceStart(ROUTES.BLUE, satAt(9, 0));
     expect(d.getDay()).toBe(1);
-    expect(d.getHours()).toBe(6);
+    expect(d.getHours()).toBe(8);
   });
 });

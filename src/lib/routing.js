@@ -61,8 +61,14 @@ export function nearestStopTo(coords) {
 const hhmmToMin = s => parseInt(s.slice(0,2),10)*60 + parseInt(s.slice(3,5),10);
 
 export const ROUTES = {
-  BLUE:  { id:"BLUE",  name:"Blue Route",   color:"#4a90e2", freq:15, hours:"0600–2200", days:"Mon–Fri",
-    stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","TMP / Driver's Licensing","Airfield Operations","Talon Cafe DFAC","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Post Office","Main Exchange (PX)","Pittman DFAC","Sitman Fitness Center","2ID Sustainment","Central Issue Facility"] },
+  BLUE:  { id:"BLUE",  name:"Blue Route",   color:"#4a90e2", freq:15,
+    verified:true,
+    days:"Mon–Fri", hours:"Mon–Fri 0800–1951",
+    schedule:[
+      { dow:[1,2,3,4,5], from:"08:00", to:"19:51" },
+    ],
+    note:"PDF-sourced (Pedestrian Gate poster, effective 23 Mar 2026). Mon–Fri only, 15-min dispatch 08:00–18:45, 66-min loop.",
+    stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","TMP / Driver's Licensing","Airfield Operations","Talon Cafe DFAC","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Post Office","Main Exchange (PX)","Pittman DFAC","Sitman Fitness Center","2ID Sustainment","SOCKOR HQ","Central Issue Facility"] },
   BLACK: { id:"BLACK", name:"Black Route",  color:"#434c5e", freq:15,
     verified:true,
     days:"Mon–Fri", hours:"Mon–Fri 0600–0900 · 1500–1900",

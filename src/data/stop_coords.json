@@ -5,8 +5,8 @@
     "fetched_at": "2026-05-20T03:03:59.966122+00:00",
     "license": "ODbL 1.0 — © OpenStreetMap contributors",
     "matched": 44,
-    "unmatched": [],
-    "total_routes_stops": 44
+    "unmatched": ["SOCKOR HQ"],
+    "total_routes_stops": 45
   },
   "stops": {
     "2ID Sustainment": {
@@ -248,6 +248,12 @@
       "lon": 126.9948794,
       "source": "osm bus_stop 5772401671",
       "name_ko": "싯맨 피트니스 센터"
+    },
+    "SOCKOR HQ": {
+      "lat": null,
+      "lon": null,
+      "source": "pending — added 2026-08-24 from Blue Route poster; OSM bus_stop node not yet identified",
+      "name_ko": null
     },
     "Spartan DFAC": {
       "lat": 36.9703399,
