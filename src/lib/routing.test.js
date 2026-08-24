@@ -52,6 +52,21 @@ describe("inService", () => {
   it("split-shift route does not run on Saturday", () => {
     expect(inService(ROUTES.BLACK, satAt(7, 0))).toBe(false);
   });
+  it("Orange evening-only Mon-Thu is out of service midday Mon", () => {
+    expect(inService(ROUTES.ORANGE, monAt(12, 0))).toBe(false);
+  });
+  it("Orange evening window Mon 20:00 is in service", () => {
+    expect(inService(ROUTES.ORANGE, monAt(20, 0))).toBe(true);
+  });
+  it("Orange Fri overnight rolls into Sat pre-01:45 as in service", () => {
+    expect(inService(ROUTES.ORANGE, satAt(1, 0))).toBe(true);
+  });
+  it("Orange Sat 03:00 (after overnight cutoff, before 09:00 start) is out of service", () => {
+    expect(inService(ROUTES.ORANGE, satAt(3, 0))).toBe(false);
+  });
+  it("Orange Sun 01:00 (rollover from Sat) is in service", () => {
+    expect(inService(ROUTES.ORANGE, sunAt(1, 0))).toBe(true);
+  });
 });
 
 describe("serviceEndToday", () => {
