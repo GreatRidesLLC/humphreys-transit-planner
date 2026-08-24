@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  ROUTES, ALL_STOPS, STOP_ROUTES,
+  ROUTES, ALL_STOPS, STOP_ROUTES, STOP_ALIASES,
   inService, serviceEndToday,
   nextScheduledDeparture, prevScheduledDeparture,
   nextDeparture, freqAt, nextServiceStart,
@@ -106,6 +106,36 @@ describe("STOP_ROUTES + ALL_STOPS index", () => {
   it("SOCKOR HQ is registered as a Blue-only stop", () => {
     expect(ALL_STOPS).toContain("SOCKOR HQ");
     expect(STOP_ROUTES["SOCKOR HQ"]).toEqual(["BLUE"]);
+  });
+});
+
+describe("STOP_ALIASES", () => {
+  it("every alias key resolves to a canonical stop that exists on some route", () => {
+    for (const canonical of Object.keys(STOP_ALIASES)) {
+      expect(ALL_STOPS, `alias key "${canonical}" is not a real stop`).toContain(canonical);
+    }
+  });
+
+  it("aliases are unique across the whole map (no double-claim)", () => {
+    const seen = new Map();
+    for (const [canonical, aliases] of Object.entries(STOP_ALIASES)) {
+      for (const alias of aliases) {
+        const prior = seen.get(alias.toLowerCase());
+        expect(prior, `alias "${alias}" is claimed by both "${prior}" and "${canonical}"`).toBeUndefined();
+        seen.set(alias.toLowerCase(), canonical);
+      }
+    }
+  });
+
+  it("user-requested aliases are present", () => {
+    expect(STOP_ALIASES["Pedestrian Gate"]).toEqual(expect.arrayContaining(["Walk-in Gate"]));
+    expect(STOP_ALIASES["Eighth Army HQ"]).toEqual(expect.arrayContaining(["8th Army"]));
+  });
+
+  it("common shorthand aliases are present", () => {
+    expect(STOP_ALIASES["Central Issue Facility"]).toEqual(expect.arrayContaining(["CIF"]));
+    expect(STOP_ALIASES["Brian D. Allgood Hospital"]).toEqual(expect.arrayContaining(["BDAACH"]));
+    expect(STOP_ALIASES["Bus Terminal"]).toEqual(expect.arrayContaining(["BT"]));
   });
 });
 
