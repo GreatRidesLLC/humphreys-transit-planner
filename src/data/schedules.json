@@ -41,7 +41,8 @@
       "BROWN": "Brown Route BUS TERMINAL Departure Times poster (photographed 2026-08-20, brown-route.jpg; trial run route)",
       "PINK": "Pink Route Bus Stops and Timetables (eff. 15 July 2023)",
       "PURPLE": "Purple Route Bus Stops and Timetables (Exhibit #0022, on-post poster)",
-      "GREEN": "Green Route Bus Stops and Timetables (Pedestrian Gate poster, updated 15 July 2023; photographed 2026-08-24, Photos-extra/green-route.jpg). Weekday 15-min :09/:24/:39/:54, weekend 30-min :24/:54. Other stops still use anchored heuristic."
+      "GREEN": "Green Route Bus Stops and Timetables (Pedestrian Gate poster, updated 15 July 2023; photographed 2026-08-24, Photos-extra/green-route.jpg). Weekday 15-min :09/:24/:39/:54, weekend 30-min :24/:54. Other stops still use anchored heuristic.",
+      "BLACK": "Black Route Pedestrian Gate poster (updated 15 July 2023; photographed 2026-08-24, Photos-extra/black-route.jpg). Mon-Fri split shift: 06:00-08:45 + 15:00-18:45, 15-min headway. Other stops still use anchored heuristic."
     }
   },
   "stops": {
@@ -5291,7 +5292,8 @@
       ],
       "routes_named": [
         "BROWN",
-        "GREEN"
+        "GREEN",
+        "BLACK"
       ],
       "minutes_pattern": [
         0,
@@ -5461,6 +5463,38 @@
             "22:54",
             "23:24",
             "23:54"
+          ]
+        },
+        "BLACK": {
+          "MONDAY-FRIDAY": [
+            "06:00",
+            "06:15",
+            "06:30",
+            "06:45",
+            "07:00",
+            "07:15",
+            "07:30",
+            "07:45",
+            "08:00",
+            "08:15",
+            "08:30",
+            "08:45",
+            "15:00",
+            "15:15",
+            "15:30",
+            "15:45",
+            "16:00",
+            "16:15",
+            "16:30",
+            "16:45",
+            "17:00",
+            "17:15",
+            "17:30",
+            "17:45",
+            "18:00",
+            "18:15",
+            "18:30",
+            "18:45"
           ]
         }
       }

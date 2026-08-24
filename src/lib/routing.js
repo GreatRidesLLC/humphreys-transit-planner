@@ -63,7 +63,14 @@ const hhmmToMin = s => parseInt(s.slice(0,2),10)*60 + parseInt(s.slice(3,5),10);
 export const ROUTES = {
   BLUE:  { id:"BLUE",  name:"Blue Route",   color:"#4a90e2", freq:15, hours:"0600–2200", days:"Mon–Fri",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","TMP / Driver's Licensing","Airfield Operations","Talon Cafe DFAC","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Post Office","Main Exchange (PX)","Pittman DFAC","Sitman Fitness Center","2ID Sustainment","Central Issue Facility"] },
-  BLACK: { id:"BLACK", name:"Black Route",  color:"#434c5e", freq:25, hours:"0600–2200", days:"Mon–Fri",
+  BLACK: { id:"BLACK", name:"Black Route",  color:"#434c5e", freq:15,
+    verified:true,
+    days:"Mon–Fri", hours:"Mon–Fri 0600–0900 · 1500–1900",
+    schedule:[
+      { dow:[1,2,3,4,5], from:"06:00", to:"09:00" },
+      { dow:[1,2,3,4,5], from:"15:00", to:"19:00" },
+    ],
+    note:"PDF-sourced (15 July 2023 Pedestrian Gate poster). Split shift — morning + late-afternoon peaks only, no midday service.",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","Pacific Victors Chapel","Commissary","LTG Maude Hall (9th St)","Spartan DFAC"] },
   GREEN: { id:"GREEN", name:"Green Route",  color:"#2e8b57", freq:15,
     verified:true,
@@ -161,9 +168,13 @@ export const inService = (r, d) => {
 export const serviceEndToday = (r, ref) => {
   const dow = ref.getDay();
   if (r.schedule) {
-    const w = r.schedule.find(x => x.dow.includes(dow));
-    if (!w) return null;
-    const em = hhmmToMin(w.to);
+    // Split-shift routes (Black: 06-09 + 15-19) list two windows for the same
+    // dow; the day's actual end is the latest `to`, not the first match.
+    const tos = r.schedule
+      .filter(x => x.dow.includes(dow))
+      .map(x => hhmmToMin(x.to));
+    if (!tos.length) return null;
+    const em = Math.max(...tos);
     const d = new Date(ref); d.setHours(0, 0, 0, 0); d.setMinutes(em);
     return d;
   }

@@ -40,6 +40,18 @@ describe("inService", () => {
   it("Mon-Sun route runs on Sunday inside hours", () => {
     expect(inService(ROUTES.GOLD, sunAt(12, 0))).toBe(true);
   });
+  it("split-shift route runs in morning peak", () => {
+    expect(inService(ROUTES.BLACK, monAt(6, 30))).toBe(true);
+  });
+  it("split-shift route runs in afternoon peak", () => {
+    expect(inService(ROUTES.BLACK, monAt(16, 30))).toBe(true);
+  });
+  it("split-shift route is out of service midday between peaks", () => {
+    expect(inService(ROUTES.BLACK, monAt(12, 0))).toBe(false);
+  });
+  it("split-shift route does not run on Saturday", () => {
+    expect(inService(ROUTES.BLACK, satAt(7, 0))).toBe(false);
+  });
 });
 
 describe("serviceEndToday", () => {
@@ -53,6 +65,13 @@ describe("serviceEndToday", () => {
   });
   it("returns null for Fri-Sat route on Monday", () => {
     expect(serviceEndToday(ROUTES.PINK, monAt(18, 0))).toBeNull();
+  });
+  it("returns the latest window end for a split-shift route", () => {
+    // Black has morning + afternoon windows; asking during morning must return
+    // the afternoon window's end (19:00), not the morning window's end.
+    const end = serviceEndToday(ROUTES.BLACK, monAt(7, 0));
+    expect(end.getHours()).toBe(19);
+    expect(end.getMinutes()).toBe(0);
   });
 });
 
