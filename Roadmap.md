@@ -8,6 +8,7 @@ Launch-focused. Target public release **~2026-08-26** (one month from 2026-07-26
 
 ## ✅ Shipped
 
+- Blue / Black / Orange / Green Pedestrian Gate posters (2026-08-24) — closed the last three big data gaps in one batch. **Blue** flipped from `freq:15` heuristic + `0600–2200` placeholder to a full 20-stop PDF matrix (Mon–Fri 08:00–18:45 dispatch, 66-min loop, last arrival 19:51) plus a new `SOCKOR HQ` stop between 2ID Sustainment and Central Issue Facility (coords still pending an OSM lookup). **Black** was wrongly modeled as `freq:25` uniform 06:00–22:00; actually a 15-min *split shift* (06:00–09:00 + 15:00–19:00 Mon-Fri, no midday) — added a two-window `schedule` and taught `serviceEndToday` to return the latest window end so afternoon arrive-by planning stays correct. **Orange** was wrongly modeled as `freq:30, Mon–Fri 06:00–22:00`; actually 15-min evenings + weekends with Fri/Sat overnight to 01:45 — added a 4-window `schedule` and PG arrivals with overnight bucketing by arrival day. **Green** gained per-stop times at Pedestrian Gate (the second Green stop with a PDF-sourced timetable, after Bus Terminal). All four routes marked `verified:true`; 72 vitest cases pass. Reproducible via `scripts/gen_{blue,black,orange,green}_pedestrian_gate.py` (blue is `gen_blue_schedule.py`).
 - Swap button bug fix — `StopInput` now syncs local state with the parent `value` prop on every change, not just when empty
 - Departure / arrival timestamps on every leg of every trip
 - Depart-at / Arrive-by toggle with `<input type="time">` picker
@@ -61,12 +62,7 @@ Custom domain `humphreysbus.app` live on the `main` branch (see Shipped). `wrang
 - Add production URL to `README.md` + repo About
 
 ### Transportation Office data inquiry (single email)
-One inquiry to DSN 755-0424 bundling three asks:
-1. Black / Orange headway (currently unverified `freq` of 25 / 30)
-2. Blue service-hour bounds (currently placeholder `0600–2200`). Green + Purple resolved via on-post posters (see Shipped)
-3. Per-route PDFs for Blue / Black / Orange (Gold Exhibit #0019 + Green + Purple posters photographed on-site)
-
-Send week 1. If no reply by week 3 → ship with current `EST.` badges (already handled by the estimated-vs-verified UI). Do not block launch on reply.
+Original inquiry deferred — the outstanding schedule gaps it targeted (Black / Orange headway, Blue service-hour bounds, Blue/Black/Orange per-route PDFs) were closed 2026-08-24 by the Pedestrian Gate poster batch (`Photos-extra/*.jpg`). All 5 on-post routes with published posters (Blue / Black / Orange / Green / Purple / Gold / Brown / Pink) now have PDF-sourced schedules. A future inquiry could still request inter-garrison timetables and Green weekday per-stop timetable — but neither is a launch blocker.
 
 ### Git workflow — prod-like with dev branch
 Establish before the first Cloudflare deploy so preview URLs behave predictably:
@@ -127,9 +123,9 @@ Do NOT start unless PAO re-opens the MAPA-integration conversation. Nagan approv
 
 ## Known data gaps
 
-- Black, Orange: 15-min headway unconfirmed — no stops served exclusively by either route in the per-stop image directory. Current `freq` of 25 / 30 is unverified
-- Blue: headway confirmed 15 min, but service-hour bounds still placeholder `0600–2200`. Green + Purple resolved via on-post posters (see Shipped)
-- Green per-stop timetables: only Bus Terminal has PDF-sourced times in `schedules.json` (`scripts/gen_green_schedule.py`). Other 19 Green stops still use the 2-min-per-stop heuristic. Requires a per-stop timetable photo (the Green route diagram posters photographed 2026-08-20 show only BT dispatches)
+- ~~Black, Orange: 15-min headway unconfirmed~~ **Resolved 2026-08-24** via PG poster. Black is a split-shift (06:00-09:00 + 15:00-19:00 Mon-Fri, 15-min); Orange is 15-min evenings + weekends with Fri/Sat overnight to 01:45. See `scripts/gen_black_pedestrian_gate.py` + `scripts/gen_orange_pedestrian_gate.py`
+- ~~Blue: headway confirmed 15 min, but service-hour bounds still placeholder `0600–2200`~~ **Resolved 2026-08-24** via PG poster. Blue is Mon-Fri 08:00-18:45 dispatch, 66-min loop, last arrival 19:51. Full per-stop matrix transcribed via `scripts/gen_blue_schedule.py`. Also added new stop `SOCKOR HQ` (between 2ID Sustainment and Central Issue Facility) — coords still pending OSM lookup, see `stop_coords.json` _meta.unmatched
+- Green per-stop timetables: Bus Terminal + Pedestrian Gate now PDF-sourced (`scripts/gen_green_schedule.py` + `scripts/gen_green_pedestrian_gate.py`). Other 18 Green stops still use the 2-min-per-stop heuristic — requires per-stop poster photos (only route-diagram + terminus posters have been photographed to date)
 - Gold stop-name verification: Exhibit #0019 photos (2026-08-20 retake) include 7 stops whose canonical names / physical mapping remain unverified. Omitted from `gen_gold_schedule.py` pending walk-through or Transportation Office confirmation:
   - `CAC` (S117) — full name? "Central Access Control"?
   - `USO` (S103) — is this "USO Sentry Village" (OSM building #301)?
@@ -138,6 +134,6 @@ Do NOT start unless PAO re-opens the MAPA-integration conversation. Nagan approv
   - `Sentry Village PX` (S451) — separate from existing `Sentry Village Burger King` and `Sentry Village Mini Mall` (which are also two distinct stops); confirm which physical shop
 - Inter-garrison routes: PDFs need re-download (Incheon Airport schedule updated Feb 2026)
 - Building directory: 32 mapped in `BUILDINGS` (high-confidence stop assignments). 380 known to exist on-post per OSM; remaining ~350 are blocked on stop coordinates for a "nearest stop" heuristic. Many of those have OSM `name` tags (e.g. "Zoeckler Fitness Center", "Heartbreak Ridge Tower") that could be hand-assigned to a stop, but doing so without coordinates risks systematic errors
-- Stop coordinates: all 44 ROUTES stops have coords in `src/data/stop_coords.json` (43 OSM-sourced, 1 hand-pinned for the new Pink-route trial stop)
+- Stop coordinates: 44 of 45 ROUTES stops have coords in `src/data/stop_coords.json` (43 OSM-sourced, 1 hand-pinned for the Pink-route trial stop). SOCKOR HQ (added 2026-08-24 from Blue poster) still needs an OSM `bus_stop` node lookup — walk-leg falls to the 3-min floor until then
 - Holiday / training-holiday schedule variations: Brown/Pink panels capture them; other routes still treat training holidays as ordinary weekdays
 - New stops not yet in `BUILDINGS`: Downtown Plaza, Family Mini Mall / Gas Station, Family Housing Towers (15th Street) — building numbers unknown
