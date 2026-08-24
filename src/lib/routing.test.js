@@ -287,20 +287,22 @@ describe("nextDeparture source", () => {
   });
 
   it("reports heuristic for a verified route at a stop the PDF never covered", () => {
-    // Green is verified:true but schedules.json only carries Bus Terminal.
-    const d = nextDeparture(ROUTES.GREEN, "Pedestrian Gate", satAt(14, 10));
+    // Green is verified:true; schedules.json carries Bus Terminal + Pedestrian
+    // Gate, so pick a still-uncovered stop for this assertion.
+    const d = nextDeparture(ROUTES.GREEN, "Desiderio ATC Tower", satAt(14, 10));
     expect(d).not.toBeNull();
     expect(d.source).toBe("heuristic");
   });
 
   it("uses the active window's freq, not the route default", () => {
-    // Green is 15 min Mon-Fri but 30 min at the weekend, so the :00-anchored
-    // estimate at its first stop lands on 14:30, not 14:15.
+    // Green is 15 min Mon-Fri but 30 min at the weekend. Desiderio ATC Tower
+    // is stops[2] → 4-min offset; from Sat 14:10 the :00-anchored 30-min
+    // heuristic lands on 14:34, not 14:19.
     expect(freqAt(ROUTES.GREEN, monAt(14, 10))).toBe(15);
     expect(freqAt(ROUTES.GREEN, satAt(14, 10))).toBe(30);
-    const d = nextDeparture(ROUTES.GREEN, "Pedestrian Gate", satAt(14, 10));
+    const d = nextDeparture(ROUTES.GREEN, "Desiderio ATC Tower", satAt(14, 10));
     expect(d.time.getHours()).toBe(14);
-    expect(d.time.getMinutes()).toBe(30);
+    expect(d.time.getMinutes()).toBe(34);
   });
 });
 
