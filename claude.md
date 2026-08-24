@@ -4,10 +4,14 @@ A mobile-first, community-built React app for planning shuttle trips around the 
 
 ## Stack
 
-- React 18 + Vite
+- React 19 + Vite
+- No backend — fully static PWA; all data is build-time JSON. Convex was evaluated and rejected 2026-08-22; if a server-side need ever arises, add a route to the existing Cloudflare Worker (see `docs/adr/0001-static-first-no-backend.md`)
 - No external state management — local component state only
-- No CSS framework — inline styles via a shared color palette object (`C`) plus a small `<style>{CSS}</style>` block for shared rules (form elements, animations, scrollbar)
-- Leaflet for the Map tab (raster tiles from CARTO `dark_all`; circleMarker only, no default Marker icons to avoid Vite-bundling traps)
+- Tailwind v4 (`@tailwindcss/vite`, no config file) + shadcn/ui registry components — style `radix-vega`, base colour zinc, medium radius, CSS variables on. All design tokens live in `src/index.css`: shadcn's names on `:root` / `.dark`, plus handoff-only tokens (`--body`, `--faint`, `--border-strong`, `--divider`, `--link`, `--warn-*`, `--pdf-*`, `--origin-dot`, `--seg-active-*`) exposed through `@theme inline` so they work as utilities. `@/` aliases `./src` (vite `resolve.alias` + `jsconfig.json`)
+- `src/components/ui/*.jsx` is generated output — re-add with `bunx shadcn@latest add <name>`, never hand-edit; call sites pass `className` overrides and `cn()` from `@/lib/utils` instead. `eslint.config.js` exempts that directory. Route colours stay data (`ROUTES[..].color`, `ROUTE_BADGE`) and are the only inline `style=` colours allowed
+- Light theme is the default; dark is a token swap applied by toggling `dark` on `<html>`, driven by `humphreys.theme` (`light` | `dark` | `system`, `system` resolved via `matchMedia`) and switchable from the header. Every screen reads tokens through Tailwind utilities — there is no palette object left in `src/App.jsx`, and inline `style=` is reserved for route colours
+- Departure times: `verified` is route-level but a transcribed per-stop timetable only exists for the stops the PDF covered, so read `source` from `nextDeparture()` / `departureSource()` (`"pdf"` | `"heuristic"`) to decide between `14:30` and `~14:30`. Headway for a moment in time comes from `freqAt()`, not `r.freq`
+- No map library. An earlier Leaflet-based Map tab (CARTO `dark_all` tiles + straight-line route polylines) was retired 2026-08-22 as half-baked; implementation parked on branch `archive/map-tab` for future revival if a coherent map story (real polylines, live positions, or an on-post basemap) materializes
 
 ## Audience
 
@@ -15,14 +19,24 @@ Soldiers, family members, civilian employees, and Korean nationals (KATUSAs, KSC
 
 ## Aesthetic
 
-Tactical night: charcoal-blue backgrounds, signal cyan (`#22D3EE`) for primary-action chrome (buttons, focus rings, active tab, "FASTEST" badge, "To" indicator), saffron gold (`#FFC83D`) reserved as a PDF-sourced-schedule / Gold-Route marker and the brand-mark logo. Earlier "olive on olive" identity was dropped after a bold repalette; olive-named keys in the `C` palette object still exist as aliases for the new cool blue-grey text ramp to avoid touching every callsite.
+**Saffron Signal** (approved 2026-08-23): warm stone neutrals on shadcn structure — flat 1px borders, subtle shadows, no glows, no colored card rails, and **no accent colour anywhere in chrome**. Light is `#faf9f7` page / `#ffffff` card / `#1c1917` ink; dark is `#0c0b0a` / `#151311` / `#f5f3ef`. Because there is no accent hue, links are foreground-weight text with an underline (`--link` is `#44403c`, not a colour), and the active tab is a raised card surface with no underline.
 
-Two fonts:
+Saffron `#FFC83D` survives in exactly one place: the brand mark. `src/components/brand-mark.jsx` exports `BrandMark({size})` — a saffron tile with a charcoal bus, 28px in the header, with an optical cut at ≤16px that drops the roof strip so nothing lands under a pixel. Nothing in the interface may reuse that gold; putting it on a badge or a dot would read as the Gold Route. App icons are generated from `public/icon.svg` (and `public/icons/icon-maskable.svg`, which is full-bleed for the maskable safe zone) with `rsvg-convert -w N -h N SRC -o OUT` into `public/icons/`; the mark itself is the source of truth, so regenerate rather than editing a PNG.
 
-- **Rajdhani** (display + UI) — military feel, tall caps
-- **JetBrains Mono** (times, route badges) — distinguishes clock data from prose
+Spec and screens: `docs/design-handoff-shadcn-redesign.md`.
 
-Dark theme by default. No light mode planned.
+Route colours are the approved set in `src/lib/palette.js` (2026-08-23), picked for colour-vision-deficiency separation as much as contrast — the worst pair distance under deuteranopia went 3.10 → 9.76 ΔE, under protanopia 2.32 → 10.10, retiring an Orange/Brown pair that read as one colour. `ROUTE_BADGE.fg` is the badge ink and every pair clears AA; `src/lib/palette.test.js` fails the build if a value regresses, so re-run it rather than hand-tuning. Saffron gold is no longer a trust marker: the PDF-sourced badge is a neutral outline chip, and gold is now just the Gold Route's colour.
+
+Type stack (`--font-sans` / `--font-mono` in `src/index.css`, faces in `public/fonts/fonts.css`):
+
+- **Avenir Next** (display + UI) where it is installed — it ships with macOS and iOS, which is most of this audience. Declared with `local()` only. **It is a licensed Monotype face: never download, vendor, or serve an Avenir file from this repo.** We have no redistribution licence
+- **Nunito Sans** (OFL, self-hosted, latin subset from `@fontsource/nunito-sans`) — the web fallback everywhere Avenir Next is absent
+- **Noto Sans KR** (self-hosted) for Korean, last in the sans stack
+- **Geist Mono** (times, route badges) — distinguishes clock data from prose; JetBrains Mono remains as the fallback face
+
+Because the Nunito Sans faces carry a latin `unicode-range`, the glyph icons (★ → ▾ ⇅ ↺) resolve from Avenir Next on Apple devices and from Noto Sans KR / the system sans elsewhere.
+
+Light theme by default; dark ships as a token swap. Rajdhani and the Geist sans faces are retired.
 
 ## Data sources
 
@@ -40,7 +54,7 @@ Data status (internal `verified` flag on `ROUTES`; gates whether `findTrips` rea
 
 Building-number directory: 32 mapped (15 hand-curated + 17 OSM-sourced via `scripts/fetch_osm_buildings.py`). OSM has 380 numbered buildings inside the installation polygon; only those whose `name` tag unambiguously matches a known bus stop are merged into the `BUILDINGS` const. Raw OSM dataset lives in `src/data/buildings_osm.json`.
 
-Bus-stop coordinates: 43 of 44 ROUTES stops have lat/lon in `src/data/stop_coords.json` (OSM `highway=bus_stop` nodes tagged `operator=USAG Humphreys`, fetched via `scripts/fetch_stop_coords.py`). Only the new Pink-route stop "Family Housing Towers (15th Street)" is missing.
+Bus-stop coordinates: 44 of 44 ROUTES stops have lat/lon in `src/data/stop_coords.json` (OSM `highway=bus_stop` nodes tagged `operator=USAG Humphreys`, fetched via `scripts/fetch_stop_coords.py`). The one stop OSM had no node for — the Pink trial-route "Family Housing Towers (15th Street)" — is hand-pinned to `36.9556, 127.0158` (SW terminus of 15th Street, OSM way 1019688918).
 
 ## Conventions
 
@@ -48,9 +62,12 @@ Bus-stop coordinates: 43 of 44 ROUTES stops have lat/lon in `src/data/stop_coord
 - Times in 24h format (`HH:MM`)
 - Walk times: see "Walk leg" below — only mock when no coords available for either side.
 - Mock ride times: 2 min per stop (heuristic, not real)
-- Wait times: `nextScheduledDeparture − userArrivalAtStop`. For Gold (weekend only)/Brown/Pink/Purple the scheduled departure comes from the PDF data in `src/data/schedules.json`; for other routes (Gold weekdays, Green, Blue, Black, Orange) it falls back to a `:00`-anchor cycle heuristic (`+2 min/stop offset from the first stop`) using the freq active for the current window.
+- Wait times: `nextScheduledDeparture − userArrivalAtStop`. `nextDeparture()` returns `{ time, source }` where source is `"pdf"` (a transcribed per-stop timetable in `src/data/schedules.json`) or `"heuristic"` (the `:00`-anchor cycle, `+2 min/stop` from the first stop, at the freq active for the current window). Provenance is **per stop, not per route** — Green is `verified: true` but only Bus Terminal has real times — so never branch on `r.verified` to decide how precise a time is; read `source`, or `departureSource(R, stop)`.
 - Walk leg: `haversine(origin, stop)` divided by 5 km/h, floored at 3 min. Origin is the user's geolocation if the "📍 Nearest" button was used, else the picked building's OSM centroid (`src/data/buildings_osm.json`), else the 3-min mock. No geolocation request on page load — only on explicit button click.
 - Service hours filtered automatically: routes out of service at the planned trip time are excluded from results
+- Headway for a moment in time is `freqAt(route, when)`, never `route.freq` — Green is 15 min on weekdays and 30 at the weekend
+- Any heuristic departure renders with the `~` prefix plus an "est." tag; only `source: "pdf"` times print bare
+- All 11px informational text uses `text-muted-foreground`. `text-faint` is reserved for placeholders and non-text glyphs (chevrons) — it is a step lighter and only clears AA on the card surface
 
 ## Out of scope (for now)
 
@@ -73,6 +90,9 @@ Bus-stop coordinates: 43 of 44 ROUTES stops have lat/lon in `src/data/stop_coord
 - Wait/ride time heuristics will get replaced once real schedule PDFs arrive; do not over-engineer them now
 - See `Roadmap.md` for the planned improvement queue (Phase 5a in progress, 5b only if PAO accepts MAPA, 5c if PAO declines long-term)
 - Before adding or editing user-facing copy, check `docs/legal-posture.md` to keep the disclaimer / non-affiliation stance intact. The internal `verified: true` flag on `ROUTES` is a data switch — do not surface the word "verified" in user-facing strings; use "PDF-sourced"
+- `src/components/ui/` is generated shadcn output. Re-add with `bunx shadcn@latest add <name>`; never hand-edit it. Style the call site with `className` + `cn()` instead — and remember `tailwind-merge` only dedupes classes that share a variant prefix, so an override must repeat the generated class's modifiers to win
+- Route colours are data, not theme: `ROUTES[..].color` and `ROUTE_BADGE` (whose ink is contrast-checked — Black, Purple and Pink carry dark text because white failed AA). They are the only inline `style=` colours in the app; everything else goes through Tailwind tokens
+- Every new user-facing string needs both locales. Render the screen in `ko` before calling it done — units and separators are the usual leak
 - See `docs/distribution-pivot.md` if you need to know what flips on MAPA-positive
 
 ## Filename quirk

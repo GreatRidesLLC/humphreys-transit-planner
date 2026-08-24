@@ -1,111 +1,270 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── Theme map ───────────────────────────────────────────────────────────────
+   shadcn token names on the left, raw values in :root / .dark below. The extra
+   --color-* entries are the design-handoff tokens shadcn has no slot for; they
+   are exposed here so they work as Tailwind utilities (text-faint, bg-warn-bg…).
+   Route colours are data (ROUTES[..].color) and deliberately absent — they read
+   identically in both themes and are applied inline from JS.                  */
+@theme inline {
+    --font-sans: 'Avenir Next', 'Nunito Sans', 'Noto Sans KR', sans-serif;
+    --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+    --font-heading: var(--font-sans);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    /* handoff tokens with no shadcn slot */
+    --color-body: var(--body);
+    --color-secondary-text: var(--secondary-text);
+    --color-faint: var(--faint);
+    --color-border-strong: var(--border-strong);
+    --color-divider: var(--divider);
+    --color-link: var(--link);
+    --color-link-hover: var(--link-hover);
+    --color-warn-bg: var(--warn-bg);
+    --color-warn-border: var(--warn-border);
+    --color-warn-text: var(--warn-text);
+    --color-origin-dot: var(--origin-dot);
+    --color-seg-active: var(--seg-active-bg);
+
+    /* Medium radius scale from the handoff: 6px small badge · 8px controls ·
+       10px tracks/notes · 12px cards. Pinned rather than derived so the steps
+       land on the spec instead of on calc() fractions of --radius. */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.625rem;
+    --radius-xl: 0.75rem;
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+    color-scheme: light;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+    --radius: 0.5rem;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    --background: #faf9f7;
+    --foreground: #1c1917;
+    --card: #ffffff;
+    --card-foreground: #1c1917;
+    --popover: #ffffff;
+    --popover-foreground: #1c1917;
+    --primary: #1c1917;
+    --primary-foreground: #f5f3ef;
+    --secondary: #f3f1ec;
+    --secondary-foreground: #1c1917;
+    --muted: #f3f1ec;
+    --muted-foreground: #6b6560;
+    --accent: #f3f1ec;
+    --accent-foreground: #1c1917;
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: #e7e3dc;
+    --input: #e7e3dc;
+    --ring: #8f887f;
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: #ffffff;
+    --sidebar-foreground: #1c1917;
+    --sidebar-primary: #1c1917;
+    --sidebar-primary-foreground: #f5f3ef;
+    --sidebar-accent: #f3f1ec;
+    --sidebar-accent-foreground: #1c1917;
+    --sidebar-border: #e7e3dc;
+    --sidebar-ring: #8f887f;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+    --body: #44403c;
+    --secondary-text: #57534e;
+    --faint: #78716c;
+    --border-strong: #d6d1c8;
+    --divider: #f3f1ec;
+    /* Saffron Signal has no accent colour, so links are foreground-weight text
+       carrying an underline rather than a hue. */
+    --link: #44403c;
+    --link-hover: #1c1917;
+    --warn-bg: #fffbeb;
+    --warn-border: #fde68a;
+    --warn-text: #92400e;
+    --origin-dot: #16a34a;
+
+    --hover: #f3f1ec;
+    --focus-ring: 0 0 0 3px rgba(28, 25, 23, 0.08);
+    --card-shadow: 0 1px 2px rgba(28, 25, 23, 0.05);
+    --card-shadow-strong: 0 1px 3px rgba(28, 25, 23, 0.07);
+    --seg-active-bg: #ffffff;
+    --seg-active-shadow: 0 1px 2px rgba(28, 25, 23, 0.08);
+    --dd-shadow: 0 8px 24px rgba(28, 25, 23, 0.1);
+    --overlay: rgba(12, 11, 10, 0.5);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+.dark {
+    color-scheme: dark;
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
+    --background: #0c0b0a;
+    --foreground: #f5f3ef;
+    --card: #151311;
+    --card-foreground: #f5f3ef;
+    --popover: #151311;
+    --popover-foreground: #f5f3ef;
+    --primary: #f5f3ef;
+    --primary-foreground: #1c1917;
+    --secondary: #2a2622;
+    --secondary-foreground: #f5f3ef;
+    --muted: #2a2622;
+    --muted-foreground: #a8a199;
+    --accent: #2a2622;
+    --accent-foreground: #f5f3ef;
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: #2a2622;
+    --input: #2a2622;
+    --ring: #a8a199;
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: #151311;
+    --sidebar-foreground: #f5f3ef;
+    --sidebar-primary: #f5f3ef;
+    --sidebar-primary-foreground: #1c1917;
+    --sidebar-accent: #2a2622;
+    --sidebar-accent-foreground: #f5f3ef;
+    --sidebar-border: #2a2622;
+    --sidebar-ring: #a8a199;
 
-body {
-  margin: 0;
-}
+    --body: #d6d1c8;
+    --secondary-text: #a8a199;
+    --faint: #8c857d;
+    --border-strong: #3d3833;
+    --divider: #2a2622;
+    --link: #e8e4dc;
+    --link-hover: #f5f3ef;
+    --warn-bg: #1f1608;
+    --warn-border: #78350f;
+    --warn-text: #fcd34d;
+    --origin-dot: #22c55e;
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
+    --hover: #1f1c19;
+    --focus-ring: 0 0 0 3px rgba(245, 243, 239, 0.12);
+    --card-shadow: 0 0 #0000;
+    --card-shadow-strong: 0 0 #0000;
+    --seg-active-bg: #3d3833;
+    --seg-active-shadow: 0 0 #0000;
+    --dd-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --overlay: rgba(12, 11, 10, 0.5);
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    /* Both, so the notch and home-indicator strips paint the theme colour
+       instead of the UA's white in standalone mode. */
+    html,
+    body {
+        background: var(--background);
+    }
+    html {
+        /* iOS inflates text in landscape without this. `contain` keeps
+           pull-to-refresh but stops scroll chaining past the app. */
+        -webkit-text-size-adjust: 100%;
+        overscroll-behavior-y: contain;
+        -webkit-tap-highlight-color: transparent;
+    }
+    body {
+        @apply bg-background text-foreground font-sans antialiased;
+    }
+    /* Opts out of the 300ms double-tap-zoom wait without disabling pinch. */
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    [role="button"],
+    [role="tab"],
+    [role="option"],
+    [role="radio"],
+    [role="combobox"] {
+        touch-action: manipulation;
+    }
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+/* The vega dialog overlay is a 10% black wash plus a backdrop blur; the handoff
+   calls for a flat 50% scrim. DialogContent renders its own overlay with no
+   className to pass, so the slot is overridden here instead of editing the
+   generated component. Deliberately UNLAYERED: `bg-black/10` and
+   `backdrop-blur-xs` live in @layer utilities, which outranks every layer. */
+[data-slot="dialog-overlay"] {
+    background: var(--overlay);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+/* ─── Legacy component classes ────────────────────────────────────────────────
+   What Tailwind utilities cannot express: the results slide-in keyframes and
+   the scrollbar. Everything the screens draw is a registry component plus
+   utilities — the native date/time inputs are gone, so is their picker fix. */
+@layer components {
+    .si {
+        animation: si 0.3s cubic-bezier(0.22, 0.68, 0, 1.2);
+    }
+    @keyframes si {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+        background: var(--background);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+    }
 }

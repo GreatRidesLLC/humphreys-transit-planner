@@ -24,9 +24,9 @@ Background context: `docs/legal-posture.md`, `SECURITY.md`, `Roadmap.md` Phase 5
 | CSP `frame-ancestors` | `public/_headers` | `'none'` |
 | `X-Frame-Options` | `public/_headers` | `DENY` |
 | MAPA embed chrome (`?embed=1`) | not implemented | n/a |
-| Hosting | not deployed; planned: Cloudflare Pages free tier on `*.pages.dev` | n/a |
-| Domain | none registered | n/a |
-| DNS hardening (DNSSEC, CAA, registrar lock) | deferred until domain registered | n/a |
+| Hosting | Cloudflare Workers Static Assets, project `humphreys-transit-planner`; `main` deploys to `https://humphreysbus.app` (fallback `*.workers.dev` for preview) | n/a |
+| Domain | `humphreysbus.app` registered via Cloudflare Registrar 2026-08-21 | n/a |
+| DNS hardening (DNSSEC, CAA, registrar lock) | applied 2026-08-21: DNSSEC on (DS at `.app` registry, `ad` flag validating), CAA restricts to `pki.goog` + `letsencrypt.org` + `iodef mailto:`, CF Edge CA pinned to Google Trust Services, registrar transfer-lock on | n/a |
 
 ## PAO-positive delta
 
@@ -82,7 +82,7 @@ Tracked in `SECURITY.md` "Controls deferred to MAPA-positive branch". Triggered 
 
 ### 6. Hosting + DNS
 
-If MAPA integration is "data-feed-only handoff" (PAO consumes `src/data/schedules.json` directly), the standalone PWA can keep its own host. If MAPA embeds the SPA via iframe, the SPA still hosts itself — same Cloudflare Pages deploy. DNS hardening (DNSSEC, CAA, registrar lock) applies once a production domain is registered, whether MAPA-integrated or standalone.
+If MAPA integration is "data-feed-only handoff" (PAO consumes `src/data/schedules.json` directly), the standalone PWA can keep its own host. If MAPA embeds the SPA via iframe, the SPA still hosts itself — same Cloudflare Workers deploy on `humphreysbus.app`. DNS hardening (DNSSEC, CAA, registrar lock) was applied 2026-08-21 alongside registration; no further action required on the standalone side. If PAO wants the app served from a `.mil` subdomain instead, DNS work restarts on that domain.
 
 ## Reverse pivot (PAO turns negative after positive)
 

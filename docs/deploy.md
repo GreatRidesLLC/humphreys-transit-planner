@@ -31,11 +31,12 @@ Environment variables: none required for the current build.
 
 | Branch | URL | Purpose |
 |--------|-----|---------|
-| `main` | `humphreys-transit-planner.<subdomain>.workers.dev` | Production |
+| `main` | `https://humphreysbus.app` | Production (custom domain) |
+| `main` | `humphreys-transit-planner.<subdomain>.workers.dev` | Production (fallback workers.dev) |
 | `dev` | `dev.humphreys-transit-planner.<subdomain>.workers.dev` | Preview / smoke test before release |
 | `feat/*` | `<hash>.humphreys-transit-planner.<subdomain>.workers.dev` | Per-PR preview (if enabled) |
 
-Custom domain is deferred until a name is chosen and registered (see [[distribution-pivot]] "Domain" section). DNS hardening (DNSSEC, CAA, registrar lock) applies at that point — see `SECURITY.md`.
+Custom domain `humphreysbus.app` registered via Cloudflare Registrar 2026-08-21; attached to the Workers project as an apex Custom Domain (CF-managed cert, Google Trust Services). DNS hardening applied at the same time: DNSSEC enabled (DS pushed to `.app` registry, resolver returns `ad` flag), CAA records restrict issuance to `pki.goog` + `letsencrypt.org` with `iodef mailto:` for violation reports, and CF Registrar transfer-lock is on by default. See `SECURITY.md` "DNS / registrar" section.
 
 ## Post-deploy verification
 

@@ -3,6 +3,7 @@ import {
   ROUTES, ALL_STOPS, STOP_ROUTES,
   inService, serviceEndToday,
   nextScheduledDeparture, prevScheduledDeparture,
+  nextDeparture, freqAt, nextServiceStart,
   findTrips,
   haversineMeters, walkMinutes,
   STOP_COORDS, nearestStopTo,
@@ -39,19 +40,57 @@ describe("inService", () => {
   it("Mon-Sun route runs on Sunday inside hours", () => {
     expect(inService(ROUTES.GOLD, sunAt(12, 0))).toBe(true);
   });
+  it("split-shift route runs in morning peak", () => {
+    expect(inService(ROUTES.BLACK, monAt(6, 30))).toBe(true);
+  });
+  it("split-shift route runs in afternoon peak", () => {
+    expect(inService(ROUTES.BLACK, monAt(16, 30))).toBe(true);
+  });
+  it("split-shift route is out of service midday between peaks", () => {
+    expect(inService(ROUTES.BLACK, monAt(12, 0))).toBe(false);
+  });
+  it("split-shift route does not run on Saturday", () => {
+    expect(inService(ROUTES.BLACK, satAt(7, 0))).toBe(false);
+  });
+  it("Orange evening-only Mon-Thu is out of service midday Mon", () => {
+    expect(inService(ROUTES.ORANGE, monAt(12, 0))).toBe(false);
+  });
+  it("Orange evening window Mon 20:00 is in service", () => {
+    expect(inService(ROUTES.ORANGE, monAt(20, 0))).toBe(true);
+  });
+  it("Orange Fri overnight rolls into Sat pre-01:45 as in service", () => {
+    expect(inService(ROUTES.ORANGE, satAt(1, 0))).toBe(true);
+  });
+  it("Orange Sat 03:00 (after overnight cutoff, before 09:00 start) is out of service", () => {
+    expect(inService(ROUTES.ORANGE, satAt(3, 0))).toBe(false);
+  });
+  it("Orange Sun 01:00 (rollover from Sat) is in service", () => {
+    expect(inService(ROUTES.ORANGE, sunAt(1, 0))).toBe(true);
+  });
+  it("Blue closes at 19:51 (last PDF loop arrival), not 22:00", () => {
+    expect(inService(ROUTES.BLUE, monAt(19, 50))).toBe(true);
+    expect(inService(ROUTES.BLUE, monAt(19, 52))).toBe(false);
+  });
 });
 
 describe("serviceEndToday", () => {
   it("returns service-end Date on a running day", () => {
     const end = serviceEndToday(ROUTES.BLUE, monAt(10, 0));
-    expect(end.getHours()).toBe(22);
-    expect(end.getMinutes()).toBe(0);
+    expect(end.getHours()).toBe(19);
+    expect(end.getMinutes()).toBe(51);
   });
   it("returns null on a non-running day", () => {
     expect(serviceEndToday(ROUTES.BLUE, satAt(10, 0))).toBeNull();
   });
   it("returns null for Fri-Sat route on Monday", () => {
     expect(serviceEndToday(ROUTES.PINK, monAt(18, 0))).toBeNull();
+  });
+  it("returns the latest window end for a split-shift route", () => {
+    // Black has morning + afternoon windows; asking during morning must return
+    // the afternoon window's end (19:00), not the morning window's end.
+    const end = serviceEndToday(ROUTES.BLACK, monAt(7, 0));
+    expect(end.getHours()).toBe(19);
+    expect(end.getMinutes()).toBe(0);
   });
 });
 
@@ -64,14 +103,26 @@ describe("STOP_ROUTES + ALL_STOPS index", () => {
   it("ALL_STOPS contains a known stop", () => {
     expect(ALL_STOPS).toContain("Main Exchange (PX)");
   });
+  it("SOCKOR HQ is registered as a Blue-only stop", () => {
+    expect(ALL_STOPS).toContain("SOCKOR HQ");
+    expect(STOP_ROUTES["SOCKOR HQ"]).toEqual(["BLUE"]);
+  });
 });
 
 describe("nextScheduledDeparture / prevScheduledDeparture", () => {
-  it("GOLD honors PDF-sourced :00 :20 :40 timetable at Bus Terminal", () => {
-    const d = nextScheduledDeparture(ROUTES.GOLD, "Bus Terminal", monAt(9, 30));
+  it("GOLD honors PDF-sourced Mon–Fri 30-min timetable at Bus Terminal", () => {
+    // Photo (Exhibit #0019, table 4): Mon–Fri BT dispatches 09:00, 09:30,
+    // 10:00 … 15:30, then 16:00 every 15 min. After 09:31 → 10:00.
+    const d = nextScheduledDeparture(ROUTES.GOLD, "Bus Terminal", monAt(9, 31));
     expect(d).not.toBeNull();
-    expect(d.getHours()).toBe(9);
-    expect(d.getMinutes()).toBe(40);
+    expect(d.getHours()).toBe(10);
+    expect(d.getMinutes()).toBe(0);
+  });
+  it("GOLD Mon–Fri switches to 15-min headway after 16:00", () => {
+    // After 16:00 dispatches are :00 :15 :30 :45. From 16:01 → 16:15.
+    const d = nextScheduledDeparture(ROUTES.GOLD, "Bus Terminal", monAt(16, 1));
+    expect(d.getHours()).toBe(16);
+    expect(d.getMinutes()).toBe(15);
   });
   it("GOLD prev <= 10:00 returns 10:00 (inclusive)", () => {
     const d = prevScheduledDeparture(ROUTES.GOLD, "Bus Terminal", monAt(10, 0));
@@ -149,13 +200,13 @@ describe("findTrips — service-hours filter", () => {
 
 describe("findTrips — overnight detection", () => {
   it("records an overnight strand when a bus leg lands past service-end", () => {
-    // 21:59 Mon from Pedestrian Gate to Central Issue Facility on Blue:
-    // ride is 18 stops * 2 min = 36 min → alightAt past 22:30, but boardAt
-    // already past 22:00 service end → next scheduled departure jumps to
-    // Tue, exceeding endToday → overnight strand recorded.
+    // 19:25 Mon Central Issue Facility → Pedestrian Gate on Blue: Blue is
+    // still in service (closes 19:51) but CIF's last PDF arrival is 19:21,
+    // so nextScheduledDeparture jumps to Tue 08:36 — past today's endToday →
+    // overnight strand recorded.
     const r = findTrips(
-      "Pedestrian Gate", "Central Issue Facility",
-      monAt(21, 59), "depart"
+      "Central Issue Facility", "Pedestrian Gate",
+      monAt(19, 25), "depart"
     );
     expect(r.trips).toEqual([]);
     expect(r.overnight.length).toBeGreaterThan(0);
@@ -267,5 +318,46 @@ describe("geo helpers", () => {
       expect(near.stop).toBe(stop);
       expect(near.meters).toBeLessThan(50);
     });
+  });
+});
+
+describe("nextDeparture source", () => {
+  it("reports pdf for a stop with a transcribed timetable", () => {
+    const d = nextDeparture(ROUTES.GOLD, "Bus Terminal", satAt(12, 0));
+    expect(d).not.toBeNull();
+    expect(d.source).toBe("pdf");
+  });
+
+  it("reports heuristic for a verified route at a stop the PDF never covered", () => {
+    // Green is verified:true; schedules.json carries Bus Terminal + Pedestrian
+    // Gate, so pick a still-uncovered stop for this assertion.
+    const d = nextDeparture(ROUTES.GREEN, "Desiderio ATC Tower", satAt(14, 10));
+    expect(d).not.toBeNull();
+    expect(d.source).toBe("heuristic");
+  });
+
+  it("uses the active window's freq, not the route default", () => {
+    // Green is 15 min Mon-Fri but 30 min at the weekend. Desiderio ATC Tower
+    // is stops[2] → 4-min offset; from Sat 14:10 the :00-anchored 30-min
+    // heuristic lands on 14:34, not 14:19.
+    expect(freqAt(ROUTES.GREEN, monAt(14, 10))).toBe(15);
+    expect(freqAt(ROUTES.GREEN, satAt(14, 10))).toBe(30);
+    const d = nextDeparture(ROUTES.GREEN, "Desiderio ATC Tower", satAt(14, 10));
+    expect(d.time.getHours()).toBe(14);
+    expect(d.time.getMinutes()).toBe(34);
+  });
+});
+
+describe("nextServiceStart", () => {
+  it("finds today's opening for a route that has not started yet", () => {
+    const d = nextServiceStart(ROUTES.BROWN, satAt(9, 0));
+    expect(d.getDay()).toBe(6);
+    expect(d.getHours()).toBe(16);
+  });
+
+  it("rolls to the next service day when today is finished", () => {
+    const d = nextServiceStart(ROUTES.BLUE, satAt(9, 0));
+    expect(d.getDay()).toBe(1);
+    expect(d.getHours()).toBe(8);
   });
 });

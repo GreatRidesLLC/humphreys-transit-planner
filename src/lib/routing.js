@@ -1,5 +1,5 @@
 // Pure routing + scheduling logic, extracted from App.jsx so it can be
-// unit-tested without pulling React / Leaflet / DOM into the test runner.
+// unit-tested without pulling React / DOM into the test runner.
 // Everything here is side-effect free and depends only on JSON data and Date.
 
 import SCHEDULES_JSON from "../data/schedules.json";
@@ -61,11 +61,24 @@ export function nearestStopTo(coords) {
 const hhmmToMin = s => parseInt(s.slice(0,2),10)*60 + parseInt(s.slice(3,5),10);
 
 export const ROUTES = {
-  BLUE:  { id:"BLUE",  name:"Blue Route",   color:"#5bb8ff", freq:15, hours:"0600–2200", days:"Mon–Fri",
-    stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","TMP / Driver's Licensing","Airfield Operations","Talon Cafe DFAC","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Post Office","Main Exchange (PX)","Pittman DFAC","Sitman Fitness Center","2ID Sustainment","Central Issue Facility"] },
-  BLACK: { id:"BLACK", name:"Black Route",  color:"#8090a0", freq:25, hours:"0600–2200", days:"Mon–Fri",
+  BLUE:  { id:"BLUE",  name:"Blue Route",   color:"#4a90e2", freq:15,
+    verified:true,
+    days:"Mon–Fri", hours:"Mon–Fri 0800–1951",
+    schedule:[
+      { dow:[1,2,3,4,5], from:"08:00", to:"19:51" },
+    ],
+    note:"PDF-sourced (Pedestrian Gate poster, effective 23 Mar 2026). Mon–Fri only, 15-min dispatch 08:00–18:45, 66-min loop.",
+    stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","TMP / Driver's Licensing","Airfield Operations","Talon Cafe DFAC","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Post Office","Main Exchange (PX)","Pittman DFAC","Sitman Fitness Center","2ID Sustainment","SOCKOR HQ","Central Issue Facility"] },
+  BLACK: { id:"BLACK", name:"Black Route",  color:"#434c5e", freq:15,
+    verified:true,
+    days:"Mon–Fri", hours:"Mon–Fri 0600–0900 · 1500–1900",
+    schedule:[
+      { dow:[1,2,3,4,5], from:"06:00", to:"09:00" },
+      { dow:[1,2,3,4,5], from:"15:00", to:"19:00" },
+    ],
+    note:"PDF-sourced (15 July 2023 Pedestrian Gate poster). Split shift — morning + late-afternoon peaks only, no midday service.",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Corps of Engineers","Pacific Victors Chapel","Commissary","LTG Maude Hall (9th St)","Spartan DFAC"] },
-  GREEN: { id:"GREEN", name:"Green Route",  color:"#4dde88", freq:15,
+  GREEN: { id:"GREEN", name:"Green Route",  color:"#2e8b57", freq:15,
     verified:true,
     days:"Mon–Sun", hours:"Mon–Fri 0700–2200 · Sat–Sun 0700–2300",
     schedule:[
@@ -74,9 +87,18 @@ export const ROUTES = {
     ],
     note:"PDF-sourced. Weekend headway is 30 min. Skips Barracks (6000s Block) before 08:00 on duty days (Marne Ave PT closure).",
     stops:["Pedestrian Gate","Provider Grill DFAC","Desiderio ATC Tower","Law Enforcement Center (DES)","Bus Terminal","Lodging","KTO Museum","MSG Jenkins Medical Clinic","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Talon Cafe DFAC","Airfield Operations","Barracks (6000s Block)","Pacific Victors Chapel","Spartan DFAC","LTG Maude Hall (9th St)","Commissary","Main Exchange (PX)","Balboni Sports Field (5th St)"] },
-  ORANGE:{ id:"ORANGE",name:"Orange Route", color:"#ff8c3a", freq:30, hours:"0600–2200", days:"Mon–Fri",
+  ORANGE:{ id:"ORANGE",name:"Orange Route", color:"#eb710e", freq:15,
+    verified:true,
+    days:"Mon–Sun", hours:"Mon–Thu 1900–2245 · Fri 1900–0145 · Sat 0900–0145 · Sun 0900–2245",
+    schedule:[
+      { dow:[1,2,3,4], from:"19:00", to:"22:45" },
+      { dow:[5],       from:"19:00", to:"25:45" },
+      { dow:[6],       from:"09:00", to:"25:45" },
+      { dow:[0],       from:"09:00", to:"22:45" },
+    ],
+    note:"PDF-sourced (15 July 2023 Pedestrian Gate poster). Evenings + weekends only; Fri/Sat run past midnight to 01:45.",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","TMP / Driver's Licensing","Eighth Army HQ"] },
-  PURPLE:{ id:"PURPLE",name:"Purple Route", color:"#c47aff", freq:15,
+  PURPLE:{ id:"PURPLE",name:"Purple Route", color:"#7c3aed", freq:15,
     verified:true,
     days:"Mon–Sun", hours:"Mon–Thu 1900–2245 · Fri 1900–0130 · Sat 0900–0130 · Sun 0900–2245",
     schedule:[
@@ -87,19 +109,26 @@ export const ROUTES = {
     ],
     note:"PDF-sourced (Exhibit #0022). Mon–Thu evenings only; Fri/Sat run past midnight; Sun daytime.",
     stops:["Brian D. Allgood Hospital","Bus Terminal","Collier Fitness Center","Turner Fitness Center","TMP / Driver's Licensing","Spartan DFAC","Sitman Fitness Center","Barracks (6800s & 6900s Block)","Balboni Sports Field (5th St)","Pittman DFAC"] },
-  GOLD:  { id:"GOLD",  name:"Gold Route",   color:"#FFD040", freq:20, hours:"0900–2100", days:"Mon–Sun",
-    verified:true, note:"Departs Bus Terminal :00 :20 :40 each hour (from publicly posted July 2023 PDF)",
-    stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course"] },
-  BROWN: { id:"BROWN", name:"Brown Route",  color:"#e8944a", freq:30,
+  GOLD:  { id:"GOLD",  name:"Gold Route",   color:"#8f6a04", freq:20,
     verified:true,
-    days:"Fri–Sat", hours:"Fri 1900–2200 · Sat 1600–2200",
+    days:"Mon–Sun", hours:"Mon–Fri 0900–2045 · Sat 0900–2045 · Sun 0900–1905",
     schedule:[
-      { dow:[5], from:"19:00", to:"22:00" },
-      { dow:[6], from:"16:00", to:"22:00" },
+      { dow:[1,2,3,4,5], from:"09:00", to:"20:45" },
+      { dow:[6],         from:"09:00", to:"20:45" },
+      { dow:[0],         from:"09:00", to:"19:05" },
+    ],
+    note:"PDF-sourced (Exhibit #0019). Mon–Fri: 30-min headway 09-16, 15-min 16-20. Sat/Sun: 20-min uniform.",
+    stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course"] },
+  BROWN: { id:"BROWN", name:"Brown Route",  color:"#85502a", freq:30,
+    verified:true,
+    days:"Fri–Sat", hours:"Fri 1900–2315 · Sat 1600–2315",
+    schedule:[
+      { dow:[5], from:"19:00", to:"23:15" },
+      { dow:[6], from:"16:00", to:"23:15" },
     ],
     note:"PDF-sourced (15 July 2023). Trial run. Friday evenings + Saturday/Training Holiday.",
     stops:["Pedestrian Gate","Provider Grill DFAC","SLQs (12200s Block)","Eighth Army HQ","Pacific Victors Chapel","Downtown Plaza","Balboni Sports Field (Marne Ave)","Balboni Sports Field (5th St)","Pittman DFAC","Spartan DFAC","TMP / Driver's Licensing","Airfield Operations","Family Housing Towers (Tropic Lightning Ave)","Collier Fitness Center","Bus Terminal"] },
-  PINK:  { id:"PINK",  name:"Pink Route",   color:"#ff6bb5", freq:15, hours:"1700–2300", days:"Fri–Sat",
+  PINK:  { id:"PINK",  name:"Pink Route",   color:"#e91e8c", freq:15, hours:"1700–2300", days:"Fri–Sat",
     verified:true, note:"Transcribed from publicly posted PDF (15 July 2023). Trial-run route; Friday/Training Holiday + Saturday only.",
     stops:["Pacific Victors Chapel","Family Mini Mall / Gas Station","Family Housing Towers (Taro Ave)","Family Housing Towers (15th Street)","Talon Cafe DFAC","TMP / Driver's Licensing"] },
 };
@@ -109,6 +138,19 @@ for (const [id, r] of Object.entries(ROUTES))
   for (const s of r.stops) { if (!STOP_ROUTES[s]) STOP_ROUTES[s]=[]; STOP_ROUTES[s].push(id); }
 
 export const ALL_STOPS = [...new Set(Object.values(ROUTES).flatMap(r=>r.stops))].sort();
+
+// Alternate names used on posters / by riders. Search matches on any alias
+// but resolves to the canonical stop name (the key). Add here when a poster
+// or user reports uses a different label than the ROUTES canonical form.
+export const STOP_ALIASES = {
+  "Barracks (700s Block)":            ["Barrack 700s", "700s Barracks"],
+  "Morning Calm Center":              ["Morning Calm"],
+  "Collier Fitness Center":           ["Collier Gym"],
+  "Main Exchange (PX)":               ["New PX", "PX"],
+  "Balboni Sports Field (Marne Ave)": ["Balboni Sports Field"],
+  "Barracks (6800s Block)":           ["Barrack 6800s"],
+  "River Bend Golf Course":           ["Riverbend Golf Course"],
+};
 
 // ─── Service-hours / day-of-week filter ──────────────────────────────────────
 function activeWindow(r, d) {
@@ -141,9 +183,13 @@ export const inService = (r, d) => {
 export const serviceEndToday = (r, ref) => {
   const dow = ref.getDay();
   if (r.schedule) {
-    const w = r.schedule.find(x => x.dow.includes(dow));
-    if (!w) return null;
-    const em = hhmmToMin(w.to);
+    // Split-shift routes (Black: 06-09 + 15-19) list two windows for the same
+    // dow; the day's actual end is the latest `to`, not the first match.
+    const tos = r.schedule
+      .filter(x => x.dow.includes(dow))
+      .map(x => hhmmToMin(x.to));
+    if (!tos.length) return null;
+    const em = Math.max(...tos);
     const d = new Date(ref); d.setHours(0, 0, 0, 0); d.setMinutes(em);
     return d;
   }
@@ -157,7 +203,10 @@ export const serviceEndToday = (r, ref) => {
   return d;
 };
 
-function freqAt(r, d) {
+// Headway in effect at `d`. Windows may override the route-level default
+// (Green runs 15 min on weekdays but 30 on the weekend), so anything that
+// shows "every N min" for a moment in time must go through this, not r.freq.
+export function freqAt(r, d) {
   const w = activeWindow(r, d);
   return (w && w.freq) || r.freq;
 }
@@ -260,16 +309,55 @@ function anchoredHeuristic(R, stop, ref, step) {
   return null;
 }
 
-export function nextScheduledDeparture(R, stop, after) {
+// `verified` is a property of the route, but a transcribed per-stop timetable
+// only exists for the stops the PDF actually covered — Green is verified yet
+// only Bus Terminal has real times, every other Green stop is still the :00
+// anchor estimate. Callers deciding whether to show "14:30" or "~14:30" must
+// read `source` here rather than R.verified, or they will overstate half the
+// network's precision.
+export const departureSource = (R, stop) =>
+  ROUTE_SCHEDULE_INDEX[R.id]?.[stop] ? "pdf" : "heuristic";
+
+export function nextDeparture(R, stop, after) {
   const stopSched = ROUTE_SCHEDULE_INDEX[R.id]?.[stop];
-  if (stopSched) return searchSchedule(stopSched, after, +1);
-  return anchoredHeuristic(R, stop, after, +1);
+  const time = stopSched
+    ? searchSchedule(stopSched, after, +1)
+    : anchoredHeuristic(R, stop, after, +1);
+  return time ? { time, source: stopSched ? "pdf" : "heuristic" } : null;
 }
 
-export function prevScheduledDeparture(R, stop, before) {
+export function prevDeparture(R, stop, before) {
   const stopSched = ROUTE_SCHEDULE_INDEX[R.id]?.[stop];
-  if (stopSched) return searchSchedule(stopSched, before, -1);
-  return anchoredHeuristic(R, stop, before, -1);
+  const time = stopSched
+    ? searchSchedule(stopSched, before, -1)
+    : anchoredHeuristic(R, stop, before, -1);
+  return time ? { time, source: stopSched ? "pdf" : "heuristic" } : null;
+}
+
+export const nextScheduledDeparture = (R, stop, after) => nextDeparture(R, stop, after)?.time ?? null;
+export const prevScheduledDeparture = (R, stop, before) => prevDeparture(R, stop, before)?.time ?? null;
+
+// First moment `r` is back in service at or after `now`, or null if it never is
+// within the next week. Drives the "returns 19:00" / "Mon 06:00" hints.
+export function nextServiceStart(r, now) {
+  const windows = r.schedule
+    ? r.schedule
+    : [{ dow: r.days === "Mon–Fri" ? [1,2,3,4,5] : r.days === "Fri–Sat" ? [5,6] : [0,1,2,3,4,5,6],
+         from: `${r.hours.slice(0,2)}:${r.hours.slice(2,4)}` }];
+  let best = null;
+  for (let off = 0; off < 8; off++) {
+    const probe = new Date(now);
+    probe.setDate(probe.getDate() + off);
+    for (const w of windows) {
+      if (!w.dow.includes(probe.getDay())) continue;
+      const d = new Date(probe);
+      d.setHours(0, 0, 0, 0);
+      d.setMinutes(hhmmToMin(w.from));
+      if (d > now && (!best || d < best)) best = d;
+    }
+    if (best) return best;
+  }
+  return null;
 }
 
 // ─── findTrips ────────────────────────────────────────────────────────────────

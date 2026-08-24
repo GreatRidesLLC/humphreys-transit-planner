@@ -81,6 +81,15 @@ These may enter scope as the application gains features. Update this section whe
 - Map tab loads raster tiles from `https://*.basemaps.cartocdn.com` (CARTO `dark_all`). This host is the only third-party origin in the CSP `img-src` allowlist. Tiles are fetched via `<img>` only; no XHR or script load from CARTO is permitted by `connect-src 'self'` and `script-src 'self'`.
 - Map popups for stops and OSM-sourced POIs are built with `document.createElement` and `textContent` — `innerHTML` is not used with any OSM-derived string (`name`, `amenity`), so a malicious OSM tag cannot inject markup. CSP `script-src 'self'` provides a second layer.
 
+### DNS / registrar
+
+- Production domain `humphreysbus.app` registered via Cloudflare Registrar 2026-08-21 (WHOIS privacy on by default; at-cost pricing removes the resale-markup incentive for takeover attempts)
+- Registrar transfer-lock enabled (CF Registrar default)
+- DNSSEC enabled — DS record pushed to the `.app` registry (Google Registry / CharlestonRoad); resolvers return `ad` flag confirming validation
+- CAA records restrict TLS issuance to `pki.goog` (Google Trust Services — matches the pinned CF Edge CA) and `letsencrypt.org` (backup for future non-CF cert paths); `iodef mailto:emmanuel.bayere@gmail.com` receives violation reports for any CA that refuses issuance under CAA
+- CF Edge Certificate Authority pinned to Google Trust Services (SSL/TLS → Edge Certificates → Certificate Authority) to prevent silent rotation to a non-whitelisted CA at renewal
+- Fallback `*.workers.dev` URL kept live for the preview / smoke-test lane but is not the public share URL
+
 ### Data handling
 
 - No PII is collected, stored, or transmitted
@@ -106,10 +115,9 @@ The project currently ships standalone (see `docs/legal-posture.md`). Some contr
 - Code-signing infrastructure — only relevant if a native wrapper is later added on top of MAPA
 - Pen test engagement scoped to MAPA's embedding chrome
 
-## Controls deferred until a production domain is registered
+## Controls deferred until post-launch
 
-- DNS hardening (DNSSEC, CAA, registrar lock) — only relevant once a production domain is registered (Cloudflare Pages default `*.pages.dev` is the planned initial host)
-- Pen test engagement — timed to whichever path goes live
+- Pen test engagement — timed to whichever path goes live (standalone launched 2026-08-21 on `humphreysbus.app`; scoping deferred until post-launch traffic materializes)
 
 ## Controls deferred until branch protection / deploy is wired up
 
