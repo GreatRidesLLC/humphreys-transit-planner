@@ -11,6 +11,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  // WSL2 inotify doesn't fire for edits on Windows-mounted drives (/mnt/d/…),
+  // so Vite HMR misses them. Poll every 500 ms in dev to catch changes.
+  server: {
+    watch: { usePolling: true, interval: 500 },
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -26,10 +31,10 @@ export default defineConfig({
       ],
       manifest: {
         name: 'Humphreys Transit Planner',
-        short_name: 'Transit Planner',
+        short_name: 'humphreysbus',
         description: 'Community shuttle planner for the post in Pyeongtaek. Not affiliated with USAG Humphreys, the U.S. Army, or the Department of Defense.',
-        theme_color: '#faf9f7',
-        background_color: '#faf9f7',
+        theme_color: '#3F6B78',
+        background_color: '#0a0e12',
         display: 'standalone',
         start_url: '/',
         scope: '/',

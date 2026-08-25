@@ -867,11 +867,9 @@ function TripBadges({ trip }) {
     : <Badge variant="outline" className="h-5 rounded-md border-border px-2 text-[10.5px] font-semibold text-muted-foreground">{t.estimated}</Badge>;
 }
 
-function FastestTrip({ trip, now }) {
+function FastestTrip({ trip }) {
   const { t } = useT();
   const buses = trip.legs.filter(l => l.k === "bus");
-  const first = buses[0];
-  const mins = Math.round((first.boardAt - now) / 60000);
   return (
     <Card className="border border-border-strong bg-card shadow-[shadow:var(--card-shadow-strong)] ring-0 [--card-spacing:--spacing(4)]">
       <CardContent className="gap-0">
@@ -879,13 +877,7 @@ function FastestTrip({ trip, now }) {
           <Badge className="h-5 rounded-full bg-primary px-2 text-[10.5px] font-bold tracking-[0.02em] text-primary-foreground">{t.fastest}</Badge>
           <TripBadges trip={trip}/>
         </div>
-        <div className="font-mono text-[34px] leading-9 font-semibold tracking-[-0.02em] text-foreground">
-          {mins > 0 ? t.minutes(mins) : t.leavingNow}
-        </div>
-        <div className="pt-0.5 text-[12.5px] leading-[17px] text-secondary-text">
-          <Parts of={t.countdownUntil(<RouteName id={first.rid}/>, first.from)}/>
-        </div>
-        <div className="pt-3 font-mono text-[28px] leading-8 font-semibold tracking-[-0.02em] text-foreground">
+        <div className="font-mono text-[28px] leading-8 font-semibold tracking-[-0.02em] text-foreground">
           {fmt(trip.departAt)} <span className="font-medium text-muted-foreground">→</span> {fmt(trip.arriveAt)}
         </div>
         <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -1680,7 +1672,7 @@ export default function App() {
                   onTryTomorrow={tryTomorrow} onChangeTime={changeTime}/>;
               })() : (
                 <>
-                  <FastestTrip trip={results.trips[0]} now={now}/>
+                  <FastestTrip trip={results.trips[0]}/>
                   {results.trips.length > 1 && <OtherTrips trips={results.trips.slice(1)}/>}
                   {(() => {
                     // eslint-disable-next-line react-hooks/purity

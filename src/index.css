@@ -73,122 +73,125 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Tactical Night + Signal Cyan — restored 2026-08-25 per user request.
+   Cyan #22D3EE is the primary-action accent (buttons, links, focus rings).
+   Charcoal #0a0e12 grounds dark theme; light theme is a cool blue-gray so
+   the visual identity carries through both modes. Gold #FFC83D still lives
+   on the brand mark and the Gold Route only. */
 :root {
     color-scheme: light;
 
     --radius: 0.5rem;
 
-    --background: #faf9f7;
-    --foreground: #1c1917;
+    --background: #eff3f8;
+    --foreground: #0a0e12;
     --card: #ffffff;
-    --card-foreground: #1c1917;
+    --card-foreground: #0a0e12;
     --popover: #ffffff;
-    --popover-foreground: #1c1917;
-    --primary: #1c1917;
-    --primary-foreground: #f5f3ef;
-    --secondary: #f3f1ec;
-    --secondary-foreground: #1c1917;
-    --muted: #f3f1ec;
-    --muted-foreground: #6b6560;
-    --accent: #f3f1ec;
-    --accent-foreground: #1c1917;
+    --popover-foreground: #0a0e12;
+    --primary: #0891a8;
+    --primary-foreground: #ffffff;
+    --secondary: #e2eaf3;
+    --secondary-foreground: #0a0e12;
+    --muted: #e2eaf3;
+    --muted-foreground: #4d5f76;
+    --accent: #d4e6ee;
+    --accent-foreground: #0891a8;
     --destructive: oklch(0.577 0.245 27.325);
-    --border: #e7e3dc;
-    --input: #e7e3dc;
-    --ring: #8f887f;
+    --border: #c9d5e3;
+    --input: #c9d5e3;
+    --ring: #22d3ee;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --sidebar: #ffffff;
-    --sidebar-foreground: #1c1917;
-    --sidebar-primary: #1c1917;
-    --sidebar-primary-foreground: #f5f3ef;
-    --sidebar-accent: #f3f1ec;
-    --sidebar-accent-foreground: #1c1917;
-    --sidebar-border: #e7e3dc;
-    --sidebar-ring: #8f887f;
+    --sidebar-foreground: #0a0e12;
+    --sidebar-primary: #0891a8;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #d4e6ee;
+    --sidebar-accent-foreground: #0891a8;
+    --sidebar-border: #c9d5e3;
+    --sidebar-ring: #22d3ee;
 
-    --body: #44403c;
-    --secondary-text: #57534e;
-    --faint: #78716c;
-    --border-strong: #d6d1c8;
-    --divider: #f3f1ec;
-    /* Saffron Signal has no accent colour, so links are foreground-weight text
-       carrying an underline rather than a hue. */
-    --link: #44403c;
-    --link-hover: #1c1917;
+    --body: #2a3a50;
+    --secondary-text: #4d5f76;
+    --faint: #7889a0;
+    --border-strong: #b0bdd0;
+    --divider: #e2eaf3;
+    --link: #0891a8;
+    --link-hover: #0ea5b7;
     --warn-bg: #fffbeb;
     --warn-border: #fde68a;
     --warn-text: #92400e;
     --origin-dot: #16a34a;
 
-    --hover: #f3f1ec;
-    --focus-ring: 0 0 0 3px rgba(28, 25, 23, 0.08);
-    --card-shadow: 0 1px 2px rgba(28, 25, 23, 0.05);
-    --card-shadow-strong: 0 1px 3px rgba(28, 25, 23, 0.07);
+    --hover: #d4e6ee;
+    --focus-ring: 0 0 0 3px rgba(34, 211, 238, 0.28);
+    --card-shadow: 0 1px 3px rgba(10, 14, 18, 0.08);
+    --card-shadow-strong: 0 4px 12px rgba(10, 14, 18, 0.1);
     --seg-active-bg: #ffffff;
-    --seg-active-shadow: 0 1px 2px rgba(28, 25, 23, 0.08);
-    --dd-shadow: 0 8px 24px rgba(28, 25, 23, 0.1);
-    --overlay: rgba(12, 11, 10, 0.5);
+    --seg-active-shadow: 0 1px 3px rgba(10, 14, 18, 0.12);
+    --dd-shadow: 0 8px 24px rgba(10, 14, 18, 0.15);
+    --overlay: rgba(6, 8, 12, 0.55);
 }
 
 .dark {
     color-scheme: dark;
 
-    --background: #0c0b0a;
-    --foreground: #f5f3ef;
-    --card: #151311;
-    --card-foreground: #f5f3ef;
-    --popover: #151311;
-    --popover-foreground: #f5f3ef;
-    --primary: #f5f3ef;
-    --primary-foreground: #1c1917;
-    --secondary: #2a2622;
-    --secondary-foreground: #f5f3ef;
-    --muted: #2a2622;
-    --muted-foreground: #a8a199;
-    --accent: #2a2622;
-    --accent-foreground: #f5f3ef;
+    --background: #0a0e12;
+    --foreground: #dde3ee;
+    --card: #111820;
+    --card-foreground: #dde3ee;
+    --popover: #111820;
+    --popover-foreground: #dde3ee;
+    --primary: #22d3ee;
+    --primary-foreground: #06131a;
+    --secondary: #1a2530;
+    --secondary-foreground: #dde3ee;
+    --muted: #1a2530;
+    --muted-foreground: #8aa0bc;
+    --accent: #1a2530;
+    --accent-foreground: #22d3ee;
     --destructive: oklch(0.704 0.191 22.216);
-    --border: #2a2622;
-    --input: #2a2622;
-    --ring: #a8a199;
+    --border: #2a3a50;
+    --input: #1a2530;
+    --ring: #22d3ee;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --sidebar: #151311;
-    --sidebar-foreground: #f5f3ef;
-    --sidebar-primary: #f5f3ef;
-    --sidebar-primary-foreground: #1c1917;
-    --sidebar-accent: #2a2622;
-    --sidebar-accent-foreground: #f5f3ef;
-    --sidebar-border: #2a2622;
-    --sidebar-ring: #a8a199;
+    --sidebar: #111820;
+    --sidebar-foreground: #dde3ee;
+    --sidebar-primary: #22d3ee;
+    --sidebar-primary-foreground: #06131a;
+    --sidebar-accent: #1a2530;
+    --sidebar-accent-foreground: #22d3ee;
+    --sidebar-border: #2a3a50;
+    --sidebar-ring: #22d3ee;
 
-    --body: #d6d1c8;
-    --secondary-text: #a8a199;
-    --faint: #8c857d;
-    --border-strong: #3d3833;
-    --divider: #2a2622;
-    --link: #e8e4dc;
-    --link-hover: #f5f3ef;
+    --body: #aab8cc;
+    --secondary-text: #8aa0bc;
+    --faint: #6a809c;
+    --border-strong: #3d5170;
+    --divider: #1a2530;
+    --link: #22d3ee;
+    --link-hover: #67e8f9;
     --warn-bg: #1f1608;
     --warn-border: #78350f;
     --warn-text: #fcd34d;
     --origin-dot: #22c55e;
 
-    --hover: #1f1c19;
-    --focus-ring: 0 0 0 3px rgba(245, 243, 239, 0.12);
-    --card-shadow: 0 0 #0000;
-    --card-shadow-strong: 0 0 #0000;
-    --seg-active-bg: #3d3833;
-    --seg-active-shadow: 0 0 #0000;
-    --dd-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    --overlay: rgba(12, 11, 10, 0.5);
+    --hover: #1a2530;
+    --focus-ring: 0 0 0 3px rgba(34, 211, 238, 0.35);
+    --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --card-shadow-strong: 0 8px 32px rgba(0, 0, 0, 0.7);
+    --seg-active-bg: #1a2530;
+    --seg-active-shadow: 0 0 0 1px rgba(34, 211, 238, 0.4);
+    --dd-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+    --overlay: rgba(6, 8, 12, 0.7);
 }
 
 @layer base {
