@@ -81,7 +81,7 @@ function requestUserLocation() {
     navigator.geolocation.getCurrentPosition(
       p => resolve({ lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy }),
       e => reject(e),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 }
     );
   });
 }
@@ -114,7 +114,7 @@ const STRINGS = {
     favNameLabel: "Name",
     actionCancel: "Cancel", actionSave: "Save", actionOk: "OK",
     noticeHeading: "Notice",
-    nearestStop: "Nearest",
+    nearestStop: "Nearest stop",
     nearestLoading: "…",
     usingLocation: "Using your current location for walk time",
     locError: msg => `Could not get your location: ${msg}`,
@@ -1274,7 +1274,7 @@ export default function App() {
   // Building numbers if the user picked a "Bldg N – Name" entry — used to
   // compute a real haversine walk leg in findTrips.
   const [fBldg,setFB]=useState(null), [tBldg,setTB]=useState(null);
-  // User lat/lon when the "Nearest" button has fetched geolocation.
+  // User lat/lon when the "Nearest stop" button has fetched geolocation.
   // Overrides building coords for the origin walk leg.
   const [fCoords,setFC]=useState(null);
   const [locBusy,setLocBusy]=useState(false);
