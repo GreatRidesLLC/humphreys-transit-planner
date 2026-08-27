@@ -96,7 +96,7 @@ const DOW_KO = ["일","월","화","수","목","금","토"];
 const STRINGS = {
   en: {
     appTitle: "Humphreys Transit Planner",
-    appSubtitle: "Community shuttle planner · Pyeongtaek",
+    appSubtitle: "Community shuttle planner",
     tabPlan: "Plan", tabNow: "Now", tabRoutes: "Routes", tabOffpost: "Off-Post",
     mainNav: "Main tabs",
     themeLabel: "Appearance",
@@ -211,7 +211,7 @@ const STRINGS = {
   },
   ko: {
     appTitle: "험프리스 교통 플래너",
-    appSubtitle: "사용자 제작 셔틀 플래너 · 평택",
+    appSubtitle: "사용자 제작 셔틀 플래너",
     tabPlan: "계획", tabNow: "지금", tabRoutes: "노선", tabOffpost: "기지 외",
     mainNav: "메인 탭",
     themeLabel: "화면 모드",

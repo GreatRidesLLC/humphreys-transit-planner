@@ -32,7 +32,7 @@ export default defineConfig({
       manifest: {
         name: 'Humphreys Transit Planner',
         short_name: 'humphreysbus',
-        description: 'Community shuttle planner for the post in Pyeongtaek. Not affiliated with USAG Humphreys, the U.S. Army, or the Department of Defense.',
+        description: 'Community shuttle planner for the on-post shuttle network. Not affiliated with USAG Humphreys, the U.S. Army, or the Department of Defense.',
         theme_color: '#3F6B78',
         background_color: '#0a0e12',
         display: 'standalone',
