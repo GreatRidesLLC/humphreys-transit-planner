@@ -63,7 +63,7 @@ Bus-stop coordinates: 44 of 44 ROUTES stops have lat/lon in `src/data/stop_coord
 - Walk times: see "Walk leg" below — only mock when no coords available for either side.
 - Mock ride times: 2 min per stop (heuristic, not real)
 - Wait times: `nextScheduledDeparture − userArrivalAtStop`. `nextDeparture()` returns `{ time, source }` where source is `"pdf"` (a transcribed per-stop timetable in `src/data/schedules.json`) or `"heuristic"` (the `:00`-anchor cycle, `+2 min/stop` from the first stop, at the freq active for the current window). Provenance is **per stop, not per route** — Green is `verified: true` but only Bus Terminal has real times — so never branch on `r.verified` to decide how precise a time is; read `source`, or `departureSource(R, stop)`.
-- Walk leg: `haversine(origin, stop)` divided by 5 km/h, floored at 3 min. Origin is the user's geolocation if the "📍 Nearest" button was used, else the picked building's OSM centroid (`src/data/buildings_osm.json`), else the 3-min mock. No geolocation request on page load — only on explicit button click.
+- Walk leg: `haversine(origin, stop)` divided by 5 km/h, floored at 3 min. Origin is the user's geolocation if the "Nearest stop" button was used, else the picked building's OSM centroid (`src/data/buildings_osm.json`), else the 3-min mock. No geolocation request on page load — only on explicit button click.
 - Service hours filtered automatically: routes out of service at the planned trip time are excluded from results
 - Headway for a moment in time is `freqAt(route, when)`, never `route.freq` — Green is 15 min on weekdays and 30 at the weekend
 - Any heuristic departure renders with the `~` prefix plus an "est." tag; only `source: "pdf"` times print bare
