@@ -89,6 +89,45 @@ feat/*     ← short-lived feature branches
 
 Nice-to-haves that improve the app but do not gate launch.
 
+### Distribution — reach Camp Humphreys bus users
+The app is live but nobody knows it exists. Audience per `CLAUDE.md`: Soldiers, family, civilian employees, KATUSAs, KSC battalion staff, Korean civilian employees, Korean spouses — mobile-first, standing at stops. All promotion must stay inside the non-affiliation posture (`docs/legal-posture.md`): use "Humphreys" descriptively only, no Army imagery, no `.mil` logos, "community-built" phrasing up front.
+
+Free / community channels (start here):
+
+- **QR-code posters** at Bus Terminal, Pedestrian Gate, chapels, DFACs (Provider Grill, Spartan, Pittman, Talon), Sitman + Collier gyms. Needs facility-owner permission per location. Highest-signal channel because it hits users at the moment of need. Design in EN + KO on one poster.
+- **Facebook groups** — USAG Humphreys spouse groups, "Camp Humphreys Community", "Pyeongtaek Foreigners", KATUSA groups. Cross-post EN + KO; include the non-affiliation disclaimer up front.
+- **Reddit** — r/army, r/Korea, r/USMilitarySO, r/MilitaryFamily. One post per sub, marked community-built.
+- **KakaoTalk groups** — Korean-language reach for KATUSA / KSC / Korean spouses. Blocked on finding a Korean-speaking advocate; solo English post never reaches this segment.
+- **Chapel bulletins** — Pacific Victors, Freedom, Morning Calm. Overlaps with the faith-touch work below.
+- **Word of mouth** — first ~10 users who post it in their own circles.
+
+Requires approval / paperwork:
+
+- **PAO social channels** — a "here's a community-built app" mention on official USAG social. Re-check MAPA non-compete with Director Nagan before asking (see `docs/legal-posture.md`, [[nagan_mapa_coexistence]]).
+- **Transportation Office referral** — if the deferred TO inquiry ever gets a reply, ask them to link the app.
+
+Risks:
+
+- Korean-language reach dies without a Korean advocate.
+- Trademark exposure rises with each promo surface; keep the endorsement scrub applied to every poster and post, not just the app itself.
+- Feedback-form volume may spike after a big channel post; ensure notifications route to a monitored inbox.
+
+### Faith touch — dedicate the tool
+The user (see [[user_faith]]) dedicates this work to God and wants the app to glorify Him without alienating the mixed audience (Soldier / KATUSA / civilian / Korean-national, mixed faiths and none). Guardrails baked in: **nothing faith-facing is on by default**, non-Christian users never see verses / prayers unless they opt in, every faith string ships EN + KO like the rest of the app, and each item lands via a small PR the user reviews before merge.
+
+Priority order for v1.1:
+
+1. **Chapel-stop service-times card** *(shortlist)* — when the trip destination is Pacific Victors Chapel, Freedom Chapel, or Morning Calm Chapel, render a small info card in the result showing that chapel's service times + denomination info. Serves *all* chapel-goers regardless of denomination; reads as helpful, not evangelistic. Same shape as other trip-card metadata. Needs a `CHAPELS` const (chapel → services × denominations × times), rendered in the Plan result card when `to` matches. Chapel data source: on-post chapel bulletins or `home.army.mil/humphreys` chaplain pages.
+2. **Sunday-morning route hint** — if the search is Sunday morning and the destination is a chapel stop, add a subtle "next service at HH:MM" prompt below the trip card.
+3. **Colophon on About page** *(rolls into the Standalone "About" page item below)* — a quiet "built in gratitude, for the Humphreys community" line. No verse text. One line, English + Korean.
+
+Deferred to v1.2+ (opt-in, harder to get right):
+
+- **Verse-of-the-day** — Settings toggle, off by default. One small line on the Plan tab when on, EN + KO. Uses a public feed or a small hand-curated local list. Requires new Settings surface.
+- **Chaplain directory** — new tab or Off-Post section listing chapels, chaplains, service schedules, denominations. Overlaps with the chapel service-times card data model; ship that first, then promote the same data into a directory.
+- **Prayer request link** — external Tally-form-style link, opt-in only, footer-linked. Moderation-light; the form provider handles submissions.
+- **Community bulletin board** — mission trips, Bible studies, meeting times. Adds a moderation burden and mixed-audience risk; probably never in scope.
+
 ### Korean string QA (KATUSA / KSC)
 First-draft translations flagged in shipped Korean MVP. Route + stop names stay English by design; long descriptive paragraphs on Off-Post remain English (out of MVP scope). Actively solicit a native reviewer via the launched feedback channel. Label Korean toggle as beta in v1 if reviewer not yet secured.
 
@@ -105,7 +144,7 @@ If Transportation Office does not supply per-route PDFs in the launch inquiry: (
 Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes bidirectional travel. Correcting requires authoritative direction data from schedule PDFs; payoff is edge cases only. Park until a wrong-direction bug is reported.
 
 ### Standalone "About" page
-Promote universal disclaimer footer into a standalone About page or section (currently inline-only in the footer).
+Promote universal disclaimer footer into a standalone About page or section (currently inline-only in the footer). Also carries the faith-touch colophon line described in the Faith touch section above (one quiet "built in gratitude" line, EN + KO).
 
 ### Google Play Store listing (via TWA)
 Wrap the PWA as a Trusted Web Activity using Google's `bubblewrap` CLI, publish to Play Console. One-time $25 Play developer account. Update flow stays push-to-deploy for the app itself — the store binary is only rebuilt on version bumps. Trigger: post-launch traction data shows KATUSA / soldier / KSC users searching "Humphreys" in the Play Store and not finding the PWA install prompt. Watch-out: a Play listing sitting next to MAPA (`mil.aswf.garrison`) in store search may re-open the PAO non-compete conversation Nagan closed 2026-06-19 (see `docs/legal-posture.md`, [[nagan_mapa_coexistence]]); do not proceed without re-confirming standalone posture with PAO. Trademark exposure also higher on a public store listing than on a URL — endorsement-scrub already applied to user copy, but the store listing itself (title, short description, screenshots) needs the same pass before submission.
