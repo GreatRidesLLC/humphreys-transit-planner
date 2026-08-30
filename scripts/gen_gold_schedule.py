@@ -38,6 +38,8 @@ STOP_OFFSETS = {
     "Balboni Sports Field (Marne Ave)":   [15, 22],
     "Barracks (6800s Block)":             [17, 21],
     "River Bend Golf Course":             [18, 19],
+    "Maude Hall (ID Cards)":              [3],
+    "Sentry Village Shoppette":           [38],
 }
 
 def hm(mins):

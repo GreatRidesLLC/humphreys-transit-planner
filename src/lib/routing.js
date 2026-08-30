@@ -118,7 +118,7 @@ export const ROUTES = {
       { dow:[0],         from:"09:00", to:"19:05" },
     ],
     note:"PDF-sourced (Exhibit #0019). Mon–Fri: 30-min headway 09-16, 15-min 16-20. Sat/Sun: 20-min uniform.",
-    stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course"] },
+    stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","Maude Hall (ID Cards)","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course","Sentry Village Shoppette"] },
   BROWN: { id:"BROWN", name:"Brown Route",  color:"#85502a", freq:30,
     verified:true,
     days:"Fri–Sat", hours:"Fri 1900–2315 · Sat 1600–2315",
@@ -184,6 +184,8 @@ export const STOP_ALIASES = {
   "Family Mini Mall / Gas Station":   ["Family Mini Mall", "Gas Station"],
   "Sentry Village Burger King":       ["Burger King", "Sentry Village BK"],
   "Sentry Village Mini Mall":         ["Sentry Mini Mall"],
+  "Sentry Village Shoppette":         ["Sentry Village PX", "Sentry Shoppette"],
+  "Maude Hall (ID Cards)":            ["CAC", "DEERS", "ID Cards", "ID Card Office"],
   "SOCKOR HQ":                        ["SOCKOR", "Special Operations Command Korea"],
 };
 
