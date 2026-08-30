@@ -33,11 +33,30 @@ labels.
 - **Lat/lon** from phone if easy (drop a pin)
 - **Which side of the street** relative to route direction (helps disambiguate outbound vs return-loop platforms sharing a name)
 
+## Tools
+
+Two aids in this repo:
+- `scripts/walkthrough/index.html` — mobile capture form; pre-loaded with
+  the 7 stops + Sat-photo offsets. Autosaves to browser `localStorage`,
+  exports `gold-walkthrough-YYYY-MM-DD.json`. Open directly in the phone
+  browser (needs to be served over HTTP for GPS — `python3 -m http.server`
+  from `scripts/walkthrough/` then hit `http://<laptop-ip>:8000` from
+  the phone on the same wifi).
+- `docs/walkthrough-checklist.md` — printable paper backup if the phone
+  can't come along.
+
 ## When done
 
-Update:
-1. `scripts/gen_gold_schedule.py` — add each confirmed stop to `STOP_OFFSETS`
-2. `src/lib/routing.js` — add canonical name to `ROUTES.GOLD.stops` (if new) + `STOP_ALIASES` entry mapping poster label → canonical
-3. `src/data/stop_coords.json` — add lat/lon if captured
-4. Roadmap.md — delete the Gold stop-name verification entry under Known data gaps
-5. Re-run `python3 scripts/gen_gold_schedule.py` + `npm test`
+1. Open `scripts/walkthrough/index.html`, fill it out, click **Export JSON**.
+2. Run:
+   ```
+   python3 scripts/apply_walkthrough.py gold-walkthrough-YYYY-MM-DD.json --dry-run
+   python3 scripts/apply_walkthrough.py gold-walkthrough-YYYY-MM-DD.json
+   ```
+   Patches `STOP_OFFSETS` in `scripts/gen_gold_schedule.py` and merges
+   `src/data/stop_coords.json`; prints the `routing.js` blocks to paste.
+3. Hand-edit `src/lib/routing.js` — insert new canonical names into
+   `ROUTES.GOLD.stops` (in outbound-offset order) and add `STOP_ALIASES`
+   entries.
+4. `python3 scripts/gen_gold_schedule.py && npm test`
+5. `Roadmap.md` — delete the Gold stop-name verification entry.

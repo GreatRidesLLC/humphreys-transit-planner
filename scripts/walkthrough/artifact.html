@@ -1,0 +1,419 @@
+<title>Gold Route Walkthrough</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  :root{
+    --bg:#faf9f7; --card:#ffffff; --ink:#1c1917; --muted:#57534e; --faint:#a8a29e;
+    --border:#e7e5e0; --border-strong:#c8c4bc; --pill:#f5f3ef;
+    --link:#44403c; --ok:#0f766e; --warn:#b45309; --danger:#b91c1c;
+    --focus:#78716c;
+    --sans:"Avenir Next","Nunito Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme:dark){
+      --bg:#0c0b0a; --card:#151311; --ink:#f5f3ef; --muted:#a8a29e; --faint:#78716c;
+      --border:#292524; --border-strong:#44403c; --pill:#1c1917;
+      --link:#d6d3d1; --ok:#5eead4; --warn:#fbbf24; --danger:#fca5a5;
+      --focus:#a8a29e;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c0b0a; --card:#151311; --ink:#f5f3ef; --muted:#a8a29e; --faint:#78716c;
+    --border:#292524; --border-strong:#44403c; --pill:#1c1917;
+    --link:#d6d3d1; --ok:#5eead4; --warn:#fbbf24; --danger:#fca5a5;
+    --focus:#a8a29e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:15px;line-height:1.45;
+    -webkit-font-smoothing:antialiased}
+  h1,h2,h3{text-wrap:balance;margin:0}
+  header{position:sticky;top:0;background:var(--bg);
+    border-bottom:1px solid var(--border);padding:12px 16px;z-index:10;
+    display:flex;align-items:center;justify-content:space-between;gap:12px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:-0.01em}
+  header .status{font-size:11px;color:var(--muted);
+    font-variant-numeric:tabular-nums;text-align:right}
+  .intro{padding:14px 16px;color:var(--muted);font-size:13px;
+    border-bottom:1px solid var(--border);background:var(--card)}
+  .intro strong{color:var(--ink);font-weight:600}
+  main{padding:12px 12px 120px;max-width:640px;margin:0 auto}
+  .stop{background:var(--card);border:1px solid var(--border);
+    border-radius:10px;padding:14px;margin-bottom:12px;
+    transition:border-color .15s ease}
+  .stop.done{border-color:var(--ok);border-width:1.5px}
+  .stop h2{font-size:15px;font-weight:600;
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .badge{font-family:var(--mono);font-size:11px;font-weight:500;
+    background:var(--pill);border:1px solid var(--border);border-radius:4px;
+    padding:3px 6px;color:var(--muted);
+    font-variant-numeric:tabular-nums;letter-spacing:0}
+  .badge.offset{color:var(--ink)}
+  .prompt{color:var(--muted);font-size:12px;margin:6px 0 12px;line-height:1.5}
+  .platform{border-top:1px dashed var(--border);padding-top:12px;margin-top:12px}
+  .platform h3{font-size:11px;font-weight:600;margin-bottom:8px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.06em;
+    display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  label{display:block;font-size:12px;color:var(--muted);
+    margin:10px 0 4px;font-weight:500}
+  input[type=text],input[type=number],textarea,select{
+    width:100%;font:inherit;padding:9px 10px;
+    background:var(--bg);color:var(--ink);
+    border:1px solid var(--border-strong);border-radius:6px;
+    -webkit-appearance:none;appearance:none}
+  input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{
+    outline:2px solid var(--focus);outline-offset:1px}
+  input[inputmode="decimal"]{font-family:var(--mono);
+    font-variant-numeric:tabular-nums}
+  textarea{min-height:52px;resize:vertical;font-family:var(--sans)}
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),
+    linear-gradient(-45deg,transparent 50%,var(--muted) 50%);
+    background-position:calc(100% - 14px) 50%,calc(100% - 9px) 50%;
+    background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
+  .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  button{font:inherit;padding:8px 12px;border-radius:6px;cursor:pointer;
+    background:var(--card);border:1px solid var(--border-strong);color:var(--ink);
+    font-weight:500;transition:background .1s ease}
+  button:hover{background:var(--pill)}
+  button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  button.primary:hover{background:var(--muted)}
+  button.gps{background:var(--pill);font-size:12px;padding:7px 10px;
+    margin-top:6px;display:inline-flex;align-items:center;gap:6px}
+  button.gps .dot{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+  .toggle{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .toggle label{display:inline-flex;align-items:center;gap:6px;
+    background:var(--pill);padding:7px 11px;border-radius:6px;
+    border:1px solid var(--border);cursor:pointer;color:var(--ink);
+    margin:0;font-size:13px;font-weight:400}
+  .toggle input{margin:0;accent-color:var(--ink)}
+  .toggle label:has(input:checked){border-color:var(--ink);font-weight:600}
+  .confirm{display:flex;align-items:center;gap:8px;margin-top:14px;
+    padding-top:12px;border-top:1px solid var(--border);font-size:13px;
+    color:var(--ink);cursor:pointer}
+  .confirm input{width:16px;height:16px;accent-color:var(--ok);margin:0}
+  .footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);
+    border-top:1px solid var(--border);padding:12px;
+    display:flex;gap:8px;justify-content:space-between;align-items:center;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .footer .count{font-size:12px;color:var(--muted);
+    font-variant-numeric:tabular-nums}
+  .footer .actions{display:flex;gap:8px}
+  .hint{font-size:11px;color:var(--faint);margin-top:6px;line-height:1.5}
+  .export-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);
+    z-index:20;align-items:center;justify-content:center;padding:16px}
+  .export-panel.open{display:flex}
+  .export-panel .box{background:var(--card);border:1px solid var(--border);
+    border-radius:10px;padding:16px;max-width:560px;width:100%;
+    display:flex;flex-direction:column;gap:10px;max-height:90vh}
+  .export-panel h3{font-size:14px;font-weight:600}
+  .export-panel textarea{flex:1;min-height:200px;font-family:var(--mono);
+    font-size:11px;line-height:1.4}
+  .export-panel .actions{display:flex;gap:8px;justify-content:flex-end}
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;animation:none !important}
+  }
+</style>
+
+<header>
+  <div>
+    <h1>Gold Route Walkthrough</h1>
+    <div style="font-size:11px;color:var(--faint);margin-top:2px">
+      7 stops · Exhibit #0019 · offsets from Sat photo
+    </div>
+  </div>
+  <span class="status" id="status">unsaved</span>
+</header>
+
+<div class="intro">
+  Fill on-site at each stop. Data auto-saves to this device (won't reach
+  other phones or the desktop). When done, tap <strong>Copy JSON</strong>
+  and paste it into a message to yourself, then run
+  <code style="font-family:var(--mono);font-size:11px">scripts/apply_walkthrough.py</code>
+  on the JSON.
+</div>
+
+<main id="main"></main>
+
+<div class="footer">
+  <span class="count" id="count">0 / 7 confirmed</span>
+  <div class="actions">
+    <button id="import" type="button">Import</button>
+    <button id="export" class="primary" type="button">Copy JSON</button>
+  </div>
+</div>
+
+<input type="file" id="import-file" accept="application/json" hidden>
+
+<div class="export-panel" id="export-panel">
+  <div class="box">
+    <h3>Walkthrough JSON</h3>
+    <div class="hint">
+      Copied to clipboard. If that failed on your browser, long-press
+      the textarea and copy manually. Save as
+      <code>gold-walkthrough-<span id="date-suffix"></span>.json</code>.
+    </div>
+    <textarea id="export-text" readonly></textarea>
+    <div class="actions">
+      <button id="export-close" type="button">Close</button>
+      <button id="export-copy" class="primary" type="button">Copy again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Pre-loaded from Exhibit #0019 (Sat photo, table 2). Offsets in
+// minutes from Bus Terminal dispatch. Two-visit stops carry both.
+const STOPS = [
+  { key:"CAC", poster:"CAC", ids:{ out:"S117" },
+    prompt:"What does 'CAC' stand for on the physical sign? Central Access Control (main gate) or Common Access Card (badge office)?",
+    offsets:{ out:3 } },
+  { key:"USO", poster:"USO", ids:{ out:"S103", ret:"S376 (Opposite USO)" },
+    prompt:"Is this OSM building #301 'USO Sentry Village'? Is the return-loop platform physically the same stop as the outbound one, or across the road?",
+    offsets:{ out:4, ret:37 } },
+  { key:"FH_TWR_1", poster:"Family Housing Twr 1", ids:{ out:"S2083", ret:"S5061" },
+    prompt:"Which physical building? Tropic Lightning Ave, Taro Ave, or neither?",
+    offsets:{ out:8, ret:32 } },
+  { key:"FH_TWR_2", poster:"Family Housing Twr 2", ids:{ out:"S5072", ret:"S5070" },
+    prompt:"Tropic Lightning, Taro, or neither?",
+    offsets:{ out:9, ret:31 } },
+  { key:"FH_TWR_3", poster:"Family Housing Twr 3", ids:{ out:"S5103", ret:"S5105" },
+    prompt:"New stop or existing? If new, which street?",
+    offsets:{ out:10, ret:27 } },
+  { key:"O6_HOUSING", poster:"O-6 Housing", ids:{ out:"(no ID in photo)", ret:"row 22 'Opposite O-6'" },
+    prompt:"Full name over the door? Location (which block)? O-6 = Colonel / Navy Captain — officer housing.",
+    offsets:{ out:13, ret:26 } },
+  { key:"SVPX", poster:"Sentry Village PX", ids:{ out:"S451" },
+    prompt:"Distinct from Sentry Village Burger King AND Mini Mall (both already separate stops)? Physical name over the door?",
+    offsets:{ out:38 } },
+];
+
+const LS_KEY = "humphreys.walkthrough.gold.v1";
+
+const blank = (offset) => ({
+  bus_stop_id:"", canonical_name:"", aliases:"",
+  offset_min:offset ?? "", lat:"", lon:"",
+  side_of_street:"", notes:""
+});
+
+let state = load() || {
+  route:"GOLD",
+  walked_at:new Date().toISOString().slice(0,10),
+  stops:Object.fromEntries(STOPS.map(s => [s.key, {
+    same_as_opposite: !s.offsets.ret ? "n/a" : "",
+    outbound: blank(s.offsets.out),
+    return_loop: s.offsets.ret ? blank(s.offsets.ret) : null,
+    confirmed: false,
+  }]))
+};
+
+function load(){
+  try { return JSON.parse(localStorage.getItem(LS_KEY)); }
+  catch { return null; }
+}
+function save(){
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    setStatus("saved " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));
+  } catch(e) { setStatus("save failed: " + e.message, true); }
+}
+function setStatus(msg, err){
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.style.color = err ? "var(--danger)" : "";
+}
+
+function pinGPS(entry, btn){
+  if(!navigator.geolocation){ alert("Geolocation unavailable"); return; }
+  const orig = btn.textContent;
+  btn.textContent = "locating…"; btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(
+    p => {
+      entry.lat = p.coords.latitude.toFixed(6);
+      entry.lon = p.coords.longitude.toFixed(6);
+      save(); render();
+    },
+    e => { alert("GPS: " + e.message); btn.textContent = orig; btn.disabled = false; },
+    { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
+  );
+}
+
+function esc(v){
+  return String(v??"").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function renderPlatform(stop, entry, side, title){
+  if(!entry) return "";
+  return `
+    <div class="platform">
+      <h3>${title}
+        ${stop.ids[side] ? `<span class="badge">${esc(stop.ids[side])}</span>` : ""}
+        <span class="badge offset">+${entry.offset_min}min</span>
+      </h3>
+      <label>Canonical name (as it should appear in the app)</label>
+      <input data-k="canonical_name" data-side="${side}" type="text"
+        value="${esc(entry.canonical_name)}" placeholder="e.g. Central Access Control"
+        autocapitalize="words">
+      <label>Aliases (comma-separated, optional)</label>
+      <input data-k="aliases" data-side="${side}" type="text"
+        value="${esc(entry.aliases)}" placeholder="CAC, Main Gate">
+      <div class="row-3">
+        <div>
+          <label>Bus stop ID</label>
+          <input data-k="bus_stop_id" data-side="${side}" type="text"
+            value="${esc(entry.bus_stop_id)}" placeholder="Sxxx"
+            autocapitalize="characters">
+        </div>
+        <div>
+          <label>Lat</label>
+          <input data-k="lat" data-side="${side}" type="text"
+            value="${esc(entry.lat)}" placeholder="36.9556" inputmode="decimal">
+        </div>
+        <div>
+          <label>Lon</label>
+          <input data-k="lon" data-side="${side}" type="text"
+            value="${esc(entry.lon)}" placeholder="127.0158" inputmode="decimal">
+        </div>
+      </div>
+      <button type="button" class="gps" data-gps="${side}">
+        <span class="dot"></span> Pin current GPS
+      </button>
+      <label>Side of street (relative to route direction)</label>
+      <select data-k="side_of_street" data-side="${side}">
+        ${["","left","right","north","south","east","west","median","other"]
+          .map(v=>`<option value="${v}" ${v===entry.side_of_street?"selected":""}>${v||"—"}</option>`).join("")}
+      </select>
+      <label>Notes / building landmark</label>
+      <textarea data-k="notes" data-side="${side}"
+        placeholder="Nearest building name/number, anything unusual">${esc(entry.notes)}</textarea>
+    </div>`;
+}
+
+function renderStop(stop){
+  const s = state.stops[stop.key];
+  const hasRet = !!stop.offsets.ret;
+  const merged = s.same_as_opposite === "yes";
+  return `
+    <section class="stop ${s.confirmed?"done":""}" data-key="${stop.key}">
+      <h2>${esc(stop.poster)} <span class="badge">poster</span></h2>
+      <p class="prompt">${esc(stop.prompt)}</p>
+      ${hasRet ? `
+        <label>Outbound and return-loop platforms — same physical stop?</label>
+        <div class="toggle">
+          ${["yes","no"].map(v=>`
+            <label><input type="radio" name="same-${stop.key}" value="${v}"
+              ${s.same_as_opposite===v?"checked":""} data-same>
+              ${v==="yes"?"Same stop (merge)":"Separate stops"}</label>`).join("")}
+        </div>
+      ` : ""}
+      ${renderPlatform(stop, s.outbound, "out", hasRet ? "Outbound platform" : "Platform")}
+      ${!merged ? renderPlatform(stop, s.return_loop, "ret", "Return-loop platform") : ""}
+      <label class="confirm">
+        <input type="checkbox" data-confirm ${s.confirmed?"checked":""}>
+        Verified on-site
+      </label>
+    </section>`;
+}
+
+function render(){
+  document.getElementById("main").innerHTML = STOPS.map(renderStop).join("");
+  const done = Object.values(state.stops).filter(s=>s.confirmed).length;
+  document.getElementById("count").textContent = `${done} / ${STOPS.length} confirmed`;
+  bind();
+}
+
+function bind(){
+  document.querySelectorAll(".stop").forEach(el => {
+    const key = el.dataset.key;
+    const s = state.stops[key];
+    el.querySelectorAll("input[data-k],select[data-k],textarea[data-k]").forEach(inp => {
+      inp.addEventListener("input", () => {
+        const side = inp.dataset.side;
+        const target = side==="out" ? s.outbound : s.return_loop;
+        target[inp.dataset.k] = inp.value;
+        save();
+      });
+    });
+    el.querySelectorAll("[data-same]").forEach(r => {
+      r.addEventListener("change", () => {
+        s.same_as_opposite = r.value;
+        save(); render();
+      });
+    });
+    el.querySelectorAll("[data-gps]").forEach(b => {
+      b.addEventListener("click", () => {
+        const side = b.dataset.gps;
+        pinGPS(side==="out"?s.outbound:s.return_loop, b);
+      });
+    });
+    const conf = el.querySelector("[data-confirm]");
+    conf.addEventListener("change", () => {
+      s.confirmed = conf.checked;
+      save(); render();
+    });
+  });
+}
+
+function buildPayload(){
+  return {
+    route: state.route,
+    walked_at: state.walked_at,
+    stops: STOPS.map(stop => {
+      const s = state.stops[stop.key];
+      return {
+        poster_label: stop.poster,
+        same_as_opposite: s.same_as_opposite,
+        confirmed: s.confirmed,
+        outbound: s.outbound,
+        return_loop: s.same_as_opposite==="yes" ? null : s.return_loop,
+      };
+    })
+  };
+}
+
+document.getElementById("export").addEventListener("click", async () => {
+  const json = JSON.stringify(buildPayload(), null, 2);
+  document.getElementById("export-text").value = json;
+  document.getElementById("date-suffix").textContent = state.walked_at;
+  document.getElementById("export-panel").classList.add("open");
+  try { await navigator.clipboard.writeText(json); setStatus("copied to clipboard"); }
+  catch { setStatus("clipboard blocked — copy manually", true); }
+});
+document.getElementById("export-close").addEventListener("click", () =>
+  document.getElementById("export-panel").classList.remove("open"));
+document.getElementById("export-copy").addEventListener("click", async () => {
+  const t = document.getElementById("export-text");
+  t.select();
+  try { await navigator.clipboard.writeText(t.value); setStatus("copied"); }
+  catch { setStatus("clipboard blocked — long-press to copy", true); }
+});
+
+document.getElementById("import").addEventListener("click", () =>
+  document.getElementById("import-file").click());
+document.getElementById("import-file").addEventListener("change", e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const data = JSON.parse(r.result);
+      state.walked_at = data.walked_at || state.walked_at;
+      for(const p of data.stops || []){
+        const stop = STOPS.find(s => s.poster === p.poster_label);
+        if(!stop) continue;
+        const s = state.stops[stop.key];
+        s.same_as_opposite = p.same_as_opposite;
+        s.confirmed = !!p.confirmed;
+        if(p.outbound) Object.assign(s.outbound, p.outbound);
+        if(p.return_loop && s.return_loop) Object.assign(s.return_loop, p.return_loop);
+      }
+      save(); render();
+    } catch(e){ alert("Import failed: " + e.message); }
+  };
+  r.readAsText(f);
+});
+
+render();
+setStatus(state.stops.CAC.outbound.canonical_name ? "loaded from device" : "new session");
+</script>
