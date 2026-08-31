@@ -100,7 +100,7 @@ These may enter scope as the application gains features. Update this section whe
 
 ## Trademark / endorsement posture
 
-The app ships under the name **Humphreys Transit Planner** with a universal footer disclaimer asserting non-affiliation with USAG Humphreys, the U.S. Army, and the Department of Defense. A larger banner appears on the Off-Post tab where official-sounding content (DSN contacts, inter-garrison routes) raises endorsement risk. User-facing strings have been scrubbed of language that implies authoritative verification ("PDF-verified" → "PDF-sourced"; "official PDF" → "publicly posted PDF"). Committed assets (`public/favicon.svg`, `public/icon.svg`, `public/icons.svg`) carry no Army / DoD / USAG identifiers — audit performed 2026-05-28.
+The app ships under the name **Humphreys Transit Planner** with a universal footer disclaimer asserting non-affiliation with USAG Humphreys, the U.S. Army, and the Department of Defense. A larger banner appears on the Off-Post tab where official-sounding content (inter-garrison routes) raises endorsement risk. User-facing strings have been scrubbed of language that implies authoritative verification ("PDF-verified" → "PDF-sourced"; "official PDF" → "publicly posted PDF"). Committed assets (`public/favicon.svg`, `public/icon.svg`, `public/icons.svg`) carry no Army / DoD / USAG identifiers — audit performed 2026-05-28.
 
 Decision record and scrub checklist: `docs/legal-posture.md`. PAO-positive revert index: `docs/distribution-pivot.md`.
 
