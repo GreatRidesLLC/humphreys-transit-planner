@@ -3,7 +3,7 @@
   "walked_at": "2026-08-31",
   "_meta": {
     "source": "web-search pre-fill 2026-08-31 (2 passes); import into scripts/walkthrough/artifact.html or use as reference for on-site verification",
-    "confidence": "2 confirmed (CAC=Maude Hall, Sentry Village Shoppette), 4 partial, 1 unresolved (O-6 Housing)"
+    "confidence": "1 confirmed (Sentry Village Shoppette), 5 partial, 1 unresolved (O-6 Housing), 1 pending on-ground (CAC — desk-research pinned it to Bldg 6400 Maude Hall but +3-min offset rules that out; canonical set to `CAC (Sentry Village)` in v1.1.1 until walk-through resolves)"
   },
   "stops": [
     {
@@ -12,12 +12,12 @@
       "confirmed": true,
       "outbound": {
         "bus_stop_id": "S117",
-        "canonical_name": "Maude Hall (ID Cards)",
-        "aliases": "CAC, DEERS, ID Cards, ID Card Office",
+        "canonical_name": "CAC (Sentry Village)",
+        "aliases": "CAC",
         "offset_min": 3,
         "lat": "", "lon": "",
         "side_of_street": "",
-        "notes": "high — Bldg 6400 Maude Hall on Marne Ave; houses DEERS/ID Cards + DES Access Control. Poster 'CAC' = CAC-card processing, the common rider destination. Confirmed via USAG Humphreys DEERS/ID Cards page + USAG FB post naming Maude Hall Bldg 6400."
+        "notes": "Public sources place both the DEERS/ID Cards office AND the Central Access Control Office at Bldg 6400 Maude Hall — but Bldg 6400 is ~2.9 km from BT, ruling out a +3-min offset. The Sentry Village cluster is ~600-700 m west of BT (consistent with +3). Poster 'CAC' must therefore be a distinct third facility yet to be identified on-ground. Canonical set to `CAC (Sentry Village)` for now; walk-through required to confirm the physical building."
       },
       "return_loop": null
     },
