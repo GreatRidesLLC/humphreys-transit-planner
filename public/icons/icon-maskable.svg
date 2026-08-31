@@ -1,19 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="512" height="512" fill="none">
   <rect width="32" height="32" fill="#332740"/>
   <g transform="translate(16 16) scale(0.72) translate(-16 -16)">
-    <path d="M17 8 L26 10.4 Q27.6 10.8 27.6 12.4 L27.6 20 Q27.6 21.6 26 22 L17 24 Z" fill="#b8a7cf"/>
-    <path d="M5 6.4 L16.4 6.4 Q17 6.4 17 7.6 L17 24 L5 24 Q3.4 24 3.4 22.4 L3.4 8 Q3.4 6.4 5 6.4 Z" fill="#d4c5e6"/>
-    <path d="M5.8 8.4 L15.6 8.4 Q16 8.4 16 8.8 L16 14 L5.6 14 Z" fill="#332740"/>
-    <path d="M18 10.6 L26 12.6 L26 14.6 L18 14.6 Z" fill="#332740"/>
-    <path d="M3.6 16.6 L17 16.6 L26 17.6 L26 18.2 L17 17.2 L3.6 17.2 Z" fill="#241933" opacity="0.55"/>
-    <circle cx="6.4" cy="19.2" r="0.95" fill="#332740"/>
-    <circle cx="14.6" cy="19.2" r="0.95" fill="#332740"/>
-    <rect x="7.6" y="20.8" width="6" height="0.55" rx="0.2" fill="#332740" opacity="0.7"/>
-    <circle cx="6.6" cy="25.4" r="2.2" fill="#d4c5e6"/>
-    <circle cx="6.6" cy="25.4" r="1.1" fill="#332740"/>
-    <circle cx="13.8" cy="25.4" r="2.2" fill="#d4c5e6"/>
-    <circle cx="13.8" cy="25.4" r="1.1" fill="#332740"/>
-    <circle cx="23.4" cy="24.4" r="2" fill="#d4c5e6"/>
-    <circle cx="23.4" cy="24.4" r="1" fill="#332740"/>
+    <rect x="4.4" y="7.6" width="19.2" height="16" rx="2.4" fill="#d4c5e6"/>
+    <rect x="6.4" y="9.6" width="15.2" height="5.4" rx="1" fill="#332740"/>
+    <circle cx="7.4" cy="18" r="1.2" fill="#e6dcf1"/>
+    <circle cx="7.4" cy="18" r="0.55" fill="#332740"/>
+    <circle cx="20.6" cy="18" r="1.2" fill="#e6dcf1"/>
+    <circle cx="20.6" cy="18" r="0.55" fill="#332740"/>
+    <circle cx="8.4" cy="24.8" r="2.2" fill="#d4c5e6"/>
+    <circle cx="8.4" cy="24.8" r="1.05" fill="#332740"/>
+    <circle cx="19.6" cy="24.8" r="2.2" fill="#d4c5e6"/>
+    <circle cx="19.6" cy="24.8" r="1.05" fill="#332740"/>
   </g>
 </svg>
