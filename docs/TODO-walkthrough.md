@@ -1,5 +1,10 @@
 # Walk-through TODO — Gold Route stop verification
 
+**Status (2026-08-31):** all 7 stops resolved and landed via
+`apply_walkthrough.py` + hand-edited `routing.js`. `schedules.json`
+regenerated; 76/76 tests pass. Retained below as reference for the
+walk-through workflow itself; the stop list is now historical.
+
 Purpose: canonical names + physical mapping for 7 stops on Exhibit #0019
 (Gold Route) that were photographed 2026-08-20 but omitted from
 `schedules.json` pending on-ground confirmation. Once resolved, add to
