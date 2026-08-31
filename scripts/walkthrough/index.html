@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gold Route walkthrough</title>
+<style>
+  :root{
+    --bg:#faf9f7; --card:#fff; --ink:#1c1917; --muted:#57534e;
+    --border:#e7e5e0; --border-strong:#c8c4bc; --link:#44403c;
+    --ok:#0f766e; --warn:#b45309; --danger:#b91c1c;
+    --pill:#f5f3ef;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#0c0b0a; --card:#151311; --ink:#f5f3ef; --muted:#a8a29e;
+      --border:#292524; --border-strong:#44403c; --link:#d6d3d1;
+      --pill:#1c1917; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Avenir Next","Segoe UI",Roboto,sans-serif}
+  header{position:sticky;top:0;background:var(--bg);
+    border-bottom:1px solid var(--border);padding:12px 16px;z-index:10;
+    display:flex;align-items:center;justify-content:space-between;gap:12px}
+  header h1{font-size:16px;margin:0;font-weight:600}
+  header .status{font-size:12px;color:var(--muted)}
+  main{padding:12px 12px 96px;max-width:640px;margin:0 auto}
+  .stop{background:var(--card);border:1px solid var(--border);
+    border-radius:10px;padding:14px;margin-bottom:12px}
+  .stop.done{border-color:var(--ok)}
+  .stop h2{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .badge{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    background:var(--pill);border:1px solid var(--border);border-radius:4px;
+    padding:3px 6px;color:var(--muted)}
+  .prompt{color:var(--muted);font-size:12px;margin:4px 0 10px}
+  .platform{border-top:1px dashed var(--border);padding-top:10px;margin-top:10px}
+  .platform h3{font-size:12px;margin:0 0 8px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.05em}
+  label{display:block;font-size:12px;color:var(--muted);margin:8px 0 2px}
+  input[type=text],input[type=number],textarea,select{
+    width:100%;font:inherit;padding:8px 10px;
+    background:var(--bg);color:var(--ink);
+    border:1px solid var(--border-strong);border-radius:6px}
+  textarea{min-height:52px;resize:vertical}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  button{font:inherit;padding:8px 12px;border-radius:6px;cursor:pointer;
+    background:var(--card);border:1px solid var(--border-strong);color:var(--ink)}
+  button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  button.gps{background:var(--pill);font-size:12px;padding:6px 10px}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .toggle{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .toggle label{display:inline-flex;align-items:center;gap:4px;
+    background:var(--pill);padding:6px 10px;border-radius:6px;
+    border:1px solid var(--border);cursor:pointer;color:var(--ink);margin:0;font-size:13px}
+  .toggle input{margin:0}
+  .toggle input:checked + span{font-weight:600}
+  .footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);
+    border-top:1px solid var(--border);padding:10px 12px;
+    display:flex;gap:8px;justify-content:space-between;align-items:center}
+  .footer .count{font-size:12px;color:var(--muted)}
+  .footer .actions{display:flex;gap:8px}
+  details{margin-top:8px;font-size:13px}
+  details summary{cursor:pointer;color:var(--link);text-decoration:underline}
+  .hint{font-size:11px;color:var(--muted);margin-top:4px}
+  .err{color:var(--danger);font-size:12px;margin-top:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Gold Route walkthrough</h1>
+  <span class="status" id="status">unsaved</span>
+</header>
+<main id="main"></main>
+<div class="footer">
+  <span class="count" id="count">0 / 7 confirmed</span>
+  <div class="actions">
+    <button id="import">Import</button>
+    <button id="export" class="primary">Export JSON</button>
+  </div>
+</div>
+<input type="file" id="import-file" accept="application/json" hidden>
+
+<script>
+// Data pre-loaded from Exhibit #0019 (Sat photo, table 2). Offsets in
+// minutes from Bus Terminal dispatch. Two-visit stops carry both.
+const STOPS = [
+  { key:"CAC", poster:"CAC", ids:{ out:"S117" },
+    prompt:"What does 'CAC' stand for on the physical sign? (Central Access Control? CAC office?)",
+    offsets:{ out:3 } },
+  { key:"USO", poster:"USO", ids:{ out:"S103", ret:"S376 (Opposite USO)" },
+    prompt:"Is this OSM building #301 'USO Sentry Village'? Same physical stop as 'Opposite USO' across the road, or separate?",
+    offsets:{ out:4, ret:37 } },
+  { key:"FH_TWR_1", poster:"Family Housing Twr 1", ids:{ out:"S2083", ret:"S5061" },
+    prompt:"Which physical building? Tropic Lightning Ave, Taro Ave, or neither?",
+    offsets:{ out:8, ret:32 } },
+  { key:"FH_TWR_2", poster:"Family Housing Twr 2", ids:{ out:"S5072", ret:"S5070" },
+    prompt:"Tropic Lightning, Taro, or neither?",
+    offsets:{ out:9, ret:31 } },
+  { key:"FH_TWR_3", poster:"Family Housing Twr 3", ids:{ out:"S5103", ret:"S5105" },
+    prompt:"New stop or existing? If new, which street?",
+    offsets:{ out:10, ret:27 } },
+  { key:"O6_HOUSING", poster:"O-6 Housing", ids:{ out:"(no ID in photo)", ret:"(row 22 'Opposite O-6 Housing')" },
+    prompt:"Full name? Location? (Officer housing, O-6 = Colonel / Navy Captain)",
+    offsets:{ out:13, ret:26 } },
+  { key:"SVPX", poster:"Sentry Village PX", ids:{ out:"S451" },
+    prompt:"Distinct from Sentry Village Burger King AND Mini Mall? Physical name over the door?",
+    offsets:{ out:38 } },
+];
+
+const LS_KEY = "humphreys.walkthrough.gold.v1";
+
+const blank = (offset) => ({
+  bus_stop_id:"", canonical_name:"", aliases:"",
+  offset_min:offset ?? "", lat:"", lon:"",
+  side_of_street:"", notes:""
+});
+
+let state = load() || {
+  route:"GOLD",
+  walked_at:new Date().toISOString().slice(0,10),
+  stops:Object.fromEntries(STOPS.map(s => [s.key, {
+    same_as_opposite: !s.offsets.ret ? "n/a" : "",
+    outbound: blank(s.offsets.out),
+    return_loop: s.offsets.ret ? blank(s.offsets.ret) : null,
+    confirmed: false,
+  }]))
+};
+
+function load(){
+  try { return JSON.parse(localStorage.getItem(LS_KEY)); }
+  catch { return null; }
+}
+function save(){
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    setStatus("saved " + new Date().toLocaleTimeString());
+  } catch(e) { setStatus("save failed: " + e.message, true); }
+}
+function setStatus(msg, err){
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.style.color = err ? "var(--danger)" : "";
+}
+
+function pinGPS(entry, key){
+  if(!navigator.geolocation){ alert("Geolocation unavailable"); return; }
+  navigator.geolocation.getCurrentPosition(
+    p => {
+      entry.lat = p.coords.latitude.toFixed(6);
+      entry.lon = p.coords.longitude.toFixed(6);
+      save(); render();
+    },
+    e => alert("GPS: " + e.message),
+    { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
+  );
+}
+
+function renderPlatform(stop, entry, side, title){
+  if(!entry) return "";
+  return `
+    <div class="platform">
+      <h3>${title} <span class="badge">${stop.ids[side]||""}</span>
+        <span class="badge">offset +${entry.offset_min}min</span></h3>
+      <label>Canonical name (as it should appear in the app)</label>
+      <input data-k="canonical_name" data-side="${side}" type="text"
+        value="${esc(entry.canonical_name)}" placeholder="e.g. Central Access Control">
+      <label>Aliases (comma-separated, optional)</label>
+      <input data-k="aliases" data-side="${side}" type="text"
+        value="${esc(entry.aliases)}" placeholder="CAC, Main Gate">
+      <div class="row-3">
+        <div>
+          <label>Bus stop ID</label>
+          <input data-k="bus_stop_id" data-side="${side}" type="text"
+            value="${esc(entry.bus_stop_id)}" placeholder="Sxxx">
+        </div>
+        <div>
+          <label>Lat</label>
+          <input data-k="lat" data-side="${side}" type="text"
+            value="${esc(entry.lat)}" placeholder="36.9556" inputmode="decimal">
+        </div>
+        <div>
+          <label>Lon</label>
+          <input data-k="lon" data-side="${side}" type="text"
+            value="${esc(entry.lon)}" placeholder="127.0158" inputmode="decimal">
+        </div>
+      </div>
+      <button class="gps" data-gps="${side}">📍 Pin current GPS</button>
+      <label>Side of street (relative to route direction)</label>
+      <select data-k="side_of_street" data-side="${side}">
+        ${["","left","right","north","south","east","west","median","other"]
+          .map(v=>`<option value="${v}" ${v===entry.side_of_street?"selected":""}>${v||"—"}</option>`).join("")}
+      </select>
+      <label>Notes / building landmark</label>
+      <textarea data-k="notes" data-side="${side}"
+        placeholder="Nearest building name/number, anything unusual">${esc(entry.notes)}</textarea>
+    </div>`;
+}
+
+function renderStop(stop){
+  const s = state.stops[stop.key];
+  const done = s.confirmed;
+  const hasRet = !!stop.offsets.ret;
+  const merged = s.same_as_opposite === "yes";
+  return `
+    <section class="stop ${done?"done":""}" data-key="${stop.key}">
+      <h2>${stop.poster} <span class="badge">poster</span></h2>
+      <p class="prompt">${stop.prompt}</p>
+      ${hasRet ? `
+        <label>Outbound and return-loop platforms — same physical stop?</label>
+        <div class="toggle">
+          ${["yes","no"].map(v=>`
+            <label><input type="radio" name="same-${stop.key}" value="${v}"
+              ${s.same_as_opposite===v?"checked":""} data-same>
+              <span>${v==="yes"?"Same stop (merge)":"Separate stops"}</span></label>`).join("")}
+        </div>
+      ` : ""}
+      ${renderPlatform(stop, s.outbound, "out", hasRet ? "Outbound platform" : "Platform")}
+      ${!merged ? renderPlatform(stop, s.return_loop, "ret", "Return-loop platform") : ""}
+      <label style="margin-top:12px">
+        <input type="checkbox" data-confirm ${done?"checked":""}>
+        Verified on-site
+      </label>
+    </section>`;
+}
+
+function esc(v){
+  return String(v??"").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function render(){
+  document.getElementById("main").innerHTML = STOPS.map(renderStop).join("");
+  const done = Object.values(state.stops).filter(s=>s.confirmed).length;
+  document.getElementById("count").textContent = `${done} / ${STOPS.length} confirmed`;
+  bind();
+}
+
+function bind(){
+  document.querySelectorAll(".stop").forEach(el => {
+    const key = el.dataset.key;
+    const s = state.stops[key];
+    el.querySelectorAll("input[data-k],select[data-k],textarea[data-k]").forEach(inp => {
+      inp.addEventListener("input", () => {
+        const side = inp.dataset.side;
+        const target = side==="out" ? s.outbound : s.return_loop;
+        target[inp.dataset.k] = inp.value;
+        save();
+      });
+    });
+    el.querySelectorAll("[data-same]").forEach(r => {
+      r.addEventListener("change", () => {
+        s.same_as_opposite = r.value;
+        if(r.value==="yes" && s.return_loop){
+          // clear return-loop entry; ingest will merge offsets
+        }
+        save(); render();
+      });
+    });
+    el.querySelectorAll("[data-gps]").forEach(b => {
+      b.addEventListener("click", () => {
+        const side = b.dataset.gps;
+        pinGPS(side==="out"?s.outbound:s.return_loop, side);
+      });
+    });
+    const conf = el.querySelector("[data-confirm]");
+    conf.addEventListener("change", () => {
+      s.confirmed = conf.checked;
+      save(); render();
+    });
+  });
+}
+
+document.getElementById("export").addEventListener("click", () => {
+  const payload = {
+    route: state.route,
+    walked_at: state.walked_at,
+    stops: STOPS.map(stop => {
+      const s = state.stops[stop.key];
+      return {
+        poster_label: stop.poster,
+        same_as_opposite: s.same_as_opposite,
+        confirmed: s.confirmed,
+        outbound: s.outbound,
+        return_loop: s.same_as_opposite==="yes" ? null : s.return_loop,
+      };
+    })
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `gold-walkthrough-${state.walked_at}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("import").addEventListener("click", () =>
+  document.getElementById("import-file").click());
+document.getElementById("import-file").addEventListener("change", e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const data = JSON.parse(r.result);
+      // rebuild state from payload
+      state.walked_at = data.walked_at || state.walked_at;
+      for(const p of data.stops || []){
+        const stop = STOPS.find(s => s.poster === p.poster_label);
+        if(!stop) continue;
+        const s = state.stops[stop.key];
+        s.same_as_opposite = p.same_as_opposite;
+        s.confirmed = !!p.confirmed;
+        if(p.outbound) Object.assign(s.outbound, p.outbound);
+        if(p.return_loop && s.return_loop) Object.assign(s.return_loop, p.return_loop);
+      }
+      save(); render();
+    } catch(e){ alert("Import failed: " + e.message); }
+  };
+  r.readAsText(f);
+});
+
+render();
+</script>
+</body>
+</html>
