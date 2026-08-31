@@ -12,7 +12,7 @@ Three commitments made to Nagan, all shipped 2026-06-19 in `src/App.jsx`:
 
 1. **MAPA pointer on every screen** — links to MAPA on the App Store (`apps.apple.com/us/app/myarmypost/id6467240977`) and Google Play (`play.google.com/store/apps/details?id=mil.aswf.garrison`). URLs in `MAPA_LINKS` const. Originally a `MapaCard` on the Plan tab; the 2026-08-23 redesign moved it into the universal page footer (`STRINGS.{en,ko}.mapaFooterLabel` + `mapaAppStore` / `mapaPlayStore`), so it now appears on **all four tabs** instead of one. `MapaCard` and its `mapaCardTitle` / `mapaCardBody` strings are gone; the commitment is unchanged and its reach is wider.
 2. **First-launch notice** (`FirstRunNotice`) — one-time modal (dismissal persisted in `localStorage` key `humphreys.noticeSeen`) stating the tool is unofficial / community-built and that MAPA is the official U.S. Army app. Strings: `STRINGS.{en,ko}.noticeTitle` / `noticeBody` / `noticeAck`. The store buttons were removed from the dialog on 2026-08-23 (misclick risk on a modal the user has not read yet); both the EN and KO bodies now end by naming MAPA and pointing at the footer — "…use MAPA (My Army Post App) — linked at the bottom of every page." / "…링크는 각 페이지 하단에 있습니다." The notice is not dismissible by Esc or overlay click; only the acknowledge button closes it.
-3. **Schedule-source credit line** — footer line crediting USAG Humphreys as the publicly posted source of route schedules. String: `STRINGS.{en,ko}.scheduleCredit`. Kept **descriptive** ("sourced from publicly posted USAG Humphreys PDFs"), not an affiliation/partnership claim — non-affiliation stance below is unchanged.
+3. **Schedule-source credit** — credits USAG Humphreys as the publicly posted source of route schedules. Originally a standalone `scheduleCredit` footer line; folded into `STRINGS.{en,ko}.disclaimer` on 2026-09-01 to remove repetition with the same footer's non-affiliation sentence. Kept **descriptive** ("Route schedules transcribed from publicly posted USAG Humphreys PDFs"), not an affiliation/partnership claim — non-affiliation stance below is unchanged.
 
 ## Audience risk summary
 
@@ -34,15 +34,15 @@ Rationale:
 
 ## Disclaimer wording (canonical)
 
-Every tab carries a footer. Larger banner appears on the Off-Post tab where official-sounding content (DSN contacts, inter-garrison routes) raises endorsement risk.
+Every tab carries a footer. Larger banner appears on the Off-Post tab where official-sounding content (inter-garrison routes) raises endorsement risk.
 
 **English (`STRINGS.en.disclaimer`):**
 
-> Community-built shuttle planner. Not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. Schedule data transcribed from publicly posted PDFs; verify with the Transportation Office (DSN 755-0424) before relying on it.
+> Community-built shuttle planner. Not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. Schedule data transcribed from publicly posted PDFs; verify with the Transportation Office before relying on it.
 
 **Korean (`STRINGS.ko.disclaimer`):**
 
-> 사용자 제작 셔틀 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 시간표는 공개된 PDF에서 옮긴 것입니다. 운행 전 교통과(DSN 755-0424)에 확인하세요.
+> 사용자 제작 셔틀 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 시간표는 공개된 PDF에서 옮긴 것입니다. 운행 전 교통과에 확인하세요.
 
 ## Text-scrub checklist
 
@@ -57,20 +57,19 @@ Applied to `src/App.jsx` and `README.md`. Strikethrough = removed/rephrased.
 | `"verified from official 15 July 2023 PDF"` (CLAUDE.md, App.jsx comments) | `"transcribed from publicly posted 15 July 2023 PDF"` |
 | `"PDF-verified schedule"` (badge text) | `"PDF-sourced schedule"` |
 | `"PDF-VERIFIED SCHEDULE"` (header) | `"PDF-SOURCED SCHEDULE"` |
-| `"Verify at USAG Humphreys or MyArmyPost app."` | `"Verify with Transportation Office (DSN 755-0424) before relying on it."` |
+| `"Verify at USAG Humphreys or MyArmyPost app."` | `"Verify with Transportation Office before relying on it."` |
 | `"From official PDF (15 July 2023)"` (route notes) | `"Transcribed from publicly posted PDF (15 July 2023)"` |
 | `"Departs Bus Terminal :00 :20 :40 each hour (from official July 2023 PDF)"` | `"Departs Bus Terminal :00 :20 :40 each hour (from publicly posted July 2023 PDF)"` |
 | `"Download current PDF from USAG Humphreys website."` | `"Download current PDF from the post's public shuttle page."` |
 | `"Verify current schedule at USAG Humphreys website."` | `"Verify current schedule on the post's public shuttle page."` |
 | `"Updated Feb 2026. Download current PDF from USAG Humphreys website."` | `"Updated Feb 2026. Download current PDF from the post's public shuttle page."` |
 | `"...for Humphreys."` (BusWhere copy) | `"...for the post."` |
-| `"USAG 험프리스 또는 MyArmyPost 앱에서 확인하세요."` | `"운행 전 교통과(DSN 755-0424)에 확인하세요."` |
+| `"USAG 험프리스 또는 MyArmyPost 앱에서 확인하세요."` | `"운행 전 교통과에 확인하세요."` |
 | `"...not yet verified against an official PDF"` (EST. tooltip) | `"...not yet matched against a publicly posted PDF"` |
 
 Strings that intentionally stay:
 
-- `Transportation Office DSN 755-0424` — descriptive reference contact in Off-Post tab, framed as external. Not an affiliation claim.
-- `DPW GIS / IGI&S Bldg 6140` — same.
+- `DPW GIS / IGI&S Bldg 6140` — descriptive reference contact, framed as external. Not an affiliation claim.
 - `home.army.mil/humphreys` — descriptive link to public source of inter-garrison PDFs; no claim of endorsement.
 - Stop names (`Bus Terminal`, `Maude Hall`, `Pacific Victors Chapel`, etc.) — descriptive geographic references. No trademark risk.
 - Internal data flag `verified: true` on `ROUTES.GOLD` / `BROWN` / `PINK` — internal switch read by `findTrips` to consult `src/data/schedules.json`. Not user-visible. No copy change needed.

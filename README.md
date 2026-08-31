@@ -122,7 +122,6 @@ CI (`.github/workflows/ci.yml`) runs lint + tests + `npm audit --audit-level=hig
 
 - **Maintainer:** _(fill in — name + email)_
 - **USAG Humphreys Public Affairs Office:** stakeholder for potential MyArmyPost App (MAPA) integration. Current status: outreach unanswered as of 2026-05-28; project proceeds standalone in the meantime (see `docs/legal-posture.md`).
-- **Transportation Office:** DSN 755-0424 — public reference contact for shuttle schedule changes.
 - **DPW GIS / IGI&S:** Bldg 6140 — public reference contact for building directory and stop coordinates.
 - **Public shuttle page:** [home.army.mil/humphreys](https://home.army.mil/humphreys) — source of the publicly posted route PDFs the planner transcribes.
 

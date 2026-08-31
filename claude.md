@@ -78,7 +78,6 @@ Bus-stop coordinates: 44 of 44 ROUTES stops have lat/lon in `src/data/stop_coord
 ## Reference contacts (external; descriptive use only — not affiliation claims)
 
 - USAG Humphreys Public Affairs Office: stakeholder for potential MAPA integration. Outreach pending; currently unresponsive (see `docs/legal-posture.md`).
-- Transportation Office: DSN 755-0424 — public reference contact for shuttle schedule changes.
 - DPW GIS / IGI&S: Bldg 6140 — public reference contact for building directory + stop coordinates.
 - Public shuttle page: home.army.mil/humphreys — source of publicly posted route PDFs.
 
