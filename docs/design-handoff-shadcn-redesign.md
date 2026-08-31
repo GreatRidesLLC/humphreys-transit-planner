@@ -112,7 +112,7 @@ Order: Favorites chips → Recent chips → "Plan a trip" card → building-numb
 - **Fastest trip card** (expanded, rank 0): `borderStrong` border + slightly stronger shadow. Row 1: mono time `19:04→19:27` 24px/600 left, `~23 min` muted pill right. Row 2: route badge pill + "Direct · every 15 min" 12px mutedFg + PDF badge right (only when `verified`). Divider, then leg rows: 13px body text left ("Walk 4 min → board **Bus Terminal**", bold stop names in `foreground`), mono 13px time right. No timeline dots/rails in the compact leg list.
 - Collapsed trip card: mono time 18px + badge chain `GREEN → PURPLE` + "1 transfer · ~37 min" + chevron ▾. Tap expands (existing `open` state).
 - Replace the FASTEST badge with the card treatment above; if a badge is still wanted use `primary` bg pill "Fastest" 10.5px/700. EST badge → outline pill "Estimated" in `mutedFg`.
-- Footnote: 11px `faint`, centered: "Estimates from posted PDFs · verify with Transportation Office (DSN 755-0424)"
+- Footnote: 11px `faint`, centered: "Estimates from posted PDFs · verify with Transportation Office"
 
 ### 2c No trips
 Card, centered, padding 28px: 40px muted circle with simple glyph, "No trips available" 15px/600, body 13px mutedFg (existing overnight/OOS copy), then two outline suggestion buttons ("Try tomorrow 09:00" — sets tMode=depart with next service day, "Change time" — focuses the When section).
