@@ -81,7 +81,7 @@ function requestUserLocation() {
     navigator.geolocation.getCurrentPosition(
       p => resolve({ lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy }),
       e => reject(e),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 }
     );
   });
 }
@@ -96,7 +96,7 @@ const DOW_KO = ["일","월","화","수","목","금","토"];
 const STRINGS = {
   en: {
     appTitle: "Humphreys Transit Planner",
-    appSubtitle: "Community shuttle planner · Pyeongtaek",
+    appSubtitle: "Community shuttle planner",
     tabPlan: "Plan", tabNow: "Now", tabRoutes: "Routes", tabOffpost: "Off-Post",
     mainNav: "Main tabs",
     themeLabel: "Appearance",
@@ -114,7 +114,7 @@ const STRINGS = {
     favNameLabel: "Name",
     actionCancel: "Cancel", actionSave: "Save", actionOk: "OK",
     noticeHeading: "Notice",
-    nearestStop: "Nearest",
+    nearestStop: "Nearest stop",
     nearestLoading: "…",
     usingLocation: "Using your current location for walk time",
     locError: msg => `Could not get your location: ${msg}`,
@@ -128,7 +128,7 @@ const STRINGS = {
     today: "Today", tomorrow: "Tmrw", dow: DOW,
     findRoutes: "Find Routes →",
     bldgsMappedTitle: n => `${n} building numbers mapped`,
-    bldgsMappedDesc: " (e.g. 6400 → Maude Hall, 5700 → PX). Full directory pending from DPW Bldg 6140.",
+    bldgsMappedDesc: " (e.g. 6400 → Maude Hall, 5700 → PX). Full directory pending.",
     noTrips: "No Trips Available",
     noTripsOOS: names => ["Possible routes are outside service hours at this time (", names, "). Try a different time."],
     noTripsNoPath: "No shared or 1-transfer path exists. Try selecting the Bus Terminal as a hub, or a nearby major stop.",
@@ -211,7 +211,7 @@ const STRINGS = {
   },
   ko: {
     appTitle: "험프리스 교통 플래너",
-    appSubtitle: "사용자 제작 셔틀 플래너 · 평택",
+    appSubtitle: "사용자 제작 셔틀 플래너",
     tabPlan: "계획", tabNow: "지금", tabRoutes: "노선", tabOffpost: "기지 외",
     mainNav: "메인 탭",
     themeLabel: "화면 모드",
@@ -243,7 +243,7 @@ const STRINGS = {
     today: "오늘", tomorrow: "내일", dow: DOW_KO,
     findRoutes: "노선 찾기 →",
     bldgsMappedTitle: n => `건물 번호 ${n}개 매핑됨`,
-    bldgsMappedDesc: " (예: 6400 → Maude Hall, 5700 → PX). 전체 목록은 DPW 6140동에서 제공 예정.",
+    bldgsMappedDesc: " (예: 6400 → Maude Hall, 5700 → PX). 전체 목록 준비 중.",
     noTrips: "이용 가능한 노선 없음",
     noTripsOOS: names => ["현재 시간에 운행하지 않는 노선이 있습니다 (", names, "). 다른 시간을 시도해 보세요."],
     noTripsNoPath: "공유 정류장 또는 1회 환승 경로가 없습니다. 버스 터미널이나 가까운 주요 정류장을 시도해 보세요.",
@@ -867,11 +867,9 @@ function TripBadges({ trip }) {
     : <Badge variant="outline" className="h-5 rounded-md border-border px-2 text-[10.5px] font-semibold text-muted-foreground">{t.estimated}</Badge>;
 }
 
-function FastestTrip({ trip, now }) {
+function FastestTrip({ trip }) {
   const { t } = useT();
   const buses = trip.legs.filter(l => l.k === "bus");
-  const first = buses[0];
-  const mins = Math.round((first.boardAt - now) / 60000);
   return (
     <Card className="border border-border-strong bg-card shadow-[shadow:var(--card-shadow-strong)] ring-0 [--card-spacing:--spacing(4)]">
       <CardContent className="gap-0">
@@ -879,13 +877,7 @@ function FastestTrip({ trip, now }) {
           <Badge className="h-5 rounded-full bg-primary px-2 text-[10.5px] font-bold tracking-[0.02em] text-primary-foreground">{t.fastest}</Badge>
           <TripBadges trip={trip}/>
         </div>
-        <div className="font-mono text-[34px] leading-9 font-semibold tracking-[-0.02em] text-foreground">
-          {mins > 0 ? t.minutes(mins) : t.leavingNow}
-        </div>
-        <div className="pt-0.5 text-[12.5px] leading-[17px] text-secondary-text">
-          <Parts of={t.countdownUntil(<RouteName id={first.rid}/>, first.from)}/>
-        </div>
-        <div className="pt-3 font-mono text-[28px] leading-8 font-semibold tracking-[-0.02em] text-foreground">
+        <div className="font-mono text-[28px] leading-8 font-semibold tracking-[-0.02em] text-foreground">
           {fmt(trip.departAt)} <span className="font-medium text-muted-foreground">→</span> {fmt(trip.arriveAt)}
         </div>
         <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -1282,7 +1274,7 @@ export default function App() {
   // Building numbers if the user picked a "Bldg N – Name" entry — used to
   // compute a real haversine walk leg in findTrips.
   const [fBldg,setFB]=useState(null), [tBldg,setTB]=useState(null);
-  // User lat/lon when the "Nearest" button has fetched geolocation.
+  // User lat/lon when the "Nearest stop" button has fetched geolocation.
   // Overrides building coords for the origin walk leg.
   const [fCoords,setFC]=useState(null);
   const [locBusy,setLocBusy]=useState(false);
@@ -1680,7 +1672,7 @@ export default function App() {
                   onTryTomorrow={tryTomorrow} onChangeTime={changeTime}/>;
               })() : (
                 <>
-                  <FastestTrip trip={results.trips[0]} now={now}/>
+                  <FastestTrip trip={results.trips[0]}/>
                   {results.trips.length > 1 && <OtherTrips trips={results.trips.slice(1)}/>}
                   {(() => {
                     // eslint-disable-next-line react-hooks/purity

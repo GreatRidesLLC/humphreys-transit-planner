@@ -1,0 +1,155 @@
+{
+  "route": "GOLD",
+  "walked_at": "2026-08-31",
+  "_meta": {
+    "source": "web-search pre-fill 2026-08-31 (2 passes); import into scripts/walkthrough/artifact.html or use as reference for on-site verification",
+    "confidence": "2 confirmed (CAC=Maude Hall, Sentry Village Shoppette), 4 partial, 1 unresolved (O-6 Housing)"
+  },
+  "stops": [
+    {
+      "poster_label": "CAC",
+      "same_as_opposite": "n/a",
+      "confirmed": true,
+      "outbound": {
+        "bus_stop_id": "S117",
+        "canonical_name": "Maude Hall (ID Cards)",
+        "aliases": "CAC, DEERS, ID Cards, ID Card Office",
+        "offset_min": 3,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "high — Bldg 6400 Maude Hall on Marne Ave; houses DEERS/ID Cards + DES Access Control. Poster 'CAC' = CAC-card processing, the common rider destination. Confirmed via USAG Humphreys DEERS/ID Cards page + USAG FB post naming Maude Hall Bldg 6400."
+      },
+      "return_loop": null
+    },
+    {
+      "poster_label": "USO",
+      "same_as_opposite": "",
+      "confirmed": false,
+      "outbound": {
+        "bus_stop_id": "S103",
+        "canonical_name": "USO Sentry Village",
+        "aliases": "USO",
+        "offset_min": 4,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "high on name — Bldg P301 across from 2ID Museum (korea.uso.org/humphreys-sentryvillage). Matches buildings_osm.json #301. LOW on merge — S103 vs S376 (273 apart) suggest separate shelters, confirm on-site."
+      },
+      "return_loop": {
+        "bus_stop_id": "S376",
+        "canonical_name": "USO Sentry Village",
+        "aliases": "Opposite USO",
+        "offset_min": 37,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "return platform. If same shelter, set same_as_opposite=yes to merge to [4,37]."
+      }
+    },
+    {
+      "poster_label": "Family Housing Twr 1",
+      "same_as_opposite": "no",
+      "confirmed": false,
+      "outbound": {
+        "bus_stop_id": "S2083",
+        "canonical_name": "Family Housing Towers (Tropic Lightning Ave)",
+        "aliases": "FH Twr 1",
+        "offset_min": 8,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "med — bldg 2083 on Tropic Lightning Ave. Matches app's existing canonical. Confirm on-site."
+      },
+      "return_loop": {
+        "bus_stop_id": "S5061",
+        "canonical_name": "Family Housing Towers (5050s Block)",
+        "aliases": "FH Twr 1 return, 5050s Block",
+        "offset_min": 32,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "med — bldg 5061 = 5050s Block. Official shuttle page names combined stop 'Family Housing Towers (5050s & 5070s Block)'; on-site may show this is one physical stop with the 5070s. If so, canonical could roll into Twr 2's Taro Ave stop instead. Split canonical for now — confirm on-site."
+      }
+    },
+    {
+      "poster_label": "Family Housing Twr 2",
+      "same_as_opposite": "no",
+      "confirmed": false,
+      "outbound": {
+        "bus_stop_id": "S5072",
+        "canonical_name": "Family Housing Towers (Taro Ave)",
+        "aliases": "FH Twr 2, 5070s Block",
+        "offset_min": 9,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "med-high — bldg 5072 = 5070s Block. Official shuttle page names stop 'Family Housing Towers (5050s & 5070s Block)'. Likely = app's existing Taro Ave canonical."
+      },
+      "return_loop": {
+        "bus_stop_id": "S5070",
+        "canonical_name": "Family Housing Towers (Taro Ave)",
+        "aliases": "FH Twr 2 return",
+        "offset_min": 31,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "return platform bldg 5070 — same block. If both platforms one stop, set same_as_opposite=yes → [9,31]."
+      }
+    },
+    {
+      "poster_label": "Family Housing Twr 3",
+      "same_as_opposite": "no",
+      "confirmed": false,
+      "outbound": {
+        "bus_stop_id": "S5103",
+        "canonical_name": "Family Housing Towers (5100s Block)",
+        "aliases": "FH Twr 3",
+        "offset_min": 10,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "med — bldg 5103 = new Sept 2024 towers (Keeble/Kyle/Vera, 216 units, LEED Gold; army.mil/article/279770). NEW STOP, not in current app data. Street unconfirmed."
+      },
+      "return_loop": {
+        "bus_stop_id": "S5105",
+        "canonical_name": "Family Housing Towers (5100s Block)",
+        "aliases": "FH Twr 3 return",
+        "offset_min": 27,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "return platform bldg 5105 — same 5100s block. Likely merges to [10,27]."
+      }
+    },
+    {
+      "poster_label": "O-6 Housing",
+      "same_as_opposite": "no",
+      "confirmed": false,
+      "outbound": {
+        "bus_stop_id": "",
+        "canonical_name": "",
+        "aliases": "O-6 Housing",
+        "offset_min": 13,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "low — no public source names an O-6-specific stop or building. Stripes 2006 documents 96-unit UOQ + 52-unit key billet (O-5+) buildings, no O-6 mapping. Walkthrough required."
+      },
+      "return_loop": {
+        "bus_stop_id": "",
+        "canonical_name": "",
+        "aliases": "Opposite O-6 Housing",
+        "offset_min": 26,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "return platform, no ID captured in original photo either."
+      }
+    },
+    {
+      "poster_label": "Sentry Village PX",
+      "same_as_opposite": "n/a",
+      "confirmed": true,
+      "outbound": {
+        "bus_stop_id": "S451",
+        "canonical_name": "Sentry Village Shoppette",
+        "aliases": "Sentry Village PX, Sentry Shoppette",
+        "offset_min": 38,
+        "lat": "", "lon": "",
+        "side_of_street": "",
+        "notes": "high — AAFES opened Sentry Village Shoppette (AFN Humphreys announcement). Distinct from Humphreys Exchange (301k sq ft) and existing Sentry Village Mini Mall / Burger King. Single-platform."
+      },
+      "return_loop": null
+    }
+  ]
+}

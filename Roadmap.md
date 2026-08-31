@@ -8,6 +8,9 @@ Launch-focused. Target public release **~2026-08-26** (one month from 2026-07-26
 
 ## ✅ Shipped
 
+- **v1.0.0 public launch (2026-08-24)** — cut annotated tag `v1.0.0` at the release merge commit on `main` and published the GitHub Release page (`https://github.com/GreatRidesLLC/humphreys-transit-planner/releases/tag/v1.0.0`). `package.json` bumped to `1.0.0` on dev to match. Prod at `https://humphreysbus.app` redeployed with the tightened CSP (no CARTO CDN in `img-src`) after PR #54 landed 30+ commits of shadcn UI + full PDF-sourced schedule data.
+- Stop-name alias expansion (2026-08-24) — added ~35 rider-vocabulary aliases to `STOP_ALIASES` so searches like `walk-in gate`, `8th army`, `cif`, `bdaach`, `hospital`, `dmv`, `sitman gym` resolve to their canonical stop. Case-insensitive search already worked (`App.jsx:578` lowercases both sides); this was purely a data expansion. Test coverage added — every alias key must be a real ROUTES stop, no alias may be double-claimed
+- SOCKOR HQ coord pinned (2026-08-24) — OSM has no `bus_stop` node, office, or building tagged SOCKOR on-post. Interpolated coord from Blue-route timing offsets (2ID → SOCKOR → CIF, 1/3 of the way from 2ID to CIF) → `(36.9756, 126.9872)`. `stop_coords.json _meta` now shows `estimated:["SOCKOR HQ"]` and coord counter reads 45/45. Better than the 3-min walk floor; replace when OSM catches up or someone verifies on-site
 - Blue / Black / Orange / Green Pedestrian Gate posters (2026-08-24) — closed the last three big data gaps in one batch. **Blue** flipped from `freq:15` heuristic + `0600–2200` placeholder to a full 20-stop PDF matrix (Mon–Fri 08:00–18:45 dispatch, 66-min loop, last arrival 19:51) plus a new `SOCKOR HQ` stop between 2ID Sustainment and Central Issue Facility (coords still pending an OSM lookup). **Black** was wrongly modeled as `freq:25` uniform 06:00–22:00; actually a 15-min *split shift* (06:00–09:00 + 15:00–19:00 Mon-Fri, no midday) — added a two-window `schedule` and taught `serviceEndToday` to return the latest window end so afternoon arrive-by planning stays correct. **Orange** was wrongly modeled as `freq:30, Mon–Fri 06:00–22:00`; actually 15-min evenings + weekends with Fri/Sat overnight to 01:45 — added a 4-window `schedule` and PG arrivals with overnight bucketing by arrival day. **Green** gained per-stop times at Pedestrian Gate (the second Green stop with a PDF-sourced timetable, after Bus Terminal). All four routes marked `verified:true`; 72 vitest cases pass. Reproducible via `scripts/gen_{blue,black,orange,green}_pedestrian_gate.py` (blue is `gen_blue_schedule.py`).
 - Swap button bug fix — `StopInput` now syncs local state with the parent `value` prop on every change, not just when empty
 - Departure / arrival timestamps on every leg of every trip
@@ -86,6 +89,45 @@ feat/*     ← short-lived feature branches
 
 Nice-to-haves that improve the app but do not gate launch.
 
+### Distribution — reach Camp Humphreys bus users
+The app is live but nobody knows it exists. Audience per `CLAUDE.md`: Soldiers, family, civilian employees, KATUSAs, KSC battalion staff, Korean civilian employees, Korean spouses — mobile-first, standing at stops. All promotion must stay inside the non-affiliation posture (`docs/legal-posture.md`): use "Humphreys" descriptively only, no Army imagery, no `.mil` logos, "community-built" phrasing up front.
+
+Free / community channels (start here):
+
+- **QR-code posters** at Bus Terminal, Pedestrian Gate, chapels, DFACs (Provider Grill, Spartan, Pittman, Talon), Sitman + Collier gyms. Needs facility-owner permission per location. Highest-signal channel because it hits users at the moment of need. Design in EN + KO on one poster.
+- **Facebook groups** — USAG Humphreys spouse groups, "Camp Humphreys Community", "Pyeongtaek Foreigners", KATUSA groups. Cross-post EN + KO; include the non-affiliation disclaimer up front.
+- **Reddit** — r/army, r/Korea, r/USMilitarySO, r/MilitaryFamily. One post per sub, marked community-built.
+- **KakaoTalk groups** — Korean-language reach for KATUSA / KSC / Korean spouses. Blocked on finding a Korean-speaking advocate; solo English post never reaches this segment.
+- **Chapel bulletins** — Pacific Victors, Freedom, Morning Calm. Overlaps with the faith-touch work below.
+- **Word of mouth** — first ~10 users who post it in their own circles.
+
+Requires approval / paperwork:
+
+- **PAO social channels** — a "here's a community-built app" mention on official USAG social. Re-check MAPA non-compete with Director Nagan before asking (see `docs/legal-posture.md`, [[nagan_mapa_coexistence]]).
+- **Transportation Office referral** — if the deferred TO inquiry ever gets a reply, ask them to link the app.
+
+Risks:
+
+- Korean-language reach dies without a Korean advocate.
+- Trademark exposure rises with each promo surface; keep the endorsement scrub applied to every poster and post, not just the app itself.
+- Feedback-form volume may spike after a big channel post; ensure notifications route to a monitored inbox.
+
+### Faith touch — dedicate the tool
+The user (see [[user_faith]]) dedicates this work to God and wants the app to glorify Him without alienating the mixed audience (Soldier / KATUSA / civilian / Korean-national, mixed faiths and none). Guardrails baked in: **nothing faith-facing is on by default**, non-Christian users never see verses / prayers unless they opt in, every faith string ships EN + KO like the rest of the app, and each item lands via a small PR the user reviews before merge.
+
+Priority order for v1.1:
+
+1. **Chapel-stop service-times card** *(shortlist)* — when the trip destination is Pacific Victors Chapel, Freedom Chapel, or Morning Calm Chapel, render a small info card in the result showing that chapel's service times + denomination info. Serves *all* chapel-goers regardless of denomination; reads as helpful, not evangelistic. Same shape as other trip-card metadata. Needs a `CHAPELS` const (chapel → services × denominations × times), rendered in the Plan result card when `to` matches. Chapel data source: on-post chapel bulletins or `home.army.mil/humphreys` chaplain pages.
+2. **Sunday-morning route hint** — if the search is Sunday morning and the destination is a chapel stop, add a subtle "next service at HH:MM" prompt below the trip card.
+3. **Colophon on About page** *(rolls into the Standalone "About" page item below)* — a quiet "built in gratitude, for the Humphreys community" line. No verse text. One line, English + Korean.
+
+Deferred to v1.2+ (opt-in, harder to get right):
+
+- **Verse-of-the-day** — Settings toggle, off by default. One small line on the Plan tab when on, EN + KO. Uses a public feed or a small hand-curated local list. Requires new Settings surface.
+- **Chaplain directory** — new tab or Off-Post section listing chapels, chaplains, service schedules, denominations. Overlaps with the chapel service-times card data model; ship that first, then promote the same data into a directory.
+- **Prayer request link** — external Tally-form-style link, opt-in only, footer-linked. Moderation-light; the form provider handles submissions.
+- **Community bulletin board** — mission trips, Bible studies, meeting times. Adds a moderation burden and mixed-audience risk; probably never in scope.
+
 ### Korean string QA (KATUSA / KSC)
 First-draft translations flagged in shipped Korean MVP. Route + stop names stay English by design; long descriptive paragraphs on Off-Post remain English (out of MVP scope). Actively solicit a native reviewer via the launched feedback channel. Label Korean toggle as beta in v1 if reviewer not yet secured.
 
@@ -102,7 +144,7 @@ If Transportation Office does not supply per-route PDFs in the launch inquiry: (
 Many routes are loops; current code uses `Math.abs(ti - fi)` which assumes bidirectional travel. Correcting requires authoritative direction data from schedule PDFs; payoff is edge cases only. Park until a wrong-direction bug is reported.
 
 ### Standalone "About" page
-Promote universal disclaimer footer into a standalone About page or section (currently inline-only in the footer).
+Promote universal disclaimer footer into a standalone About page or section (currently inline-only in the footer). Also carries the faith-touch colophon line described in the Faith touch section above (one quiet "built in gratitude" line, EN + KO).
 
 ### Google Play Store listing (via TWA)
 Wrap the PWA as a Trusted Web Activity using Google's `bubblewrap` CLI, publish to Play Console. One-time $25 Play developer account. Update flow stays push-to-deploy for the app itself — the store binary is only rebuilt on version bumps. Trigger: post-launch traction data shows KATUSA / soldier / KSC users searching "Humphreys" in the Play Store and not finding the PWA install prompt. Watch-out: a Play listing sitting next to MAPA (`mil.aswf.garrison`) in store search may re-open the PAO non-compete conversation Nagan closed 2026-06-19 (see `docs/legal-posture.md`, [[nagan_mapa_coexistence]]); do not proceed without re-confirming standalone posture with PAO. Trademark exposure also higher on a public store listing than on a URL — endorsement-scrub already applied to user copy, but the store listing itself (title, short description, screenshots) needs the same pass before submission.
@@ -126,12 +168,7 @@ Do NOT start unless PAO re-opens the MAPA-integration conversation. Nagan approv
 - ~~Black, Orange: 15-min headway unconfirmed~~ **Resolved 2026-08-24** via PG poster. Black is a split-shift (06:00-09:00 + 15:00-19:00 Mon-Fri, 15-min); Orange is 15-min evenings + weekends with Fri/Sat overnight to 01:45. See `scripts/gen_black_pedestrian_gate.py` + `scripts/gen_orange_pedestrian_gate.py`
 - ~~Blue: headway confirmed 15 min, but service-hour bounds still placeholder `0600–2200`~~ **Resolved 2026-08-24** via PG poster. Blue is Mon-Fri 08:00-18:45 dispatch, 66-min loop, last arrival 19:51. Full per-stop matrix transcribed via `scripts/gen_blue_schedule.py`. Also added new stop `SOCKOR HQ` (between 2ID Sustainment and Central Issue Facility) — coords still pending OSM lookup, see `stop_coords.json` _meta.unmatched
 - Green per-stop timetables: Bus Terminal + Pedestrian Gate now PDF-sourced (`scripts/gen_green_schedule.py` + `scripts/gen_green_pedestrian_gate.py`). Other 18 Green stops still use the 2-min-per-stop heuristic — requires per-stop poster photos (only route-diagram + terminus posters have been photographed to date)
-- Gold stop-name verification: Exhibit #0019 photos (2026-08-20 retake) include 7 stops whose canonical names / physical mapping remain unverified. Omitted from `gen_gold_schedule.py` pending walk-through or Transportation Office confirmation:
-  - `CAC` (S117) — full name? "Central Access Control"?
-  - `USO` (S103) — is this "USO Sentry Village" (OSM building #301)?
-  - `Family Housing Twr 1/2/3` (S2083/S5072/S5103 outbound; S5061/S5070/? return) — how do these map to existing `Family Housing Towers (Tropic Lightning Ave)` / `(Taro Ave)` entries? Is Twr 3 new?
-  - `O-6 Housing` (no visible ID) — canonical name?
-  - `Sentry Village PX` (S451) — separate from existing `Sentry Village Burger King` and `Sentry Village Mini Mall` (which are also two distinct stops); confirm which physical shop
+- ~~Gold stop-name verification: 7 Exhibit #0019 stops pending~~ **Resolved 2026-08-31.** Two landed 2026-08-31 via public sources (CAC → Maude Hall (ID Cards); Sentry Village PX → Sentry Village Shoppette). Remaining five landed 2026-08-31 via walkthrough + `scripts/apply_walkthrough.py`: `USO` → `USO Sentry Village` (outbound S103) + `USO Sentry Village (Opposite)` (return S376) as separate shelters; `Family Housing Twr 1` → existing `Family Housing Towers (Tropic Lightning Ave)` outbound + new `Family Housing Towers (5050s Block)` return; `Family Housing Twr 2` → existing `Family Housing Towers (Taro Ave)` (both platforms); `Family Housing Twr 3` → new `Family Housing Towers (5100s Block)`; `O-6 Housing` → new `Officer Housing`. All 19 Gold stops now PDF-sourced across Mon–Fri / Sat / Sun. Coordinates for the 5 new stops still pending OSM lookup
 - Inter-garrison routes: PDFs need re-download (Incheon Airport schedule updated Feb 2026)
 - Building directory: 32 mapped in `BUILDINGS` (high-confidence stop assignments). 380 known to exist on-post per OSM; remaining ~350 are blocked on stop coordinates for a "nearest stop" heuristic. Many of those have OSM `name` tags (e.g. "Zoeckler Fitness Center", "Heartbreak Ridge Tower") that could be hand-assigned to a stop, but doing so without coordinates risks systematic errors
 - Stop coordinates: 45 of 45 ROUTES stops have coords in `src/data/stop_coords.json` (43 OSM-sourced, 1 hand-pinned for the Pink-route trial stop, 1 interpolated for SOCKOR HQ from Blue-route offsets — OSM has no SOCKOR entity on-post as of 2026-08-24; verify on-site or replace with a real coord if a future OSM update adds it)

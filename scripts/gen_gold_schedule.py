@@ -38,6 +38,15 @@ STOP_OFFSETS = {
     "Balboni Sports Field (Marne Ave)":   [15, 22],
     "Barracks (6800s Block)":             [17, 21],
     "River Bend Golf Course":             [18, 19],
+    "Maude Hall (ID Cards)":              [3],
+    "Sentry Village Shoppette":           [38],
+    "USO Sentry Village":                 [4],
+    "USO Sentry Village (Opposite)":      [37],
+    "Family Housing Towers (Tropic Lightning Ave)":[8],
+    "Family Housing Towers (5050s Block)":[32],
+    "Family Housing Towers (Taro Ave)":   [9, 31],
+    "Family Housing Towers (5100s Block)":[10, 27],
+    "Officer Housing":                    [13, 26],
 }
 
 def hm(mins):
