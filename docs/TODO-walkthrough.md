@@ -1,9 +1,18 @@
 # Walk-through TODO — Gold Route stop verification
 
-**Status (2026-08-31):** all 7 stops resolved and landed via
+**Status (2026-08-31):** 6 of 7 stops resolved and landed via
 `apply_walkthrough.py` + hand-edited `routing.js`. `schedules.json`
-regenerated; 76/76 tests pass. Retained below as reference for the
-walk-through workflow itself; the stop list is now historical.
+regenerated; 76/76 tests pass.
+
+**One stop still pending on-ground identification: CAC (S117, +3 min
+from BT).** Public sources (USAG DES + FB) place both DEERS/ID Cards
+AND the Central Access Control Office at Bldg 6400 Maude Hall — but
+Bldg 6400 is ~2.9 km from BT, ruling out the +3-min offset. Sentry
+Village cluster is ~600-700 m from BT, consistent with the offset.
+Poster CAC is therefore a distinct third facility in the Sentry
+Village neighborhood. Canonical set to `CAC (Sentry Village)` in
+v1.1.1 as a placeholder; walk the route and capture the physical
+building name / stop signage to finalize.
 
 Purpose: canonical names + physical mapping for 7 stops on Exhibit #0019
 (Gold Route) that were photographed 2026-08-20 but omitted from
