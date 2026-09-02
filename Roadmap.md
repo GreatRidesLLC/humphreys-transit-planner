@@ -123,10 +123,10 @@ The user (see [[user_faith]]) dedicates this work to God and wants the app to gl
 
 Small one-line quote at the top of the Plan tab, dismissible for the day. Content is universal-wisdom framing (kindness, patience, diligence, humility, honest speech) drawn from biblical principles but **written in the maintainer's own words** — no chapter/verse, no "Bible" tag, no scripture quotation. Original paraphrase, not misattributed quotation. Reads as encouragement, not doctrine.
 
-Design decisions (locked 2026-09-02):
+Design decisions (locked 2026-09-02; **no-opt-out revision 2026-09-02**):
 
-- **Placement**: Plan tab header, above the search form. Dismissible via `✕`; dismissal persists per-day in `localStorage` (`humphreys.encouragement.dismissed = YYYY-MM-DD`).
-- **Default state**: **on** by default. Settings toggle `humphreys.encouragement.enabled` (default `true`) lets a user hide it permanently. This is a deliberate exception to the `[[user_faith]]` "nothing faith-facing on by default" guardrail — see updated memory.
+- **Placement**: Plan tab header, above the search form.
+- **Visibility**: **always shown**, no dismiss button, no permanent hide. The line is treated as ambient chrome (like the disclaimer footer), not an interruption. Deliberate exception to the `[[user_faith]]` guardrail; justified because universal-wisdom content (kindness, patience, diligence) is not identifiable as doctrine. Tradeoff acknowledged: a user who dislikes it has no in-app escape — accept this and monitor feedback. If a user-facing objection materializes, add a Settings toggle at that point.
 - **Content plan**: seed with **4 weeks**, iterate on feedback before scaling. Ship-safe: if today's ISO-week bucket is missing or empty, render nothing silently.
 - **Cadence**: weekly rotation. Each week has 3–7 lines; pick by day-of-week index into that week's array (`day % lines.length`).
 - **Bilingual**: EN + KO per line. Same rule as rest of app. No line ships without both.
@@ -145,7 +145,7 @@ Data shape (`public/wisdom.json`, served static so PWA caches it; content update
 }
 ```
 
-Component (`src/components/daily-encouragement.jsx`): reads `humphreys.encouragement.enabled`, computes today's ISO week + day-of-week, fetches `/wisdom.json`, picks the line, respects the per-day dismissal key. Silent no-op on any failure. Style: `text-muted-foreground`, single line, italic optional. Dismiss button uses existing `Button variant="ghost" size="icon"`.
+Component (`src/components/daily-encouragement.jsx`): computes today's ISO week + day-of-week, fetches `/wisdom.json`, picks the line, renders. Silent no-op on any failure. Style: `text-muted-foreground`, single line, italic, center-aligned inside a card. No dismiss UI.
 
 In-repo doc comment on `public/wisdom.json` states that the omission of scripture attribution is a deliberate non-affiliation posture, not deception — so future maintainers understand the intent.
 

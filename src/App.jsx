@@ -208,8 +208,6 @@ const STRINGS = {
     feedbackNudgeQuestion: "Was this trip info right?",
     feedbackNudgeButton: "Give feedback",
     feedbackNudgeDismiss: "Close feedback prompt",
-    encouragementDismiss: "Hide for today",
-    encouragementHide: "Don't show these",
   },
   ko: {
     appTitle: "험프리스 교통 플래너",
@@ -324,8 +322,6 @@ const STRINGS = {
     feedbackNudgeQuestion: "이 여정 정보가 정확했나요?",
     feedbackNudgeButton: "피드백 남기기",
     feedbackNudgeDismiss: "피드백 메시지 닫기",
-    encouragementDismiss: "오늘은 숨기기",
-    encouragementHide: "다시 표시 안 함",
   },
 };
 const LangContext = createContext({ lang: "en", t: STRINGS.en });
@@ -1336,12 +1332,6 @@ export default function App() {
   // First-run non-affiliation notice. Shown once per device until acknowledged.
   const [noticeSeen, setNoticeSeen] = useLocalStorage("humphreys.noticeSeen", false);
 
-  // Daily encouragement card. `enabled` is a permanent off switch; `dismissed`
-  // holds the YYYY-MM-DD the card was last hidden for the day. See Roadmap.md
-  // Faith touch v1.1 item 0 for the guardrail context.
-  const [encEnabled, setEncEnabled] = useLocalStorage("humphreys.encouragement.enabled", true);
-  const [encDismissed, setEncDismissed] = useLocalStorage("humphreys.encouragement.dismissed", "");
-
   // Feedback nudge: track plan count and snooze status
   const [planCount, setPlanCount] = useLocalStorage("htp_planCount", 0);
   const [nudgeSnoozedUntil, setNudgeSnoozedUntil] = useLocalStorage("htp_nudgeSnoozedUntil", null);
@@ -1557,11 +1547,7 @@ export default function App() {
 
       <main>
       <TabsContent value="plan" className="px-5 py-4">
-          {showForm && (
-            <DailyEncouragement lang={lang} t={t}
-              enabled={encEnabled} onDisable={() => setEncEnabled(false)}
-              dismissedYmd={encDismissed} onDismiss={setEncDismissed}/>
-          )}
+          {showForm && <DailyEncouragement lang={lang}/>}
           {showForm ? (
           <Card className="mb-3.5 border bg-card shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(4)]">
             <CardHeader className="flex flex-row items-center justify-between gap-2">
