@@ -210,9 +210,9 @@ const STRINGS = {
     feedbackNudgeButton: "Give feedback",
     feedbackNudgeDismiss: "Close feedback prompt",
     communityLinksHeader: "Community links",
-    communityLinksNote: "Community-submitted resources. Inclusion is not an endorsement. To add or correct an entry, use the feedback link.",
     communityLinksSubmit: "Submit a resource →",
     communityLinksExternal: "opens in a new tab",
+    communityLinksPointer: "Looking for off-post resources? See Off-Post → Community links.",
   },
   ko: {
     appTitle: "험프리스 교통 플래너",
@@ -328,9 +328,9 @@ const STRINGS = {
     feedbackNudgeButton: "피드백 남기기",
     feedbackNudgeDismiss: "피드백 메시지 닫기",
     communityLinksHeader: "커뮤니티 링크",
-    communityLinksNote: "사용자가 제출한 자원입니다. 포함이 곧 승인은 아닙니다. 항목을 추가하거나 수정하려면 피드백 링크를 이용하세요.",
     communityLinksSubmit: "자원 제출하기 →",
     communityLinksExternal: "새 탭에서 열림",
+    communityLinksPointer: "기지 외 자원을 찾으세요? Off-Post → 커뮤니티 링크에서 확인하세요.",
   },
 };
 const LangContext = createContext({ lang: "en", t: STRINGS.en });
@@ -1246,9 +1246,8 @@ function OffPostTab() {
         </span>
       </div>
 
-      <div className="flex flex-col gap-2.5 pt-2">
+      <div className="pt-2">
         <div className="text-[13px] leading-[17px] font-semibold text-foreground">{t.communityLinksHeader}</div>
-        <div className={NOTE_CLS}>{t.communityLinksNote}</div>
       </div>
       <Card className={cn(CARD_CLS,"gap-0 py-0")}>
         {COMMUNITY_LINKS.categories.map((cat, ci) => (
@@ -1678,6 +1677,13 @@ export default function App() {
             <div className={cn(NOTE_CLS,"mt-3.5")}>
               <span className="font-semibold text-foreground">{t.bldgsMappedTitle(Object.keys(BUILDINGS).length)}</span>{t.bldgsMappedDesc}
             </div>
+          )}
+
+          {showForm && (
+            <button type="button" onClick={()=>{setTab("offpost");reset();}}
+              className="mt-3.5 w-full rounded-lg border border-dashed border-border bg-transparent px-3 py-2.5 text-left text-xs leading-[1.5] text-muted-foreground hover:bg-muted/50 hover:text-foreground focus-visible:bg-muted/50 focus-visible:outline-none">
+              {t.communityLinksPointer}
+            </button>
           )}
 
           {searched && (

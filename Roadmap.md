@@ -189,9 +189,11 @@ Quiet "built in gratitude, for the Humphreys community" line. No verse. One line
 
 Shape: link-only entries (name + one-line detail + external URL). Not a directory — no structured service-times / transit / address fields. Users click through for details.
 
-Placement: below the existing Inter-Garrison Routes card on the Off-Post tab. Section header + framing note + card of grouped entries + "Submit a resource" CTA linking to the existing Tally feedback form.
+Placement: below the existing Inter-Garrison Routes card on the Off-Post tab. Section header + card of grouped entries + "Submit a resource" CTA linking to the existing Tally feedback form.
 
-Framing text (bilingual): *"Community-submitted resources. Inclusion is not an endorsement. To add or correct an entry, use the feedback link."*
+**No per-section framing / disclaimer text.** The app-wide footer (`t.disclaimer`) plus the one-time `FirstRunNotice` already carry the non-affiliation posture — every user has seen it and it sits on every page. Duplicating it per section reads as anxious and clutters mobile screens. See memory [[feedback_no_perlink_disclaimers]] (2026-09-02).
+
+**Plan-tab pointer**: a small dashed-border button below the buildings-mapped note on the Plan tab, only visible when the search form is showing. Copy: *"Looking for off-post resources? See Off-Post → Community links."* Tapping it switches the active tab to Off-Post via `setTab("offpost")`. Drives discovery without moving the content or bloating chrome.
 
 Data lives in `src/data/community_links.json`:
 
