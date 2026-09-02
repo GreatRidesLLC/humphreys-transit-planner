@@ -17,6 +17,7 @@ import { ArrowDownUp, ChevronDown, ClockAlert, FileText, History, Languages, Mon
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
 import { BrandMark } from "@/components/brand-mark.jsx";
 import { DailyEncouragement } from "@/components/daily-encouragement.jsx";
+import COMMUNITY_LINKS from "./data/community_links.json";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -208,6 +209,10 @@ const STRINGS = {
     feedbackNudgeQuestion: "Was this trip info right?",
     feedbackNudgeButton: "Give feedback",
     feedbackNudgeDismiss: "Close feedback prompt",
+    communityLinksHeader: "Community links",
+    communityLinksNote: "Community-submitted resources. Inclusion is not an endorsement. To add or correct an entry, use the feedback link.",
+    communityLinksSubmit: "Submit a resource →",
+    communityLinksExternal: "opens in a new tab",
   },
   ko: {
     appTitle: "험프리스 교통 플래너",
@@ -322,6 +327,10 @@ const STRINGS = {
     feedbackNudgeQuestion: "이 여정 정보가 정확했나요?",
     feedbackNudgeButton: "피드백 남기기",
     feedbackNudgeDismiss: "피드백 메시지 닫기",
+    communityLinksHeader: "커뮤니티 링크",
+    communityLinksNote: "사용자가 제출한 자원입니다. 포함이 곧 승인은 아닙니다. 항목을 추가하거나 수정하려면 피드백 링크를 이용하세요.",
+    communityLinksSubmit: "자원 제출하기 →",
+    communityLinksExternal: "새 탭에서 열림",
   },
 };
 const LangContext = createContext({ lang: "en", t: STRINGS.en });
@@ -1200,7 +1209,7 @@ function RouteDetail({ route:r, onBack }) {
 // for the Korean toggle is UI chrome only. Long-form reference content can be
 // translated in a follow-up with KATUSA/KSC QA.
 function OffPostTab() {
-  const { t } = useT();
+  const { lang, t } = useT();
   return (
     <div className="flex flex-col gap-3.5 px-5 pt-4 pb-8">
       <div role="note" className="rounded-lg border border-warn-border bg-warn-bg p-3 text-xs leading-[1.7] text-warn-text">
@@ -1235,6 +1244,42 @@ function OffPostTab() {
             home.army.mil/humphreys → Inter-Garrison Bus Service
           </a>
         </span>
+      </div>
+
+      <div className="flex flex-col gap-2.5 pt-2">
+        <div className="text-[13px] leading-[17px] font-semibold text-foreground">{t.communityLinksHeader}</div>
+        <div className={NOTE_CLS}>{t.communityLinksNote}</div>
+      </div>
+      <Card className={cn(CARD_CLS,"gap-0 py-0")}>
+        {COMMUNITY_LINKS.categories.map((cat, ci) => (
+          <Fragment key={cat.id}>
+            {ci > 0 && <div className="border-t"/>}
+            <div className="px-4 pt-3 pb-1 text-[10.5px] leading-4 font-semibold tracking-wide uppercase text-muted-foreground">
+              {lang === "ko" ? cat.label_ko : cat.label_en}
+            </div>
+            {cat.entries.map((e, i) => (
+              <a key={e.id} href={e.url} target="_blank" rel="noopener noreferrer"
+                className={cn(
+                  "flex flex-col gap-1 px-4 py-3 hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none",
+                  i < cat.entries.length - 1 && "border-b",
+                )}>
+                <span className="text-sm leading-5 font-semibold text-foreground">
+                  {lang === "ko" ? e.name_ko : e.name_en}
+                </span>
+                <span className="text-xs leading-[1.5] text-muted-foreground">
+                  {lang === "ko" ? e.detail_ko : e.detail_en}
+                  <span aria-hidden="true" className="ml-1 text-faint">↗</span>
+                  <span className="sr-only">{" — " + t.communityLinksExternal}</span>
+                </span>
+              </a>
+            ))}
+          </Fragment>
+        ))}
+      </Card>
+      <div className="flex min-h-11 items-center justify-center text-center text-xs leading-[1.6] text-muted-foreground">
+        <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
+          {t.communityLinksSubmit}
+        </a>
       </div>
     </div>
   );

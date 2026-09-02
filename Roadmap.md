@@ -183,44 +183,46 @@ If planned trip is Sunday 06:00–12:00 and destination is a chapel stop, add su
 
 Quiet "built in gratitude, for the Humphreys community" line. No verse. One line, EN + KO.
 
-#### v1.1.x — Off-post worship transit (new)
+#### v1.1.x — Community links (Off-Post tab)
 
-Separate surface from on-post chapel card, because off-post worship depends on Korean city buses (KTX, #1220, etc.), not USAG shuttles. Lives in the **Off-Post tab**, not the Plan tab.
+**Scope broadened 2026-09-02**: after weighing "off-post worship" as a standalone surface (endorsement risk, single-denomination look), decision is to ship a broader **Community links** section on the Off-Post tab that can hold worship, family / spouse groups, language exchange, etc. Worship is one category; PICC is the seed entry inside it. Broader framing dilutes the "one church featured" read.
 
-Shape: a small list titled "Off-post worship — community submissions" with the framing text: *"Community-submitted list of off-post worship gatherings and how to reach them by public transit. Inclusion is not an endorsement. To add or correct an entry, use the feedback link."*
+Shape: link-only entries (name + one-line detail + external URL). Not a directory — no structured service-times / transit / address fields. Users click through for details.
 
-Seed entry — **PICC (Pyeongtaek International Community Church)**, submitted by the maintainer 2026-09-02:
+Placement: below the existing Inter-Garrison Routes card on the Off-Post tab. Section header + framing note + card of grouped entries + "Submit a resource" CTA linking to the existing Tally feedback form.
 
-- **Name**: Pyeongtaek International Community Church (PICC) / 평택국제커뮤니티교회
-- **Sunday worship**: 10:30 (English)
-- **Address**: 14-8, Songhwa-ri, Paengseong-eup, Pyeongtaek-si, Gyeonggi-do
-- **Transit from Camp Humphreys**: Korean city bus **#1220** (also serves Pyeongtaek Station). Walking directions available on site.
-- **Web**: [picckorea.com](https://picckorea.com)
-- **Notes**: Non-denominational (Baptist roots). English-language service. Nursery (1–3) and Sunday School (4–12) during service. Free basement parking.
-- **Source**: picckorea.com/gatherings, fetched 2026-09-02
+Framing text (bilingual): *"Community-submitted resources. Inclusion is not an endorsement. To add or correct an entry, use the feedback link."*
 
-Data shape (new file `src/data/off_post_worship.json`):
+Data lives in `src/data/community_links.json`:
 
 ```json
 {
-  "picc": {
-    "name": "Pyeongtaek International Community Church",
-    "name_ko": "평택국제커뮤니티교회",
-    "abbr": "PICC",
-    "services": [ { "day": "Sun", "time": "10:30", "lang": "en", "type": "worship" } ],
-    "transit": { "from": "Camp Humphreys", "modes": [ { "kind": "city_bus", "route": "1220" } ] },
-    "address": "14-8, Songhwa-ri, Paengseong-eup, Pyeongtaek-si",
-    "web": "https://picckorea.com",
-    "source": "picckorea.com 2026-09-02"
-  }
+  "version": 1,
+  "categories": [
+    {
+      "id": "worship", "label_en": "Worship", "label_ko": "예배",
+      "entries": [
+        {
+          "id": "picc",
+          "name_en": "PICC — Pyeongtaek International Community Church",
+          "name_ko": "PICC — 평택국제커뮤니티교회",
+          "detail_en": "Sun 10:30 English worship",
+          "detail_ko": "일요일 10:30 영어 예배",
+          "url": "https://picckorea.com"
+        }
+      ]
+    }
+  ]
 }
 ```
 
-**Open questions before shipping**:
+Seed entry — **PICC** (Pyeongtaek International Community Church), submitted by the maintainer 2026-09-02, source picckorea.com/gatherings. Full facts (service times, bus #1220 from Camp Humphreys, address 14-8 Songhwa-ri Paengseong-eup, non-denominational Baptist roots) captured in memory `user_church_picc.md`; the shipped surface itself carries only name + one-line + URL by MVP-scope design.
 
-- **Single-entry endorsement risk**: A list with one entry (PICC) reads as recommendation. Mitigations to choose between: (a) hold the surface until 2+ community submissions exist; (b) ship with explicit "seed entry; add yours via feedback" framing; (c) do not ship in-app — keep PICC in a personal side doc only.
-- **Denomination coverage**: current list is English Protestant only. Catholic mass, Korean-language services, KATUSA-relevant Korean churches all absent. Publishing an unbalanced list is worse than publishing none.
-- **Non-affiliation posture**: cross-check with [[legal_posture]] and `docs/legal-posture.md` — off-post third-party listings are a new content category and may warrant an updated disclaimer line.
+Open items to work through as the list grows:
+
+- **Denomination and language coverage**: current worship list is English Protestant only. Adding Catholic mass, Korean-language services, and KATUSA-relevant Korean churches over time reduces the "single church featured" read further.
+- **Second and third categories**: family / spouse groups and language exchange are natural next categories. Empty categories should not ship — omit until there is at least one entry.
+- **Non-affiliation posture**: `docs/legal-posture.md` cross-check on the framing text. Third-party outbound links are a new content category. The disclaimer footer may want a one-line addition.
 
 #### Deferred to v1.2+ (opt-in, harder to get right)
 
