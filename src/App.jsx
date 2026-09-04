@@ -16,6 +16,7 @@ import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, History, Languages, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
 import { BrandMark } from "@/components/brand-mark.jsx";
+import { DailyEncouragement } from "@/components/daily-encouragement.jsx";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1546,6 +1547,7 @@ export default function App() {
 
       <main>
       <TabsContent value="plan" className="px-5 py-4">
+          {showForm && <DailyEncouragement lang={lang}/>}
           {showForm ? (
           <Card className="mb-3.5 border bg-card shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(4)]">
             <CardHeader className="flex flex-row items-center justify-between gap-2">

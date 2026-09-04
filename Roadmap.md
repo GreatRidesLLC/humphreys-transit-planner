@@ -115,13 +115,114 @@ Risks:
 ### Faith touch — dedicate the tool
 The user (see [[user_faith]]) dedicates this work to God and wants the app to glorify Him without alienating the mixed audience (Soldier / KATUSA / civilian / Korean-national, mixed faiths and none). Guardrails baked in: **nothing faith-facing is on by default**, non-Christian users never see verses / prayers unless they opt in, every faith string ships EN + KO like the rest of the app, and each item lands via a small PR the user reviews before merge.
 
-Priority order for v1.1:
+**Non-affiliation ground rule**: Chapel and worship info is presented as *utility metadata* (times, denominations, transit), never as recommendation, invitation, or endorsement. The app describes the transit landscape; it does not evangelize.
 
-1. **Chapel-stop service-times card** *(shortlist)* — when the trip destination is Pacific Victors Chapel, Freedom Chapel, or Morning Calm Chapel, render a small info card in the result showing that chapel's service times + denomination info. Serves *all* chapel-goers regardless of denomination; reads as helpful, not evangelistic. Same shape as other trip-card metadata. Needs a `CHAPELS` const (chapel → services × denominations × times), rendered in the Plan result card when `to` matches. Chapel data source: on-post chapel bulletins or `home.army.mil/humphreys` chaplain pages.
-2. **Sunday-morning route hint** — if the search is Sunday morning and the destination is a chapel stop, add a subtle "next service at HH:MM" prompt below the trip card.
-3. **Colophon on About page** *(rolls into the Standalone "About" page item below)* — a quiet "built in gratitude, for the Humphreys community" line. No verse text. One line, English + Korean.
+#### v1.1 priority order
 
-Deferred to v1.2+ (opt-in, harder to get right):
+**0. Daily encouragement line** *(new, 2026-09-02)*
+
+Small one-line quote at the top of the Plan tab, dismissible for the day. Content is universal-wisdom framing (kindness, patience, diligence, humility, honest speech) drawn from biblical principles but **written in the maintainer's own words** — no chapter/verse, no "Bible" tag, no scripture quotation. Original paraphrase, not misattributed quotation. Reads as encouragement, not doctrine.
+
+Design decisions (locked 2026-09-02; **no-opt-out revision 2026-09-02**):
+
+- **Placement**: Plan tab header, above the search form.
+- **Visibility**: **always shown**, no dismiss button, no permanent hide. The line is treated as ambient chrome (like the disclaimer footer), not an interruption. Deliberate exception to the `[[user_faith]]` guardrail; justified because universal-wisdom content (kindness, patience, diligence) is not identifiable as doctrine. Tradeoff acknowledged: a user who dislikes it has no in-app escape — accept this and monitor feedback. If a user-facing objection materializes, add a Settings toggle at that point.
+- **Content plan**: seed with **4 weeks**, iterate on feedback before scaling. Ship-safe: if today's ISO-week bucket is missing or empty, render nothing silently.
+- **Cadence**: weekly rotation. Each week has 3–7 lines; pick by day-of-week index into that week's array (`day % lines.length`).
+- **Bilingual**: EN + KO per line. Same rule as rest of app. No line ships without both.
+
+Data shape (`public/wisdom.json`, served static so PWA caches it; content updates are JSON-only commits — no component change, no code deploy):
+
+```json
+{
+  "version": 1,
+  "weeks": {
+    "2026-W36": [
+      { "en": "A soft answer turns away anger.", "ko": "부드러운 대답은 분노를 가라앉힌다." },
+      { "en": "Small steps, kept up, cross mountains.", "ko": "..." }
+    ]
+  }
+}
+```
+
+Component (`src/components/daily-encouragement.jsx`): computes today's ISO week + day-of-week, fetches `/wisdom.json`, picks the line, renders. Silent no-op on any failure. Style: `text-muted-foreground`, single line, italic, center-aligned inside a card. No dismiss UI.
+
+In-repo doc comment on `public/wisdom.json` states that the omission of scripture attribution is a deliberate non-affiliation posture, not deception — so future maintainers understand the intent.
+
+Blocker before merge: 4 weeks of copy (EN + KO) from the maintainer or a translator.
+
+**1. Chapel-stop service-times card** *(shortlist)*
+
+Scope: on-post chapel stops served by USAG Humphreys shuttles. Two stops qualify — **Freedom Chapel** (Green Route, `src/lib/routing.js:121`) and **Pacific Victors Chapel** (multi-route: Blue, Black, Purple, Gold — `src/lib/routing.js:71,80,89,130,133`). Warrior Chapel and Four Chaplains Memorial Chapel exist in OSM but have no shuttle stop; excluded from v1.1. *(Roadmap previously listed "Morning Calm Chapel" — this is an error: `Morning Calm Center` is the Morning Calm Conference Center, not a place of worship. Corrected 2026-09-02.)*
+
+Data shape (new file `src/data/chapels.json`):
+
+```json
+{
+  "Freedom Chapel": {
+    "stop": "Freedom Chapel",
+    "services": [
+      { "day": "Sun", "time": "HH:MM", "type": "Protestant" | "Catholic" | "Gospel" | "Liturgical" | ... }
+    ],
+    "source": "bulletin YYYY-MM-DD",
+    "source_url": "..."
+  },
+  "Pacific Victors Chapel": { ... }
+}
+```
+
+Render: when a Plan-tab result's destination stop matches a `CHAPELS` key, append a small info card under the trip card showing next upcoming service(s). Same visual weight as existing trip-card metadata. Bilingual labels (`day` → `Sun` / `일`, service type → EN + KO). Uses the same `~`/est. vs bare-time convention as departure times.
+
+Data source: on-post chapel bulletins (Freedom + Pacific Victors publish printed weekly bulletins) or `home.army.mil/humphreys` chaplain pages. **Blocker before code**: need actual current service schedules — user or a chaplain-office contact to supply them. Do not ship placeholders.
+
+**2. Sunday-morning route hint**
+
+If planned trip is Sunday 06:00–12:00 and destination is a chapel stop, add subtle "next service at HH:MM" below the trip card. Reuses the `CHAPELS` data from item 1.
+
+**3. Colophon on About page** *(rolls into the Standalone "About" page item below)*
+
+Quiet "built in gratitude, for the Humphreys community" line. No verse. One line, EN + KO.
+
+#### v1.1.x — Off-post worship transit (new)
+
+Separate surface from on-post chapel card, because off-post worship depends on Korean city buses (KTX, #1220, etc.), not USAG shuttles. Lives in the **Off-Post tab**, not the Plan tab.
+
+Shape: a small list titled "Off-post worship — community submissions" with the framing text: *"Community-submitted list of off-post worship gatherings and how to reach them by public transit. Inclusion is not an endorsement. To add or correct an entry, use the feedback link."*
+
+Seed entry — **PICC (Pyeongtaek International Community Church)**, submitted by the maintainer 2026-09-02:
+
+- **Name**: Pyeongtaek International Community Church (PICC) / 평택국제커뮤니티교회
+- **Sunday worship**: 10:30 (English)
+- **Address**: 14-8, Songhwa-ri, Paengseong-eup, Pyeongtaek-si, Gyeonggi-do
+- **Transit from Camp Humphreys**: Korean city bus **#1220** (also serves Pyeongtaek Station). Walking directions available on site.
+- **Web**: [picckorea.com](https://picckorea.com)
+- **Notes**: Non-denominational (Baptist roots). English-language service. Nursery (1–3) and Sunday School (4–12) during service. Free basement parking.
+- **Source**: picckorea.com/gatherings, fetched 2026-09-02
+
+Data shape (new file `src/data/off_post_worship.json`):
+
+```json
+{
+  "picc": {
+    "name": "Pyeongtaek International Community Church",
+    "name_ko": "평택국제커뮤니티교회",
+    "abbr": "PICC",
+    "services": [ { "day": "Sun", "time": "10:30", "lang": "en", "type": "worship" } ],
+    "transit": { "from": "Camp Humphreys", "modes": [ { "kind": "city_bus", "route": "1220" } ] },
+    "address": "14-8, Songhwa-ri, Paengseong-eup, Pyeongtaek-si",
+    "web": "https://picckorea.com",
+    "source": "picckorea.com 2026-09-02"
+  }
+}
+```
+
+**Open questions before shipping**:
+
+- **Single-entry endorsement risk**: A list with one entry (PICC) reads as recommendation. Mitigations to choose between: (a) hold the surface until 2+ community submissions exist; (b) ship with explicit "seed entry; add yours via feedback" framing; (c) do not ship in-app — keep PICC in a personal side doc only.
+- **Denomination coverage**: current list is English Protestant only. Catholic mass, Korean-language services, KATUSA-relevant Korean churches all absent. Publishing an unbalanced list is worse than publishing none.
+- **Non-affiliation posture**: cross-check with [[legal_posture]] and `docs/legal-posture.md` — off-post third-party listings are a new content category and may warrant an updated disclaimer line.
+
+#### Deferred to v1.2+ (opt-in, harder to get right)
 
 - **Verse-of-the-day** — Settings toggle, off by default. One small line on the Plan tab when on, EN + KO. Uses a public feed or a small hand-curated local list. Requires new Settings surface.
 - **Chaplain directory** — new tab or Off-Post section listing chapels, chaplains, service schedules, denominations. Overlaps with the chapel service-times card data model; ship that first, then promote the same data into a directory.
