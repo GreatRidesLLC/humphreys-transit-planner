@@ -1,0 +1,21 @@
+{
+  "_note": "Community-submitted resources shown in the Off-Post tab under 'Community links'. Inclusion is not an endorsement. To add or correct an entry, submitters use the feedback link (Tally form) referenced in the footer. Categories are ordered by the array; entries within a category are ordered by the array. Every entry ships EN + KO for name + detail. Seed entry PICC was submitted by the maintainer 2026-09-02 (picckorea.com); see memory user_church_picc.md.",
+  "version": 1,
+  "categories": [
+    {
+      "id": "worship",
+      "label_en": "Worship",
+      "label_ko": "예배",
+      "entries": [
+        {
+          "id": "picc",
+          "name_en": "PICC — Pyeongtaek International Community Church",
+          "name_ko": "PICC — 평택국제커뮤니티교회",
+          "detail_en": "Sun 10:30 English worship",
+          "detail_ko": "일요일 10:30 영어 예배",
+          "url": "https://picckorea.com"
+        }
+      ]
+    }
+  ]
+}
