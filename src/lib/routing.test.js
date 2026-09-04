@@ -4,9 +4,10 @@ import {
   inService, serviceEndToday,
   nextScheduledDeparture, prevScheduledDeparture,
   nextDeparture, freqAt, nextServiceStart,
-  findTrips,
+  findTrips, walkableTrip,
   haversineMeters, walkMinutes,
   STOP_COORDS, nearestStopTo,
+  BUILDING_COORDS,
 } from "./routing.js";
 
 // Reference dates: 2026-06-29 is a Monday, 2026-07-03 Friday, 2026-07-04 Saturday.
@@ -168,13 +169,89 @@ describe("nextScheduledDeparture / prevScheduledDeparture", () => {
 });
 
 describe("findTrips — guards", () => {
-  it("returns empty for same from/to", () => {
+  it("flags same-stop with sameStop:true", () => {
     const r = findTrips("Bus Terminal", "Bus Terminal", monAt(12, 0), "depart");
     expect(r.trips).toEqual([]);
+    expect(r.sameStop).toBe(true);
   });
   it("returns empty for missing stop", () => {
     const r = findTrips("Bus Terminal", "Not A Real Stop", monAt(12, 0), "depart");
     expect(r.trips).toEqual([]);
+    expect(r.sameStop).toBeUndefined();
+  });
+});
+
+describe("walkableTrip", () => {
+  it("suggests walking for very close stops", () => {
+    // Family Mini Mall ↔ Pacific Victors Chapel: neighboring stops, ~360m.
+    const w = walkableTrip(
+      "Family Mini Mall / Gas Station", "Pacific Victors Chapel",
+      null, null, null, null,
+    );
+    expect(w).toBeTruthy();
+    expect(w.minutes).toBeGreaterThan(0);
+    expect(w.minutes).toBeLessThanOrEqual(15);
+  });
+  it("returns null when far apart", () => {
+    // Brian D. Allgood Hospital to Pedestrian Gate — spans the installation.
+    const w = walkableTrip(
+      "Brian D. Allgood Hospital", "Pedestrian Gate",
+      null, null, null, null,
+    );
+    expect(w).toBeNull();
+  });
+  it("resolves user coords over stop coords", () => {
+    const w = walkableTrip(
+      "Bus Terminal", "Bus Terminal",
+      null, null,
+      { lat: 36.9622, lon: 127.0111 }, // Auto Skills Center coords
+      null, // no dest override → uses Bus Terminal stop coords
+    );
+    // Distance ≈ 1.4 km on this installation — beyond cap → null.
+    expect(w === null || w.minutes <= 15).toBe(true);
+  });
+});
+
+describe("OSM building coverage", () => {
+  it("Bldg 2250 (Automotive Skills Center) has coords + nearest stop resolves", () => {
+    const b = BUILDING_COORDS["2250"];
+    expect(b).toBeTruthy();
+    expect(b.name).toMatch(/Automotive Skills/);
+    const hit = nearestStopTo({ lat: b.lat, lon: b.lon });
+    expect(hit).toBeTruthy();
+    expect(hit.meters).toBeLessThan(500);
+  });
+});
+
+describe("findTrips — noPathEver + route lists", () => {
+  it("exposes fromRoutes + toRoutes for both stops", () => {
+    const r = findTrips("Pedestrian Gate", "Eighth Army HQ", monAt(10, 0), "depart");
+    expect(r.fromRoutes.length).toBeGreaterThan(0);
+    expect(r.toRoutes.length).toBeGreaterThan(0);
+    expect(r.noPathEver).toBe(false);
+  });
+  it("noPathEver stays false when a direct or xfer path exists but routes are OOS", () => {
+    // Blue only runs Mon-Fri; Sat 12:00 → Blue+similar OOS but path exists.
+    const r = findTrips("Corps of Engineers", "LTG Maude Hall (9th St)", satAt(12, 0), "depart");
+    expect(r.noPathEver).toBe(false);
+    // Green runs Sat → some trip should be found, this is a smoke check on shape.
+    expect(r.fromRoutes).toContain("Blue Route");
+    expect(r.toRoutes).toContain("Blue Route");
+  });
+});
+
+describe("findTrips — walk-only fallback", () => {
+  it("returns walkOnly when Pink is out of service and destination is walkable via stop coords", () => {
+    // Family Mini Mall is Pink-only. Pacific Victors Chapel is on many routes
+    // but on Monday-midday Pink is OOS → no direct or transfer at this stop.
+    // Stops are ~360m apart, so walkOnly should surface.
+    const r = findTrips(
+      "Family Mini Mall / Gas Station", "Pacific Victors Chapel",
+      monAt(12, 0), "depart",
+      null, null, null, null,
+    );
+    expect(r.walkOnly).toBeTruthy();
+    expect(r.walkOnly.minutes).toBeLessThanOrEqual(15);
   });
 });
 

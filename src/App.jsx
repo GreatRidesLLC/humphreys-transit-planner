@@ -11,9 +11,10 @@ import {
   freqAt,
   nextServiceStart,
   findTrips,
+  BUILDING_COORDS,
 } from "./lib/routing.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
-import { ArrowDownUp, ChevronDown, ClockAlert, FileText, History, Languages, Monitor, Moon, Star, Sun } from "lucide-react";
+import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
 import { BrandMark } from "@/components/brand-mark.jsx";
 import { DailyEncouragement } from "@/components/daily-encouragement.jsx";
@@ -134,6 +135,18 @@ const STRINGS = {
     noTrips: "No Trips Available",
     noTripsOOS: names => ["Possible routes are outside service hours at this time (", names, "). Try a different time."],
     noTripsNoPath: "No shared or 1-transfer path exists. Try selecting the Bus Terminal as a hub, or a nearby major stop.",
+    noPathOriginRoutes: names => ["Your start is served by ", names, "."],
+    noPathDestRoutes: names => ["Your destination is served by ", names, "."],
+    noPathNoShared: "No stop connects them within 1 transfer. Consider walking or a taxi.",
+    noPathOriginEmpty: "No shuttle route serves your start stop.",
+    noPathDestEmpty: "No shuttle route serves your destination stop.",
+    sameStopTitle: "You're already there",
+    sameStopBody: "Origin and destination are the same stop. Pick a different destination.",
+    sameStopInline: "Origin and destination are the same stop.",
+    walkFasterTitle: "Walking is faster",
+    walkFasterBody: (min, m) => `About ${min} min on foot (~${m} m). Faster than waiting for a bus.`,
+    walkInsteadTitle: "Try walking",
+    walkInsteadBody: (min, m) => `No direct shuttle serves this pair, but it's about ${min} min on foot (~${m} m).`,
     noTripsOvernightDirect: names => ["Bus service (", names, ") ends before this trip can finish. Service resumes the next service day — consider a taxi, Kakao T, or walking."],
     noTripsOvernightXfer: names => ["The transfer bus (", names, ") would have stopped running before you could board it. The shuttle network can't get you there in time — consider a taxi, Kakao T, or walking."],
     optionsFound: n => `${n} option${n!==1?"s":""} found`,
@@ -252,6 +265,18 @@ const STRINGS = {
     noTrips: "이용 가능한 노선 없음",
     noTripsOOS: names => ["현재 시간에 운행하지 않는 노선이 있습니다 (", names, "). 다른 시간을 시도해 보세요."],
     noTripsNoPath: "공유 정류장 또는 1회 환승 경로가 없습니다. 버스 터미널이나 가까운 주요 정류장을 시도해 보세요.",
+    noPathOriginRoutes: names => ["출발지 노선: ", names, "."],
+    noPathDestRoutes: names => ["도착지 노선: ", names, "."],
+    noPathNoShared: "1회 환승으로 연결되는 정류장이 없습니다. 도보 또는 택시를 이용하세요.",
+    noPathOriginEmpty: "출발 정류장을 지나는 셔틀 노선이 없습니다.",
+    noPathDestEmpty: "도착 정류장을 지나는 셔틀 노선이 없습니다.",
+    sameStopTitle: "이미 도착지에 있습니다",
+    sameStopBody: "출발지와 도착지가 같은 정류장입니다. 다른 도착지를 선택하세요.",
+    sameStopInline: "출발지와 도착지가 같은 정류장입니다.",
+    walkFasterTitle: "도보가 더 빠릅니다",
+    walkFasterBody: (min, m) => `도보 약 ${min}분 (~${m}m). 버스를 기다리는 것보다 빠릅니다.`,
+    walkInsteadTitle: "도보 이동 권장",
+    walkInsteadBody: (min, m) => `이 구간에는 직행 셔틀이 없지만, 도보로 약 ${min}분 (~${m}m) 입니다.`,
     noTripsOvernightDirect: names => ["이 시간에 출발하면 ", names, " 노선의 운행이 종료되어 목적지까지 도착할 수 없습니다. 다음 운행일까지 기다리거나 택시, 카카오T, 도보를 이용하세요."],
     noTripsOvernightXfer: names => ["환승 버스(", names, ")가 탑승 전에 운행을 종료합니다. 셔틀로는 시간 내 도착이 불가능하니 택시, 카카오T, 도보를 권장합니다."],
     optionsFound: n => `${n}개 옵션`,
@@ -418,6 +443,26 @@ function useLocalStorage(key, initial) {
   return [v, setV];
 }
 
+// OSM buildings not already curated in BUILDINGS: pick the nearest bus stop
+// from coords so search covers labeled destinations that weren't hand-mapped
+// (e.g. Bldg 2250 Automotive Skills Center). Beyond ~2 km from any stop we
+// skip — those sit outside the meaningful shuttle footprint.
+const OSM_NEAREST_CAP_M = 2000;
+const OSM_BUILDING_SEARCH = Object.entries(BUILDING_COORDS)
+  .filter(([num, b]) => b && b.name && b.lat != null && !BUILDINGS[num])
+  .map(([num, b]) => {
+    const hit = nearestStopTo({ lat: b.lat, lon: b.lon });
+    if (!hit || hit.meters > OSM_NEAREST_CAP_M) return null;
+    return {
+      label: `Bldg ${num} – ${b.name}`,
+      stop: hit.stop,
+      sub: `Nearest stop: ${hit.stop} (~${Math.round(hit.meters)} m)`,
+      isBuilding: true,
+      bldg: num,
+    };
+  })
+  .filter(Boolean);
+
 const SEARCH_INDEX = [
   ...ALL_STOPS.map(s => ({ label:s, stop:s, sub:"Bus stop" })),
   ...Object.entries(STOP_ALIASES).flatMap(([canonical, aliases]) =>
@@ -426,6 +471,7 @@ const SEARCH_INDEX = [
   ...Object.entries(BUILDINGS).map(([num,b]) => ({
     label:`Bldg ${num} – ${b.name}`, stop:b.stop, sub:`Nearest stop: ${b.stop}`, isBuilding:true, bldg:num
   })),
+  ...OSM_BUILDING_SEARCH,
 ];
 
 // ─── Schedule presentation helpers ────────────────────────────────────────────
@@ -951,6 +997,21 @@ function OtherTrips({ trips }) {
         })}
       </Card>
     </div>
+  );
+}
+
+// ─── Advisory cards (walk / same-stop) ────────────────────────────────────────
+function AdvisoryCard({ icon: Icon, title, body }) {
+  return (
+    <Card className="border bg-card shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]">
+      <CardContent className="items-center gap-0 text-center">
+        <div className="flex size-10 items-center justify-center rounded-full bg-muted">
+          <Icon aria-hidden="true" className="size-5 text-muted-foreground"/>
+        </div>
+        <div className="pt-3 text-[17px] leading-[21px] font-semibold text-foreground">{title}</div>
+        <div className="pt-2 text-[13px] leading-[1.6] text-muted-foreground">{body}</div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1654,7 +1715,13 @@ export default function App() {
                 )}
               </div>
 
-              <Button className={cn(CTA_BTN,"mt-1.5")} disabled={!fStop||!tStop} onClick={search}>
+              {fStop && tStop && fStop === tStop && (
+                <div className="rounded-md border border-warn-border bg-warn-bg px-3 py-2 text-[12px] leading-4 text-warn-text" role="status">
+                  {t.sameStopInline}
+                </div>
+              )}
+              <Button className={cn(CTA_BTN,"mt-1.5")}
+                disabled={!fStop||!tStop||fStop===tStop} onClick={search}>
                 {t.findRoutes}
               </Button>
             </CardContent>
@@ -1675,7 +1742,7 @@ export default function App() {
 
           {showForm && (
             <div className={cn(NOTE_CLS,"mt-3.5")}>
-              <span className="font-semibold text-foreground">{t.bldgsMappedTitle(Object.keys(BUILDINGS).length)}</span>{t.bldgsMappedDesc}
+              <span className="font-semibold text-foreground">{t.bldgsMappedTitle(Object.keys(BUILDINGS).length + OSM_BUILDING_SEARCH.length)}</span>{t.bldgsMappedDesc}
             </div>
           )}
 
@@ -1697,7 +1764,14 @@ export default function App() {
                 )}
               </div>
 
-              {!results.trips.length ? (() => {
+              {results.sameStop ? (
+                <AdvisoryCard icon={MapPin} title={t.sameStopTitle} body={t.sameStopBody}/>
+              ) : !results.trips.length ? (() => {
+                if (results.walkOnly) {
+                  const { minutes, meters } = results.walkOnly;
+                  return <AdvisoryCard icon={Footprints} title={t.walkInsteadTitle}
+                    body={t.walkInsteadBody(minutes, meters)}/>;
+                }
                 const overnight = results.overnight || [];
                 const overnightDirect = overnight.filter(o => o.type === "direct");
                 const overnightXfer = overnight.filter(o => o.type === "xfer");
@@ -1708,6 +1782,24 @@ export default function App() {
                 } else if (overnightXfer.length) {
                   ids = idsFromNames(overnightXfer[0].routes);
                   body = t.noTripsOvernightXfer(<RouteNameList ids={ids} full sep=" → "/>);
+                } else if (results.noPathEver) {
+                  const fromIds = idsFromNames(results.fromRoutes || []);
+                  const toIds = idsFromNames(results.toRoutes || []);
+                  const parts = [];
+                  if (!fromIds.length) {
+                    parts.push(t.noPathOriginEmpty);
+                  } else {
+                    parts.push(...t.noPathOriginRoutes(<RouteNameList ids={fromIds} full/>));
+                  }
+                  parts.push(<br key="br1"/>);
+                  if (!toIds.length) {
+                    parts.push(t.noPathDestEmpty);
+                  } else {
+                    parts.push(...t.noPathDestRoutes(<RouteNameList ids={toIds} full/>));
+                  }
+                  parts.push(<br key="br2"/>);
+                  parts.push(t.noPathNoShared);
+                  body = parts;
                 } else if (results.filtered.length > 0) {
                   ids = idsFromNames(results.filtered);
                   body = t.noTripsOOS(<RouteNameList ids={ids} full/>);
@@ -1723,6 +1815,10 @@ export default function App() {
                   onTryTomorrow={tryTomorrow} onChangeTime={changeTime}/>;
               })() : (
                 <>
+                  {results.walkOnly && (
+                    <AdvisoryCard icon={Footprints} title={t.walkFasterTitle}
+                      body={t.walkFasterBody(results.walkOnly.minutes, results.walkOnly.meters)}/>
+                  )}
                   <FastestTrip trip={results.trips[0]}/>
                   {results.trips.length > 1 && <OtherTrips trips={results.trips.slice(1)}/>}
                   {(() => {
