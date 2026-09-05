@@ -50,6 +50,37 @@ export function nearestStopTo(coords) {
   return bestStop ? { stop: bestStop, meters: bestM } : null;
 }
 
+// Resolve best-known coords for one side of a trip: user geolocation, else
+// building centroid, else the bus stop's coord. Returns {lat, lon} or null.
+function resolveCoords(bldgNum, stopName, userCoords) {
+  if (userCoords && userCoords.lat != null) return { lat: userCoords.lat, lon: userCoords.lon };
+  if (bldgNum) {
+    const b = BUILDING_COORDS[bldgNum];
+    if (b && b.lat != null) return { lat: b.lat, lon: b.lon };
+  }
+  const s = STOP_COORDS[stopName];
+  if (s && s.lat != null) return { lat: s.lat, lon: s.lon };
+  return null;
+}
+
+// Threshold above which walking is unpleasant enough that a bus wait usually
+// beats it. 1250 m ≈ 15 min at 5 km/h. Tuned to catch short intra-neighborhood
+// trips (e.g. Auto Skills → Maude Hall ≈ 795 m ≈ 10 min) without steering
+// people onto a 20-min hike when a 5-min wait would do.
+const WALK_ONLY_CAP_MIN = 15;
+
+// Suggest walking when origin & destination are close enough that no bus
+// meaningfully helps. Returns { meters, minutes } or null.
+export function walkableTrip(from, to, fBldg, tBldg, fCoords, tCoords) {
+  const oc = resolveCoords(fBldg, from, fCoords);
+  const dc = resolveCoords(tBldg, to, tCoords);
+  if (!oc || !dc) return null;
+  const meters = haversineMeters(oc.lat, oc.lon, dc.lat, dc.lon);
+  const minutes = Math.max(1, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
+  if (minutes > WALK_ONLY_CAP_MIN) return null;
+  return { meters: Math.round(meters), minutes };
+}
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 // `schedule` (optional) is the source of truth for routing logic when present.
 // Each window is `{ dow:[0..6], from:"HH:MM", to:"HH:MM", freq? }` where `to`
@@ -409,11 +440,23 @@ export function nextServiceStart(r, now) {
 // When either is present the walk leg uses haversine instead of the 3-min
 // mock. Floor stays at 3 min for the "find the stop, board the bus" buffer.
 export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoords) {
-  if (!from||!to||from===to) return { trips:[], filtered:[], overnight:[] };
+  if (!from || !to) return { trips:[], filtered:[], overnight:[] };
+  if (from === to) return { trips:[], sameStop:true, filtered:[], overnight:[] };
+  const walkOnly = walkableTrip(from, to, fBldg, tBldg, fCoords, tCoords);
   const fr=STOP_ROUTES[from]||[], tr=STOP_ROUTES[to]||[];
   const candidates=[];
   const filtered=[];
   const overnight=[];
+
+  // Would a direct or 1-transfer path exist if service hours were ignored?
+  // Distinguishes "no bus running now" (fixable by picking a different time)
+  // from "the network can't connect these stops at all" (a different time
+  // will never help).
+  const hasDirectAny = fr.some(r => tr.includes(r));
+  const hasXferAny = !hasDirectAny && fr.some(r1 =>
+    tr.some(r2 => r1 !== r2 &&
+      ROUTES[r1].stops.some(s => ROUTES[r2].stops.includes(s) && s !== from && s !== to)));
+  const noPathEver = !hasDirectAny && !hasXferAny;
 
   const originWalk = walkMinutes(fBldg, from, fCoords);
   const destWalk = walkMinutes(tBldg, to, tCoords);
@@ -543,9 +586,20 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
     trips.push(trip);
   }
 
-  return {
-    trips: trips.sort((a,b)=>a.total-b.total).slice(0,3),
+  const sorted = trips.sort((a,b)=>a.total-b.total).slice(0,3);
+  const result = {
+    trips: sorted,
     filtered: [...new Set(filtered)],
     overnight,
+    noPathEver,
+    fromRoutes: fr.map(r => ROUTES[r].name),
+    toRoutes: tr.map(r => ROUTES[r].name),
   };
+  // Attach walk-only hint when either no bus works or the fastest bus trip
+  // takes longer than just walking. Latter catches cases where a route exists
+  // but the wait + ride wins nothing over foot.
+  if (walkOnly && (!sorted.length || sorted[0].total > walkOnly.minutes)) {
+    result.walkOnly = walkOnly;
+  }
+  return result;
 }

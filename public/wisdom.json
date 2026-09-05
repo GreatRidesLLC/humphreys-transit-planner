@@ -1,0 +1,34 @@
+{
+  "_note": "Universal-wisdom lines shown by the Daily Encouragement card on the Plan tab. Written in original words; scripture attribution is intentionally omitted so the surface reads as encouragement, not doctrine, and does not compromise the app's non-affiliation posture. Bucketed by ISO week (Monday-anchored). To update: edit this file and commit; the component is content-agnostic. See Roadmap.md Faith touch v1.1 item 0 and memory user_faith.md for the guardrails. KO strings are first-draft pending native reviewer.",
+  "version": 1,
+  "weeks": {
+    "2026-W36": [
+      { "en": "A soft answer turns away anger.", "ko": "부드러운 대답은 분노를 가라앉힌다." },
+      { "en": "The one who waits well travels far.", "ko": "잘 기다리는 사람이 멀리 간다." },
+      { "en": "Slow to speak, quick to listen — a rare strength.", "ko": "말은 늦게, 듣기는 빠르게 — 드문 힘이다." },
+      { "en": "Small kindness in tight spaces costs nothing.", "ko": "좁은 공간에서의 작은 친절은 아무것도 들지 않는다." },
+      { "en": "Peace begins with the next word you choose.", "ko": "평화는 당신이 고를 다음 말 한마디에서 시작된다." }
+    ],
+    "2026-W37": [
+      { "en": "Small steps, kept up, cross mountains.", "ko": "작은 걸음도 꾸준하면 산을 넘는다." },
+      { "en": "What is done today is done — tomorrow has enough of its own.", "ko": "오늘 한 일은 오늘의 것 — 내일에는 내일의 몫이 있다." },
+      { "en": "The steady hand outlasts the loud one.", "ko": "흔들리지 않는 손이 시끄러운 손보다 오래 간다." },
+      { "en": "A task begun is already half won.", "ko": "시작한 일은 이미 절반은 이룬 것이다." },
+      { "en": "Faithful in little, trusted with much.", "ko": "작은 일에 성실한 사람이 큰 일도 맡게 된다." }
+    ],
+    "2026-W38": [
+      { "en": "A true word, plainly said, is worth a hundred clever ones.", "ko": "진심 어린 한 마디가 백 마디 재치보다 낫다." },
+      { "en": "Humility opens doors pride cannot see.", "ko": "겸손은 교만이 보지 못하는 문을 연다." },
+      { "en": "Own the small mistake before it grows.", "ko": "작은 실수는 자라기 전에 인정하라." },
+      { "en": "The wise ear is louder than the wise mouth.", "ko": "지혜로운 귀는 지혜로운 입보다 크다." },
+      { "en": "Better a quiet integrity than a loud reputation.", "ko": "요란한 명성보다 조용한 진실이 낫다." }
+    ],
+    "2026-W39": [
+      { "en": "The full life is measured in what is given, not held.", "ko": "충만한 삶은 쥔 것이 아니라 나눈 것으로 잰다." },
+      { "en": "Enough is a gift the discontent will never open.", "ko": "“충분함”은 만족을 모르는 이가 결코 열지 못하는 선물이다." },
+      { "en": "A cheerful giver makes even a small gift shine.", "ko": "기쁜 마음으로 주는 사람은 작은 선물도 빛나게 한다." },
+      { "en": "Gratitude turns what you have into enough.", "ko": "감사는 가진 것을 넉넉함으로 바꾼다." },
+      { "en": "Kindness returns by paths you cannot see.", "ko": "친절은 보이지 않는 길을 통해 돌아온다." }
+    ]
+  }
+}
