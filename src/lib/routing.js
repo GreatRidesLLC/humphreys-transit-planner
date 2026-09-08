@@ -473,10 +473,20 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
   }
   for (const r1 of fr) for (const r2 of tr) {
     if (r1===r2) continue;
-    if (!inService(ROUTES[r1], checkTime) || !inService(ROUTES[r2], checkTime)) continue;
     const R1=ROUTES[r1], R2=ROUTES[r2];
     const shared=R1.stops.filter(s=>R2.stops.includes(s)&&s!==from&&s!==to);
     if (!shared.length) continue;
+    const in1 = inService(R1, checkTime);
+    const in2 = inService(R2, checkTime);
+    // A transfer via a route that is out of service is still a real path —
+    // record the OOS partner(s) so the empty-state can name the blocker
+    // (e.g. Family Mini Mall → Pedestrian Gate on a weekday: Pink is the
+    // only origin route and it only runs Fri–Sat).
+    if (!in1 || !in2) {
+      if (!in1) filtered.push(R1.name);
+      if (!in2) filtered.push(R2.name);
+      continue;
+    }
     let best=null;
     for (const x of shared) {
       const n1=Math.abs(R1.stops.indexOf(x)-R1.stops.indexOf(from));

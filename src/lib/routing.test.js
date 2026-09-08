@@ -303,6 +303,30 @@ describe("findTrips — service-hours filter", () => {
       expect.arrayContaining(["Blue Route", "Black Route", "Orange Route"])
     );
   });
+
+  it("names Pink as filtered when it is the only origin-connecting route and is out of service", () => {
+    // Family Mini Mall / Gas Station is on PINK only; Pedestrian Gate is on
+    // BLUE/BLACK/GREEN/ORANGE/BROWN. On a weekday PINK does not run, so the
+    // only paths (Pink→BLUE/GREEN/ORANGE via a shared stop) all fail on the
+    // Pink leg. Empty-state must surface Pink as the OOS blocker.
+    const r = findTrips(
+      "Family Mini Mall / Gas Station", "Pedestrian Gate",
+      monAt(14, 0), "depart"
+    );
+    expect(r.trips).toEqual([]);
+    expect(r.filtered).toContain("Pink Route");
+    expect(r.noPathEver).toBe(false);
+  });
+
+  it("finds the Pink→BLUE transfer when Pink is in service (Fri evening)", () => {
+    const r = findTrips(
+      "Family Mini Mall / Gas Station", "Pedestrian Gate",
+      friAt(18, 0), "depart"
+    );
+    expect(r.trips.length).toBeGreaterThan(0);
+    const buses = r.trips[0].legs.filter(l => l.k === "bus").map(l => l.rid);
+    expect(buses[0]).toBe("PINK");
+  });
 });
 
 describe("findTrips — overnight detection", () => {
