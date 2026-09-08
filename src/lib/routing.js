@@ -548,12 +548,13 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
 
   searchPair(from, originWalk, to, destWalk);
 
-  // Fallback: the picked pair produced nothing (Family Mini Mall on a weekday
-  // — Pink OOS, no directs, no in-service transfers). Try walking to nearby
-  // stops served by other routes and search again. Only kicks in when the
-  // primary pair yields zero candidates, so trips that already work are
-  // unaffected.
-  if (!candidates.length) {
+  // Whenever no single route serves both picked stops, also consider walking
+  // to a nearby stop that DOES have a direct route (or a shorter transfer).
+  // A 5-min walk to a stop on the same route as your destination is almost
+  // always better UX than boarding at a stop with only-transfer paths. The
+  // sort at the end (by total time) keeps the picked-pair transfer if it
+  // still wins overall.
+  if (!hasDirectAny) {
     const originStops = candidateStops(from, fBldg, fCoords);
     const destStops   = candidateStops(to,   tBldg, tCoords);
     for (const o of originStops) for (const d of destStops) {
