@@ -304,20 +304,6 @@ describe("findTrips — service-hours filter", () => {
     );
   });
 
-  it("names Pink as filtered when it is the only origin-connecting route and is out of service", () => {
-    // Family Mini Mall / Gas Station is on PINK only; Pedestrian Gate is on
-    // BLUE/BLACK/GREEN/ORANGE/BROWN. On a weekday PINK does not run, so the
-    // only paths (Pink→BLUE/GREEN/ORANGE via a shared stop) all fail on the
-    // Pink leg. Empty-state must surface Pink as the OOS blocker.
-    const r = findTrips(
-      "Family Mini Mall / Gas Station", "Pedestrian Gate",
-      monAt(14, 0), "depart"
-    );
-    expect(r.trips).toEqual([]);
-    expect(r.filtered).toContain("Pink Route");
-    expect(r.noPathEver).toBe(false);
-  });
-
   it("finds the Pink→BLUE transfer when Pink is in service (Fri evening)", () => {
     const r = findTrips(
       "Family Mini Mall / Gas Station", "Pedestrian Gate",
@@ -326,6 +312,37 @@ describe("findTrips — service-hours filter", () => {
     expect(r.trips.length).toBeGreaterThan(0);
     const buses = r.trips[0].legs.filter(l => l.k === "bus").map(l => l.rid);
     expect(buses[0]).toBe("PINK");
+  });
+});
+
+describe("findTrips — nearby-stop walk fallback", () => {
+  it("walks to a nearby stop on a different route when the picked stop's only route is out of service", () => {
+    // Family Mini Mall / Gas Station is Pink-only; Pink runs Fri–Sat only.
+    // Pacific Victors Chapel (5 min walk) and LTG Maude Hall (7 min walk) are
+    // both on multiple routes to Pedestrian Gate. On a weekday the router
+    // should suggest walking to one of them instead of returning zero trips.
+    const r = findTrips(
+      "Family Mini Mall / Gas Station", "Pedestrian Gate",
+      monAt(14, 0), "depart"
+    );
+    expect(r.trips.length).toBeGreaterThan(0);
+    const firstLeg = r.trips[0].legs[0];
+    expect(firstLeg.k).toBe("walk");
+    // Walk leg's destination is a nearby stop, not the picked one.
+    expect(firstLeg.dest).not.toBe("Family Mini Mall / Gas Station");
+    // And that stop must be within the 10-minute walk cap.
+    expect(firstLeg.dur).toBeLessThanOrEqual(10);
+  });
+
+  it("does not activate the fallback when the picked pair already has trips", () => {
+    // Pedestrian Gate → Eighth Army HQ Mon 10:00: multiple direct routes
+    // running. Fallback must not fire and inflate the results with alt-stop
+    // trips that would beat the direct on total time by luck.
+    const r = findTrips("Pedestrian Gate", "Eighth Army HQ", monAt(10, 0), "depart");
+    expect(r.trips.length).toBeGreaterThan(0);
+    for (const trip of r.trips) {
+      expect(trip.legs[0].dest).toBe("Pedestrian Gate");
+    }
   });
 });
 
