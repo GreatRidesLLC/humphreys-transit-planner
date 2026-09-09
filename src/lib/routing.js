@@ -69,6 +69,32 @@ function resolveCoords(bldgNum, stopName, userCoords) {
 // people onto a 20-min hike when a 5-min wait would do.
 const WALK_ONLY_CAP_MIN = 15;
 
+// How far off the picked stop the router will look for an alternative board /
+// alight stop when the picked one has no reachable trip. Family Mini Mall is
+// Pink-only (Fri–Sat) but LTG Maude Hall is 7 min on foot and sits on 4
+// routes to Pedestrian Gate; the fallback should walk you there rather than
+// declaring the trip impossible.
+const NEARBY_STOP_WALK_CAP_MIN = 10;
+
+// Board/alight candidates: the user's picked stop, plus any stop within
+// NEARBY_STOP_WALK_CAP_MIN on foot from the same starting coord. Requires
+// resolvable coords (user geo, building centroid, or the picked stop's own
+// coord) — with none of those we can only return the picked stop, since a
+// walk to anywhere else would be the 3-min mock.
+function candidateStops(primary, bldg, coords) {
+  const primaryWalk = walkMinutes(bldg, primary, coords);
+  const oc = resolveCoords(bldg, primary, coords);
+  const out = [{ stop: primary, walkMin: primaryWalk }];
+  if (!oc) return out;
+  for (const [name, s] of Object.entries(STOP_COORDS)) {
+    if (name === primary || s.lat == null) continue;
+    const meters = haversineMeters(oc.lat, oc.lon, s.lat, s.lon);
+    const min = Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
+    if (min <= NEARBY_STOP_WALK_CAP_MIN) out.push({ stop: name, walkMin: min });
+  }
+  return out.sort((a, b) => a.walkMin - b.walkMin);
+}
+
 // Suggest walking when origin & destination are close enough that no bus
 // meaningfully helps. Returns { meters, minutes } or null.
 export function walkableTrip(from, to, fBldg, tBldg, fCoords, tCoords) {
@@ -463,37 +489,79 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
 
   const checkTime = mode === "depart" ? refTime : subMin(refTime, 60);
 
-  for (const rid of fr.filter(r=>tr.includes(r))) {
-    const R=ROUTES[rid];
-    if (!inService(R, checkTime)) { filtered.push(R.name); continue; }
-    const fi=R.stops.indexOf(from), ti=R.stops.indexOf(to);
-    const n=Math.abs(ti-fi), t=n*2;
-    candidates.push({ id:`d-${rid}`, type:"direct",
-      legs:[{k:"walk",dur:originWalk,dest:from},{k:"bus",rid,from,to,n,t},{k:"walk",dur:destWalk,dest:null}] });
-  }
-  for (const r1 of fr) for (const r2 of tr) {
-    if (r1===r2) continue;
-    if (!inService(ROUTES[r1], checkTime) || !inService(ROUTES[r2], checkTime)) continue;
-    const R1=ROUTES[r1], R2=ROUTES[r2];
-    const shared=R1.stops.filter(s=>R2.stops.includes(s)&&s!==from&&s!==to);
-    if (!shared.length) continue;
-    let best=null;
-    for (const x of shared) {
-      const n1=Math.abs(R1.stops.indexOf(x)-R1.stops.indexOf(from));
-      const n2=Math.abs(R2.stops.indexOf(to)-R2.stops.indexOf(x));
-      const t1=n1*2, t2=n2*2;
-      const h=t1+t2+Math.round(R1.freq/2)+Math.round(R2.freq/2)+8;
-      if (!best || h<best.h) best={x,n1,n2,t1,t2,h};
+  // Search direct + 1-transfer trips between a specific (origin, destination)
+  // stop pair. Track filtered OOS routes only when both stops are the user's
+  // picked stops — otherwise a nearby-stop expansion would flood the empty
+  // state with unrelated route names.
+  const searchPair = (oStop, oWalk, dStop, dWalk) => {
+    const fr = STOP_ROUTES[oStop] || [];
+    const tr = STOP_ROUTES[dStop] || [];
+    const isPrimaryPair = oStop === from && dStop === to;
+    for (const rid of fr.filter(r => tr.includes(r))) {
+      const R = ROUTES[rid];
+      if (!inService(R, checkTime)) {
+        if (isPrimaryPair) filtered.push(R.name);
+        continue;
+      }
+      const fi = R.stops.indexOf(oStop), ti = R.stops.indexOf(dStop);
+      const n = Math.abs(ti - fi), t = n * 2;
+      candidates.push({ id: `d-${rid}-${oStop}-${dStop}`, type: "direct",
+        legs: [
+          { k: "walk", dur: oWalk, dest: oStop },
+          { k: "bus", rid, from: oStop, to: dStop, n, t },
+          { k: "walk", dur: dWalk, dest: null },
+        ] });
     }
-    const {x,n1,n2,t1,t2}=best;
-    candidates.push({ id:`x-${r1}-${r2}`, type:"xfer",
-      legs:[
-        {k:"walk",dur:originWalk,dest:from},
-        {k:"bus",rid:r1,from,to:x,n:n1,t:t1},
-        {k:"xfer",dur:2,at:x},
-        {k:"bus",rid:r2,from:x,to,n:n2,t:t2},
-        {k:"walk",dur:destWalk,dest:null}
-      ] });
+    for (const r1 of fr) for (const r2 of tr) {
+      if (r1 === r2) continue;
+      const R1 = ROUTES[r1], R2 = ROUTES[r2];
+      const shared = R1.stops.filter(s => R2.stops.includes(s) && s !== oStop && s !== dStop);
+      if (!shared.length) continue;
+      const in1 = inService(R1, checkTime);
+      const in2 = inService(R2, checkTime);
+      if (!in1 || !in2) {
+        if (isPrimaryPair) {
+          if (!in1) filtered.push(R1.name);
+          if (!in2) filtered.push(R2.name);
+        }
+        continue;
+      }
+      let best = null;
+      for (const x of shared) {
+        const n1 = Math.abs(R1.stops.indexOf(x) - R1.stops.indexOf(oStop));
+        const n2 = Math.abs(R2.stops.indexOf(dStop) - R2.stops.indexOf(x));
+        const t1 = n1 * 2, t2 = n2 * 2;
+        const h = t1 + t2 + Math.round(R1.freq/2) + Math.round(R2.freq/2) + 8;
+        if (!best || h < best.h) best = { x, n1, n2, t1, t2, h };
+      }
+      const { x, n1, n2, t1, t2 } = best;
+      candidates.push({ id: `x-${r1}-${r2}-${oStop}-${dStop}`, type: "xfer",
+        legs: [
+          { k: "walk", dur: oWalk, dest: oStop },
+          { k: "bus", rid: r1, from: oStop, to: x, n: n1, t: t1 },
+          { k: "xfer", dur: 2, at: x },
+          { k: "bus", rid: r2, from: x, to: dStop, n: n2, t: t2 },
+          { k: "walk", dur: dWalk, dest: null },
+        ] });
+    }
+  };
+
+  searchPair(from, originWalk, to, destWalk);
+
+  // Whenever no single route serves both picked stops, also consider walking
+  // to a nearby stop that DOES have a direct route (or a shorter transfer).
+  // A 5-min walk to a stop on the same route as your destination is almost
+  // always better UX than boarding at a stop with only-transfer paths. The
+  // sort at the end (by total time) keeps the picked-pair transfer if it
+  // still wins overall.
+  if (!hasDirectAny) {
+    const originStops = candidateStops(from, fBldg, fCoords);
+    const destStops   = candidateStops(to,   tBldg, tCoords);
+    for (const o of originStops) for (const d of destStops) {
+      if (o.stop === from && d.stop === to) continue;
+      if (o.stop === d.stop) continue;
+      searchPair(o.stop, o.walkMin, d.stop, d.walkMin);
+    }
   }
 
   const trips=[];

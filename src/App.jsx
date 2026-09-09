@@ -173,6 +173,7 @@ const STRINGS = {
     tryTomorrow: "Try tomorrow 09:00",
     changeTime: "Change time",
     endsAt: (name, hm) => [name, ` ends ${hm}`],
+    resumesAt: (name, hm) => [name, ` resumes ${hm}`],
     estTitle: "Times based on estimated schedule — not yet matched against a publicly posted PDF",
     everyMin: m => `every ${m} min`,
     waitDisclaimer: "Wait times estimate the next scheduled bus assuming each route starts its cycle at :00 from its first stop. Real PDFs may differ. Verify with Transportation Office before relying on it.",
@@ -303,6 +304,7 @@ const STRINGS = {
     tryTomorrow: "내일 09:00로 검색",
     changeTime: "시간 변경",
     endsAt: (name, hm) => [name, ` ${hm} 종료`],
+    resumesAt: (name, hm) => [name, ` ${hm} 재개`],
     estTitle: "추정 시간표 기반 — 공개 PDF와 대조되지 않음",
     everyMin: m => `${m}분 간격`,
     waitDisclaimer: "대기 시간은 각 노선이 첫 정류장에서 :00에 출발한다고 가정한 추정치입니다. 실제 시간표는 다를 수 있습니다. 운행 전 교통과에 확인하세요.",
@@ -1028,9 +1030,11 @@ function NoTrips({ body, endTimes, onTryTomorrow, onChangeTime }) {
         <div className="pt-2 text-[13px] leading-[1.6] text-muted-foreground"><Parts of={body}/></div>
         {endTimes && (
           <div className="flex flex-wrap justify-center gap-x-2 pt-2.5 text-[12.5px] leading-[18px] font-medium text-secondary-text">
-            {endTimes.map(([id,hm],i)=>(
+            {endTimes.map(({id,hm,kind},i)=>(
               <span key={id}>{i>0 && <span className="pr-2 text-muted-foreground">·</span>}
-                <Parts of={t.endsAt(<RouteName id={id}/>, hm)}/>
+                <Parts of={kind === "resume"
+                  ? t.resumesAt(<RouteName id={id}/>, hm)
+                  : t.endsAt(<RouteName id={id}/>, hm)}/>
               </span>
             ))}
           </div>
@@ -1806,10 +1810,21 @@ export default function App() {
                 } else {
                   body = [t.noTripsNoPath];
                 }
-                // Mono line of when each named route actually stops for the day.
+                // Mono line of when each named route actually stops for the day
+                // — or when it next resumes, if it does not run today at all
+                // (Pink Route on a weekday, Brown before Fri 19:00, …).
                 const ref = tMode === "now" ? now : parseHMD(tTime, tDate);
                 const ends = ids
-                  .map(id => { const e = serviceEndToday(ROUTES[id], ref); return e && [id, fmt(e)]; })
+                  .map(id => {
+                    const e = serviceEndToday(ROUTES[id], ref);
+                    if (e) return { id, hm: fmt(e), kind: "end" };
+                    const start = nextServiceStart(ROUTES[id], ref);
+                    if (!start) return null;
+                    const hm = start.toDateString() === ref.toDateString()
+                      ? fmt(start)
+                      : `${DOW_ABBR[start.getDay()]} ${fmt(start)}`;
+                    return { id, hm, kind: "resume" };
+                  })
                   .filter(Boolean);
                 return <NoTrips body={body} endTimes={ends.length ? ends : null}
                   onTryTomorrow={tryTomorrow} onChangeTime={changeTime}/>;

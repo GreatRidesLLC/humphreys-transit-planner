@@ -2,12 +2,11 @@
   "_meta": {
     "source": "OpenStreetMap via Overpass API (highway=bus_stop, operator=USAG Humphreys)",
     "polygon_osm_way": 245548245,
-    "fetched_at": "2026-05-20T03:03:59.966122+00:00",
+    "fetched_at": "2026-09-08T23:58:18.297478+00:00",
     "license": "ODbL 1.0 — © OpenStreetMap contributors",
-    "matched": 44,
-    "estimated": ["SOCKOR HQ"],
+    "matched": 52,
     "unmatched": [],
-    "total_routes_stops": 45
+    "total_routes_stops": 52
   },
   "stops": {
     "2ID Sustainment": {
@@ -70,6 +69,12 @@
       "source": "osm bus_stop 9248355468",
       "name_ko": "버스터미널"
     },
+    "CAC (Sentry Village)": {
+      "lat": 36.949,
+      "lon": 127.0272,
+      "source": "estimated at the Sentry Village north entry gate (near OSM lift_gate 36.9490, 127.0273); Gold enters Sentry Village here between Morning Calm Center and USO",
+      "name_ko": null
+    },
     "Central Issue Facility": {
       "lat": 36.9720841,
       "lon": 126.9868916,
@@ -116,6 +121,18 @@
       "lat": 36.9556,
       "lon": 127.0158,
       "source": "hand-pinned; OSM has no bus_stop node for this Pink-route trial stop; SW terminus of 15th Street way 1019688918",
+      "name_ko": null
+    },
+    "Family Housing Towers (5050s Block)": {
+      "lat": 36.956,
+      "lon": 127.0135,
+      "source": "estimated south of the 5100s Blackhawk/Apache/Chinook cluster in the Family Housing area; no OSM data for this stop or the 5050s buildings — refine when ground-truthed",
+      "name_ko": null
+    },
+    "Family Housing Towers (5100s Block)": {
+      "lat": 36.9574,
+      "lon": 127.0139,
+      "source": "estimated centroid of OSM buildings 5101/5102/5103 (Blackhawk/Apache/Chinook Towers)",
       "name_ko": null
     },
     "Family Housing Towers (Taro Ave)": {
@@ -190,6 +207,12 @@
       "source": "osm bus_stop 13837939356",
       "name_ko": null
     },
+    "Officer Housing": {
+      "lat": 36.96,
+      "lon": 127.009,
+      "source": "estimated on the road between Family Housing Towers (5100s) and Red Cloud Circle; no OSM data for the Officer Housing bus stop — refine when ground-truthed",
+      "name_ko": null
+    },
     "Pacific Victors Chapel": {
       "lat": 36.9663592,
       "lon": 127.0101238,
@@ -232,6 +255,12 @@
       "source": "osm bus_stop 13837939345",
       "name_ko": null
     },
+    "SOCKOR HQ": {
+      "lat": 36.9756,
+      "lon": 126.9872,
+      "source": "estimated 2026-08-24 by interpolating Blue-route offsets (2ID Sustainment min 33 → SOCKOR HQ min 34 → Central Issue Facility min 36 → 1/3 of the way from 2ID to CIF); OSM has no bus_stop node, office, or building named SOCKOR on-post",
+      "name_ko": null
+    },
     "Sentry Village Burger King": {
       "lat": 36.9480302,
       "lon": 127.025401,
@@ -244,17 +273,17 @@
       "source": "osm bus_stop 13837939341",
       "name_ko": null
     },
+    "Sentry Village Shoppette": {
+      "lat": 36.9484,
+      "lon": 127.0245,
+      "source": "estimated inside the Sentry Village retail cluster ~50 m N of Mini Mall (bldg 400); no OSM bus_stop node — refine when ground-truthed",
+      "name_ko": null
+    },
     "Sitman Fitness Center": {
       "lat": 36.9747695,
       "lon": 126.9948794,
       "source": "osm bus_stop 5772401671",
       "name_ko": "싯맨 피트니스 센터"
-    },
-    "SOCKOR HQ": {
-      "lat": 36.9756,
-      "lon": 126.9872,
-      "source": "estimated 2026-08-24 by interpolating Blue-route offsets (2ID Sustainment min 33 → SOCKOR HQ min 34 → Central Issue Facility min 36 → 1/3 of the way from 2ID to CIF); OSM has no bus_stop node, office, or building named SOCKOR on-post as of 2026-08-24",
-      "name_ko": null
     },
     "Spartan DFAC": {
       "lat": 36.9703399,
@@ -278,6 +307,18 @@
       "lat": 36.9610149,
       "lon": 127.0243022,
       "source": "osm bus_stop 13837939353",
+      "name_ko": null
+    },
+    "USO Sentry Village": {
+      "lat": 36.9493211,
+      "lon": 127.0251725,
+      "source": "hand-pinned to OSM building #301 (USO Sentry Village); no bus_stop node exists",
+      "name_ko": null
+    },
+    "USO Sentry Village (Opposite)": {
+      "lat": 36.9495,
+      "lon": 127.0243,
+      "source": "hand-pinned across the road from USO building #301 (~50 m NW); Gold's return-leg pair to USO Sentry Village on the outbound leg",
       "name_ko": null
     }
   }
