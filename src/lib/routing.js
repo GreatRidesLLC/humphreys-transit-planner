@@ -115,11 +115,26 @@ export function walkableTrip(from, to, fBldg, tBldg, fCoords, tCoords) {
 // `days` + `hours` are also kept on schedule-based routes as human-facing
 // display strings (rendered in the Routes tab + Now tab) — they are NOT read
 // by inService / serviceEndToday / anchoredHeuristic.
+//
+// `loop: true` flags a one-way looped route. The `stops` array does NOT repeat
+// the first stop at the end, and the bus always travels forward through the
+// array, wrapping from the last index back to zero. Ride distance between two
+// indices is `(toIdx - fromIdx + n) % n` on a loop, plain `abs` otherwise —
+// see `stopDistance` below.
 const hhmmToMin = s => parseInt(s.slice(0,2),10)*60 + parseInt(s.slice(3,5),10);
+
+// Forward stop count between two indices on a route. On a loop the bus is
+// one-way, so a negative delta wraps around; on a linear route it is just
+// unsigned distance. Multiplied by 2 min elsewhere to estimate ride time.
+export function stopDistance(R, fromIdx, toIdx) {
+  const n = R.stops.length;
+  if (R.loop) return ((toIdx - fromIdx) % n + n) % n;
+  return Math.abs(toIdx - fromIdx);
+}
 
 export const ROUTES = {
   BLUE:  { id:"BLUE",  name:"Blue Route",   color:"#4a90e2", freq:15,
-    verified:true,
+    verified:true, loop:true,
     days:"Mon–Fri", hours:"Mon–Fri 0800–1951",
     schedule:[
       { dow:[1,2,3,4,5], from:"08:00", to:"19:51" },
@@ -167,7 +182,7 @@ export const ROUTES = {
     note:"PDF-sourced (Exhibit #0022). Mon–Thu evenings only; Fri/Sat run past midnight; Sun daytime.",
     stops:["Brian D. Allgood Hospital","Bus Terminal","Collier Fitness Center","Turner Fitness Center","TMP / Driver's Licensing","Spartan DFAC","Sitman Fitness Center","Barracks (6800s & 6900s Block)","Balboni Sports Field (5th St)","Pittman DFAC"] },
   GOLD:  { id:"GOLD",  name:"Gold Route",   color:"#8f6a04", freq:20,
-    verified:true,
+    verified:true, loop:true,
     days:"Mon–Sun", hours:"Mon–Fri 0900–2045 · Sat 0900–2045 · Sun 0900–1905",
     schedule:[
       { dow:[1,2,3,4,5], from:"09:00", to:"20:45" },
@@ -504,7 +519,7 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
         continue;
       }
       const fi = R.stops.indexOf(oStop), ti = R.stops.indexOf(dStop);
-      const n = Math.abs(ti - fi), t = n * 2;
+      const n = stopDistance(R, fi, ti), t = n * 2;
       candidates.push({ id: `d-${rid}-${oStop}-${dStop}`, type: "direct",
         legs: [
           { k: "walk", dur: oWalk, dest: oStop },
@@ -528,8 +543,8 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
       }
       let best = null;
       for (const x of shared) {
-        const n1 = Math.abs(R1.stops.indexOf(x) - R1.stops.indexOf(oStop));
-        const n2 = Math.abs(R2.stops.indexOf(dStop) - R2.stops.indexOf(x));
+        const n1 = stopDistance(R1, R1.stops.indexOf(oStop), R1.stops.indexOf(x));
+        const n2 = stopDistance(R2, R2.stops.indexOf(x), R2.stops.indexOf(dStop));
         const t1 = n1 * 2, t2 = n2 * 2;
         const h = t1 + t2 + Math.round(R1.freq/2) + Math.round(R2.freq/2) + 8;
         if (!best || h < best.h) best = { x, n1, n2, t1, t2, h };

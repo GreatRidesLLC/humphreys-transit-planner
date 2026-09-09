@@ -8,6 +8,7 @@ import {
   haversineMeters, walkMinutes,
   STOP_COORDS, nearestStopTo,
   BUILDING_COORDS,
+  stopDistance,
 } from "./routing.js";
 
 // Reference dates: 2026-06-29 is a Monday, 2026-07-03 Friday, 2026-07-04 Saturday.
@@ -371,6 +372,54 @@ describe("findTrips — arrive-by mode", () => {
     expect(r.trips.length).toBeGreaterThan(0);
     expect(r.trips[0].arriveAt <= arriveBy).toBe(true);
     expect(r.trips[0].departAt < arriveBy).toBe(true);
+  });
+});
+
+describe("stopDistance — loop-aware ride distance", () => {
+  it("wraps around a one-way loop (Gold: 5050s → Bus Terminal is 1 stop, not 22)", () => {
+    const R = ROUTES.GOLD;
+    expect(R.loop).toBe(true);
+    const fi = R.stops.indexOf("Family Housing Towers (5050s Block)");
+    const ti = R.stops.indexOf("Bus Terminal");
+    expect(stopDistance(R, fi, ti)).toBe(1);
+  });
+
+  it("still returns the forward distance when it already is forward (Gold: Bus Terminal → 5050s is 22 stops)", () => {
+    const R = ROUTES.GOLD;
+    const fi = R.stops.indexOf("Bus Terminal");
+    const ti = R.stops.indexOf("Family Housing Towers (5050s Block)");
+    expect(stopDistance(R, fi, ti)).toBe(22);
+  });
+
+  it("returns forward distance for a mid-loop pair (Gold: Sentry Village Shoppette → Collier is 12 stops via wrap, not 11)", () => {
+    const R = ROUTES.GOLD;
+    const fi = R.stops.indexOf("Sentry Village Shoppette");
+    const ti = R.stops.indexOf("Collier Fitness Center");
+    expect(stopDistance(R, fi, ti)).toBe(12);
+  });
+
+  it("falls back to unsigned distance on a non-loop route", () => {
+    const R = ROUTES.PINK;
+    expect(R.loop).toBeFalsy();
+    // Pink stops (linear): PVC(0), Family Mini Mall(1), Taro(2), 15th(3), Talon(4), TMP(5)
+    expect(stopDistance(R, 5, 1)).toBe(4);
+    expect(stopDistance(R, 1, 5)).toBe(4);
+  });
+});
+
+describe("findTrips — loop route rides forward across the wrap", () => {
+  it("Gold from Family Housing Towers (5050s Block) → Bus Terminal is a 2-min ride, not 44", () => {
+    const r = findTrips(
+      "Family Housing Towers (5050s Block)", "Bus Terminal",
+      satAt(12, 0), "depart"
+    );
+    const goldDirect = r.trips.find(t =>
+      t.type === "direct" && t.legs.some(l => l.k === "bus" && l.rid === "GOLD")
+    );
+    expect(goldDirect).toBeTruthy();
+    const busLeg = goldDirect.legs.find(l => l.k === "bus" && l.rid === "GOLD");
+    expect(busLeg.n).toBe(1);
+    expect(busLeg.t).toBe(2);
   });
 });
 
