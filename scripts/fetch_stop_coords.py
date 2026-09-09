@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-APP_JSX = ROOT / "src" / "App.jsx"
+ROUTES_JS = ROOT / "src" / "lib" / "routing.js"
 BUILDINGS_JSON = ROOT / "src" / "data" / "buildings_osm.json"
 OUT = ROOT / "src" / "data" / "stop_coords.json"
 
@@ -62,11 +62,11 @@ def fetch_osm_stops() -> list[dict]:
 
 
 def parse_routes_stops() -> set[str]:
-    """Extract the union of all stop names from ROUTES in App.jsx."""
-    text = APP_JSX.read_text()
+    """Extract the union of all stop names from ROUTES in src/lib/routing.js."""
+    text = ROUTES_JS.read_text()
     m = re.search(r"const ROUTES\s*=\s*\{(.+?)^\};", text, re.S | re.M)
     if not m:
-        sys.exit("ROUTES const not found")
+        sys.exit("ROUTES const not found in " + str(ROUTES_JS))
     body = m.group(1)
     stops: set[str] = set()
     for stops_blob in re.finditer(r"stops:\[(.+?)\]", body, re.S):
@@ -107,7 +107,50 @@ EXPLICIT_OSM_NAME = {
 # Format: stop_name → {"lat": ..., "lon": ..., "via": "building #X"}
 MANUAL_FALLBACKS_BY_BUILDING_NUM = {
     "River Bend Golf Course": "5904",
-    "Family Housing Towers (15th Street)": None,  # genuinely no source; left null
+}
+
+# Hand-pinned coordinates for stops with no OSM bus_stop node and no clean
+# building fallback. Each entry carries a `source` line explaining the pin —
+# these are approximate (usually within ~50-100 m) and should be refined when
+# ground-truthed. Field intel: on-post shelters carry only an "S-####" ref
+# with no route or stop name, so OSM mappers routinely miss these.
+MANUAL_COORDS = {
+    "Family Housing Towers (15th Street)": {
+        "lat": 36.9556, "lon": 127.0158,
+        "source": "hand-pinned; OSM has no bus_stop node for this Pink-route trial stop; SW terminus of 15th Street way 1019688918",
+    },
+    "SOCKOR HQ": {
+        "lat": 36.9756, "lon": 126.9872,
+        "source": "estimated 2026-08-24 by interpolating Blue-route offsets (2ID Sustainment min 33 → SOCKOR HQ min 34 → Central Issue Facility min 36 → 1/3 of the way from 2ID to CIF); OSM has no bus_stop node, office, or building named SOCKOR on-post",
+    },
+    "USO Sentry Village": {
+        "lat": 36.9493211, "lon": 127.0251725,
+        "source": "hand-pinned to OSM building #301 (USO Sentry Village); no bus_stop node exists",
+    },
+    "USO Sentry Village (Opposite)": {
+        "lat": 36.9495, "lon": 127.0243,
+        "source": "hand-pinned across the road from USO building #301 (~50 m NW); Gold's return-leg pair to USO Sentry Village on the outbound leg",
+    },
+    "Sentry Village Shoppette": {
+        "lat": 36.9484, "lon": 127.0245,
+        "source": "estimated inside the Sentry Village retail cluster ~50 m N of Mini Mall (bldg 400); no OSM bus_stop node — refine when ground-truthed",
+    },
+    "CAC (Sentry Village)": {
+        "lat": 36.9490, "lon": 127.0272,
+        "source": "estimated at the Sentry Village north entry gate (near OSM lift_gate 36.9490, 127.0273); Gold enters Sentry Village here between Morning Calm Center and USO",
+    },
+    "Family Housing Towers (5100s Block)": {
+        "lat": 36.9574, "lon": 127.0139,
+        "source": "estimated centroid of OSM buildings 5101/5102/5103 (Blackhawk/Apache/Chinook Towers)",
+    },
+    "Family Housing Towers (5050s Block)": {
+        "lat": 36.9560, "lon": 127.0135,
+        "source": "estimated south of the 5100s Blackhawk/Apache/Chinook cluster in the Family Housing area; no OSM data for this stop or the 5050s buildings — refine when ground-truthed",
+    },
+    "Officer Housing": {
+        "lat": 36.9600, "lon": 127.0090,
+        "source": "estimated on the road between Family Housing Towers (5100s) and Red Cloud Circle; no OSM data for the Officer Housing bus stop — refine when ground-truthed",
+    },
 }
 
 
@@ -144,6 +187,16 @@ def main() -> int:
                 "lat": b["lat"],
                 "lon": b["lon"],
                 "source": f"building #{bnum} ({b.get('name','')})",
+                "name_ko": None,
+            }
+            continue
+        # Hand-pinned fallback
+        manual = MANUAL_COORDS.get(stop)
+        if manual:
+            out[stop] = {
+                "lat": manual["lat"],
+                "lon": manual["lon"],
+                "source": manual["source"],
                 "name_ko": None,
             }
             continue
