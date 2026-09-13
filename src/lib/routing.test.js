@@ -376,26 +376,34 @@ describe("findTrips — arrive-by mode", () => {
 });
 
 describe("stopDistance — loop-aware ride distance", () => {
-  it("wraps around a one-way loop (Gold: 5050s → Bus Terminal is 1 stop, not 22)", () => {
+  it("wraps around a one-way loop (Gold: 5050s → Bus Terminal is 3 stops, not 20)", () => {
     const R = ROUTES.GOLD;
     expect(R.loop).toBe(true);
     const fi = R.stops.indexOf("Family Housing Towers (5050s Block)");
     const ti = R.stops.indexOf("Bus Terminal");
-    expect(stopDistance(R, fi, ti)).toBe(1);
+    expect(stopDistance(R, fi, ti)).toBe(3);
   });
 
-  it("still returns the forward distance when it already is forward (Gold: Bus Terminal → 5050s is 22 stops)", () => {
+  it("still returns the forward distance when it already is forward (Gold: Bus Terminal → 5050s is 20 stops)", () => {
     const R = ROUTES.GOLD;
     const fi = R.stops.indexOf("Bus Terminal");
     const ti = R.stops.indexOf("Family Housing Towers (5050s Block)");
-    expect(stopDistance(R, fi, ti)).toBe(22);
+    expect(stopDistance(R, fi, ti)).toBe(20);
   });
 
-  it("returns forward distance for a mid-loop pair (Gold: Sentry Village Shoppette → Collier is 12 stops via wrap, not 11)", () => {
+  it("returns forward distance for a mid-loop pair (Gold: Sentry Village Shoppette → Collier is 10 stops via wrap, not 13)", () => {
     const R = ROUTES.GOLD;
     const fi = R.stops.indexOf("Sentry Village Shoppette");
     const ti = R.stops.indexOf("Collier Fitness Center");
-    expect(stopDistance(R, fi, ti)).toBe(12);
+    expect(stopDistance(R, fi, ti)).toBe(10);
+  });
+
+  it("Gold tail is in physical travel order (5050s → USO Opposite → Shoppette)", () => {
+    const s = ROUTES.GOLD.stops;
+    const golfIdx = s.indexOf("River Bend Golf Course");
+    expect(s[golfIdx + 1]).toBe("Family Housing Towers (5050s Block)");
+    expect(s[golfIdx + 2]).toBe("USO Sentry Village (Opposite)");
+    expect(s[golfIdx + 3]).toBe("Sentry Village Shoppette");
   });
 
   it("falls back to unsigned distance on a non-loop route", () => {
@@ -408,7 +416,7 @@ describe("stopDistance — loop-aware ride distance", () => {
 });
 
 describe("findTrips — loop route rides forward across the wrap", () => {
-  it("Gold from Family Housing Towers (5050s Block) → Bus Terminal is a 2-min ride, not 44", () => {
+  it("Gold from Family Housing Towers (5050s Block) → Bus Terminal is a short forward ride, not the ~44-min reverse", () => {
     const r = findTrips(
       "Family Housing Towers (5050s Block)", "Bus Terminal",
       satAt(12, 0), "depart"
@@ -418,8 +426,23 @@ describe("findTrips — loop route rides forward across the wrap", () => {
     );
     expect(goldDirect).toBeTruthy();
     const busLeg = goldDirect.legs.find(l => l.k === "bus" && l.rid === "GOLD");
-    expect(busLeg.n).toBe(1);
-    expect(busLeg.t).toBe(2);
+    // Post-#85 stop order: 5050s(20) → USO Opposite(21) → Shoppette(22) → BT(0 via wrap).
+    // Real PDF ride is 13 min (offset 45 − 32); n*2 heuristic is a placeholder — see #86.
+    expect(busLeg.n).toBe(3);
+    expect(busLeg.t).toBe(6);
+  });
+
+  it("Gold from 5050s → Sentry Village Shoppette is a short forward ride, not a full-loop wrap", () => {
+    const r = findTrips(
+      "Family Housing Towers (5050s Block)", "Sentry Village Shoppette",
+      satAt(12, 0), "depart"
+    );
+    const goldDirect = r.trips.find(t =>
+      t.type === "direct" && t.legs.some(l => l.k === "bus" && l.rid === "GOLD")
+    );
+    expect(goldDirect).toBeTruthy();
+    const busLeg = goldDirect.legs.find(l => l.k === "bus" && l.rid === "GOLD");
+    expect(busLeg.t).toBeLessThanOrEqual(12);
   });
 });
 
