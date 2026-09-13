@@ -58,6 +58,9 @@
     --color-warn-bg: var(--warn-bg);
     --color-warn-border: var(--warn-border);
     --color-warn-text: var(--warn-text);
+    --color-advisory-bg: var(--advisory-bg);
+    --color-advisory-border: var(--advisory-border);
+    --color-advisory-text: var(--advisory-text);
     --color-origin-dot: var(--origin-dot);
     --color-seg-active: var(--seg-active-bg);
 
@@ -125,6 +128,9 @@
     --warn-bg: #fffbeb;
     --warn-border: #fde68a;
     --warn-text: #92400e;
+    --advisory-bg: #cffafe;
+    --advisory-border: #06b6d4;
+    --advisory-text: #164e63;
     --origin-dot: #16a34a;
 
     --hover: #d4e6ee;
@@ -182,6 +188,9 @@
     --warn-bg: #1f1608;
     --warn-border: #78350f;
     --warn-text: #fcd34d;
+    --advisory-bg: #155e75;
+    --advisory-border: #22d3ee;
+    --advisory-text: #cffafe;
     --origin-dot: #22c55e;
 
     --hover: #1a2530;

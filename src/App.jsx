@@ -1003,15 +1003,29 @@ function OtherTrips({ trips }) {
 }
 
 // ─── Advisory cards (walk / same-stop) ────────────────────────────────────────
-function AdvisoryCard({ icon: Icon, title, body }) {
+function AdvisoryCard({ icon: Icon, title, body, emphasis = false }) {
   return (
-    <Card className="border bg-card shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]">
+    <Card className={cn(
+      "shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]",
+      emphasis ? "border-2 border-advisory-border bg-advisory-bg" : "border bg-card",
+    )}>
       <CardContent className="items-center gap-0 text-center">
-        <div className="flex size-10 items-center justify-center rounded-full bg-muted">
-          <Icon aria-hidden="true" className="size-5 text-muted-foreground"/>
+        <div className={cn(
+          "flex items-center justify-center rounded-full",
+          emphasis ? "size-12 bg-advisory-border" : "size-10 bg-muted",
+        )}>
+          <Icon aria-hidden="true" className={cn(
+            emphasis ? "size-6 text-advisory-text" : "size-5 text-muted-foreground",
+          )}/>
         </div>
-        <div className="pt-3 text-[17px] leading-[21px] font-semibold text-foreground">{title}</div>
-        <div className="pt-2 text-[13px] leading-[1.6] text-muted-foreground">{body}</div>
+        <div className={cn(
+          "pt-3 leading-[21px] font-semibold",
+          emphasis ? "text-[18px] text-advisory-text" : "text-[17px] text-foreground",
+        )}>{title}</div>
+        <div className={cn(
+          "pt-2 leading-[1.6]",
+          emphasis ? "text-[14px] text-advisory-text" : "text-[13px] text-muted-foreground",
+        )}>{body}</div>
       </CardContent>
     </Card>
   );
@@ -1832,7 +1846,8 @@ export default function App() {
                 <>
                   {results.walkOnly && (
                     <AdvisoryCard icon={Footprints} title={t.walkFasterTitle}
-                      body={t.walkFasterBody(results.walkOnly.minutes, results.walkOnly.meters)}/>
+                      body={t.walkFasterBody(results.walkOnly.minutes, results.walkOnly.meters)}
+                      emphasis/>
                   )}
                   <FastestTrip trip={results.trips[0]}/>
                   {results.trips.length > 1 && <OtherTrips trips={results.trips.slice(1)}/>}
