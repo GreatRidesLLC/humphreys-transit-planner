@@ -1007,24 +1007,24 @@ function AdvisoryCard({ icon: Icon, title, body, emphasis = false }) {
   return (
     <Card className={cn(
       "shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]",
-      emphasis ? "border-2 border-border-strong bg-muted" : "border bg-card",
+      emphasis ? "border-2 border-advisory-border bg-advisory-bg" : "border bg-card",
     )}>
       <CardContent className="items-center gap-0 text-center">
         <div className={cn(
           "flex items-center justify-center rounded-full",
-          emphasis ? "size-12 bg-background" : "size-10 bg-muted",
+          emphasis ? "size-12 bg-advisory-border" : "size-10 bg-muted",
         )}>
           <Icon aria-hidden="true" className={cn(
-            emphasis ? "size-6 text-foreground" : "size-5 text-muted-foreground",
+            emphasis ? "size-6 text-advisory-text" : "size-5 text-muted-foreground",
           )}/>
         </div>
         <div className={cn(
-          "pt-3 leading-[21px] font-semibold text-foreground",
-          emphasis ? "text-[18px]" : "text-[17px]",
+          "pt-3 leading-[21px] font-semibold",
+          emphasis ? "text-[18px] text-advisory-text" : "text-[17px] text-foreground",
         )}>{title}</div>
         <div className={cn(
           "pt-2 leading-[1.6]",
-          emphasis ? "text-[14px] text-foreground" : "text-[13px] text-muted-foreground",
+          emphasis ? "text-[14px] text-advisory-text" : "text-[13px] text-muted-foreground",
         )}>{body}</div>
       </CardContent>
     </Card>
