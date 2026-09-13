@@ -128,9 +128,9 @@
     --warn-bg: #fffbeb;
     --warn-border: #fde68a;
     --warn-text: #92400e;
-    --advisory-bg: #ecfeff;
-    --advisory-border: #22d3ee;
-    --advisory-text: #155e75;
+    --advisory-bg: #cffafe;
+    --advisory-border: #06b6d4;
+    --advisory-text: #164e63;
     --origin-dot: #16a34a;
 
     --hover: #d4e6ee;
@@ -188,9 +188,9 @@
     --warn-bg: #1f1608;
     --warn-border: #78350f;
     --warn-text: #fcd34d;
-    --advisory-bg: #062a33;
-    --advisory-border: #0e7490;
-    --advisory-text: #a5f3fc;
+    --advisory-bg: #155e75;
+    --advisory-border: #22d3ee;
+    --advisory-text: #cffafe;
     --origin-dot: #22c55e;
 
     --hover: #1a2530;
