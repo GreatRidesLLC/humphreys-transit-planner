@@ -190,7 +190,7 @@ export const ROUTES = {
       { dow:[0],         from:"09:00", to:"19:05" },
     ],
     note:"PDF-sourced (Exhibit #0019). Mon–Fri: 30-min headway 09-16, 15-min 16-20. Sat/Sun: 20-min uniform.",
-    stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","CAC (Sentry Village)","USO Sentry Village","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Family Housing Towers (5100s Block)","Officer Housing","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course","Sentry Village Shoppette","USO Sentry Village (Opposite)","Family Housing Towers (5050s Block)"] },
+    stops:["Bus Terminal","Barracks (700s Block)","Morning Calm Center","CAC (Sentry Village)","USO Sentry Village","Sentry Village Burger King","Sentry Village Mini Mall","MSG Jenkins Medical Clinic","Freedom Chapel","Collier Fitness Center","Family Housing Towers (Tropic Lightning Ave)","Family Housing Towers (Taro Ave)","Family Housing Towers (5100s Block)","Officer Housing","Red Cloud Circle","Main Post Office","Main Exchange (PX)","Balboni Sports Field (Marne Ave)","Barracks (6800s Block)","River Bend Golf Course","Family Housing Towers (5050s Block)","USO Sentry Village (Opposite)","Sentry Village Shoppette"] },
   BROWN: { id:"BROWN", name:"Brown Route",  color:"#85502a", freq:30,
     verified:true,
     days:"Fri–Sat", hours:"Fri 1900–2315 · Sat 1600–2315",
