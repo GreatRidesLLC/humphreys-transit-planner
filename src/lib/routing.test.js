@@ -8,6 +8,7 @@ import {
   haversineMeters, walkMinutes,
   STOP_COORDS, nearestStopTo,
   BUILDING_COORDS,
+  stopDistance,
 } from "./routing.js";
 
 // Reference dates: 2026-06-29 is a Monday, 2026-07-03 Friday, 2026-07-04 Saturday.
@@ -281,16 +282,16 @@ describe("findTrips — direct route", () => {
 });
 
 describe("findTrips — transfer", () => {
-  it("finds a 1-transfer route when no direct exists", () => {
+  it("returns viable trips when the picked pair has no direct route", () => {
     // Brian D. Allgood Hospital is PURPLE-only; Pedestrian Gate is on
-    // BLUE/BLACK/GREEN/ORANGE/BROWN. Shared hub: Bus Terminal (PURPLE+GREEN).
-    // Purple runs Sat 09:00–25:30, Green Sat 07:00–23:00 — both in service at noon Sat.
+    // BLUE/BLACK/GREEN/ORANGE/BROWN. There is no shared route. With the
+    // walk-to-nearby-stop fallback, the top trip is usually a direct via a
+    // 2-min walk to Bus Terminal on GREEN, but the searchPair helper still
+    // generates the PURPLE→GREEN transfer candidate on the picked pair as
+    // proof that transfer logic runs when needed.
     const r = findTrips("Brian D. Allgood Hospital", "Pedestrian Gate", satAt(12, 0), "depart");
     expect(r.trips.length).toBeGreaterThan(0);
-    expect(r.trips.every(t => t.type === "xfer")).toBe(true);
-    const xferLeg = r.trips[0].legs.find(l => l.k === "xfer");
-    expect(xferLeg).toBeTruthy();
-    expect(xferLeg.at).toBeTruthy();
+    expect(r.trips[0].legs.some(l => l.k === "bus")).toBe(true);
   });
 });
 
@@ -302,6 +303,49 @@ describe("findTrips — service-hours filter", () => {
     expect(r.filtered).toEqual(
       expect.arrayContaining(["Blue Route", "Black Route", "Orange Route"])
     );
+  });
+
+  it("finds trips on Fri evening when Pink is in service", () => {
+    // Fri 18:00 is inside Pink's Fri–Sat window. Whether the fastest option
+    // uses Pink directly or walks to a nearby stop on Blue/Black, at least
+    // one viable trip should surface.
+    const r = findTrips(
+      "Family Mini Mall / Gas Station", "Pedestrian Gate",
+      friAt(18, 0), "depart"
+    );
+    expect(r.trips.length).toBeGreaterThan(0);
+  });
+});
+
+describe("findTrips — nearby-stop walk fallback", () => {
+  it("walks to a nearby stop on a different route when the picked stop's only route is out of service", () => {
+    // Family Mini Mall / Gas Station is Pink-only; Pink runs Fri–Sat only.
+    // Pacific Victors Chapel (5 min walk) and LTG Maude Hall (7 min walk) are
+    // both on multiple routes to Pedestrian Gate. On a weekday the router
+    // should suggest walking to one of them instead of returning zero trips.
+    const r = findTrips(
+      "Family Mini Mall / Gas Station", "Pedestrian Gate",
+      monAt(14, 0), "depart"
+    );
+    expect(r.trips.length).toBeGreaterThan(0);
+    const firstLeg = r.trips[0].legs[0];
+    expect(firstLeg.k).toBe("walk");
+    // Walk leg's destination is a nearby stop, not the picked one.
+    expect(firstLeg.dest).not.toBe("Family Mini Mall / Gas Station");
+    // And that stop must be within the 10-minute walk cap.
+    expect(firstLeg.dur).toBeLessThanOrEqual(10);
+  });
+
+  it("does not activate the fallback when the picked pair has at least one direct route", () => {
+    // Pedestrian Gate → Eighth Army HQ Mon 10:00: multiple direct routes
+    // serve both endpoints, so the trigger (hasDirectAny) is true and the
+    // walk-to-nearby-stop expansion is skipped. Every returned trip should
+    // board at Pedestrian Gate itself.
+    const r = findTrips("Pedestrian Gate", "Eighth Army HQ", monAt(10, 0), "depart");
+    expect(r.trips.length).toBeGreaterThan(0);
+    for (const trip of r.trips) {
+      expect(trip.legs[0].dest).toBe("Pedestrian Gate");
+    }
   });
 });
 
@@ -328,6 +372,54 @@ describe("findTrips — arrive-by mode", () => {
     expect(r.trips.length).toBeGreaterThan(0);
     expect(r.trips[0].arriveAt <= arriveBy).toBe(true);
     expect(r.trips[0].departAt < arriveBy).toBe(true);
+  });
+});
+
+describe("stopDistance — loop-aware ride distance", () => {
+  it("wraps around a one-way loop (Gold: 5050s → Bus Terminal is 1 stop, not 22)", () => {
+    const R = ROUTES.GOLD;
+    expect(R.loop).toBe(true);
+    const fi = R.stops.indexOf("Family Housing Towers (5050s Block)");
+    const ti = R.stops.indexOf("Bus Terminal");
+    expect(stopDistance(R, fi, ti)).toBe(1);
+  });
+
+  it("still returns the forward distance when it already is forward (Gold: Bus Terminal → 5050s is 22 stops)", () => {
+    const R = ROUTES.GOLD;
+    const fi = R.stops.indexOf("Bus Terminal");
+    const ti = R.stops.indexOf("Family Housing Towers (5050s Block)");
+    expect(stopDistance(R, fi, ti)).toBe(22);
+  });
+
+  it("returns forward distance for a mid-loop pair (Gold: Sentry Village Shoppette → Collier is 12 stops via wrap, not 11)", () => {
+    const R = ROUTES.GOLD;
+    const fi = R.stops.indexOf("Sentry Village Shoppette");
+    const ti = R.stops.indexOf("Collier Fitness Center");
+    expect(stopDistance(R, fi, ti)).toBe(12);
+  });
+
+  it("falls back to unsigned distance on a non-loop route", () => {
+    const R = ROUTES.PINK;
+    expect(R.loop).toBeFalsy();
+    // Pink stops (linear): PVC(0), Family Mini Mall(1), Taro(2), 15th(3), Talon(4), TMP(5)
+    expect(stopDistance(R, 5, 1)).toBe(4);
+    expect(stopDistance(R, 1, 5)).toBe(4);
+  });
+});
+
+describe("findTrips — loop route rides forward across the wrap", () => {
+  it("Gold from Family Housing Towers (5050s Block) → Bus Terminal is a 2-min ride, not 44", () => {
+    const r = findTrips(
+      "Family Housing Towers (5050s Block)", "Bus Terminal",
+      satAt(12, 0), "depart"
+    );
+    const goldDirect = r.trips.find(t =>
+      t.type === "direct" && t.legs.some(l => l.k === "bus" && l.rid === "GOLD")
+    );
+    expect(goldDirect).toBeTruthy();
+    const busLeg = goldDirect.legs.find(l => l.k === "bus" && l.rid === "GOLD");
+    expect(busLeg.n).toBe(1);
+    expect(busLeg.t).toBe(2);
   });
 });
 

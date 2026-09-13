@@ -54,7 +54,7 @@ Data status (internal `verified` flag on `ROUTES`; gates whether `findTrips` rea
 
 Building-number directory: 32 mapped (15 hand-curated + 17 OSM-sourced via `scripts/fetch_osm_buildings.py`). OSM has 380 numbered buildings inside the installation polygon; only those whose `name` tag unambiguously matches a known bus stop are merged into the `BUILDINGS` const. Raw OSM dataset lives in `src/data/buildings_osm.json`.
 
-Bus-stop coordinates: 44 of 44 ROUTES stops have lat/lon in `src/data/stop_coords.json` (OSM `highway=bus_stop` nodes tagged `operator=USAG Humphreys`, fetched via `scripts/fetch_stop_coords.py`). The one stop OSM had no node for — the Pink trial-route "Family Housing Towers (15th Street)" — is hand-pinned to `36.9556, 127.0158` (SW terminus of 15th Street, OSM way 1019688918).
+Bus-stop coordinates: 52 of 52 ROUTES stops have lat/lon in `src/data/stop_coords.json` (OSM `highway=bus_stop` nodes tagged `operator=USAG Humphreys`, fetched via `scripts/fetch_stop_coords.py`). Nine stops with no OSM node are hand-pinned in the `MANUAL_COORDS` table in that script — one Pink trial stop (Family Housing Towers 15th Street), the estimated SOCKOR HQ pin, and seven Gold-only Sentry Village + Family Housing stops added 2026-09-09 (CAC, USO, USO Opposite, Shoppette, 5050s, 5100s, Officer Housing). The seven Gold hand-pins are approximate (~50-100 m); each carries a `source` line and should be refined when ground-truthed. Field intel: on-post shelters carry only an "S-####" ref with no route or stop name, so OSM mappers routinely miss them.
 
 ## Conventions
 
