@@ -14,19 +14,15 @@ Per-stop offsets in minutes from BT dispatch, taken from Sat photo trip 1
 column (offsets are route-geometry constants, stable across day-types).
 Two-visit stops (outbound + return-loop) carry both offsets.
 
-18 of 19 stops have confirmed canonical names. The CAC (S117) poster
-label was initially mis-identified as Bldg 6400 (LTG Maude Hall / ID
-Cards / One Stop / Central Access Control Office) but that building
-is ~2.9 km from BT — too far for a +3-min offset. The Sentry Village
-cluster (Burger King, Mini Mall, USO Bldg P301) sits ~600-700 m west
-of BT, consistent with a 3-min offset. Public sources place the DEERS
-office and Central Access Control Office both at Bldg 6400, so the
-Gold poster "CAC" cannot be either. Canonical set to `CAC (Sentry
-Village)` (2026-08-31) — literal poster label + neighborhood context
-— until an on-ground walk-through identifies the physical facility.
-Sources: home.army.mil/humphreys DEERS/ID Cards + Physical Security
-pages; USAG Humphreys Facebook posts (Aug 2019 CAC card office at
-Maude Hall Bldg 6400).
+19 of 19 stops have canonical names. The Gold poster label "CAC" at
+offset +3 min (S117) was initially resolved to `CAC (Sentry Village)`
+(2026-08-31) as a placeholder pending on-ground identification.
+Renamed 2026-09-21 to `Sentry Village Gate`: the poster "CAC" refers
+to Central Access Control (the gate access point at the Sentry
+Village north entry, near OSM lift_gate 36.9490/127.0273), not the
+Common Access Card office. The CAC card / DEERS / ID office is at
+Bldg 6400 LTG Maude Hall (served by Blue/Green/Purple) and is aliased
+accordingly in STOP_ALIASES.
 """
 
 import json
@@ -47,7 +43,7 @@ STOP_OFFSETS = {
     "Balboni Sports Field (Marne Ave)":   [15, 22],
     "Barracks (6800s Block)":             [17, 21],
     "River Bend Golf Course":             [18, 19],
-    "CAC (Sentry Village)":               [3],
+    "Sentry Village Gate":                [3],
     "Sentry Village Shoppette":           [38],
     "USO Sentry Village":                 [4],
     "USO Sentry Village (Opposite)":      [37],

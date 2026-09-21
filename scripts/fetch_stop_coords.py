@@ -135,9 +135,9 @@ MANUAL_COORDS = {
         "lat": 36.9484, "lon": 127.0245,
         "source": "estimated inside the Sentry Village retail cluster ~50 m N of Mini Mall (bldg 400); no OSM bus_stop node — refine when ground-truthed",
     },
-    "CAC (Sentry Village)": {
+    "Sentry Village Gate": {
         "lat": 36.9490, "lon": 127.0272,
-        "source": "estimated at the Sentry Village north entry gate (near OSM lift_gate 36.9490, 127.0273); Gold enters Sentry Village here between Morning Calm Center and USO",
+        "source": "estimated at the Sentry Village north entry gate (near OSM lift_gate 36.9490, 127.0273); Gold enters Sentry Village here between Morning Calm Center and USO. Renamed 2026-09-21 from 'CAC (Sentry Village)' — poster 'CAC' = Central Access Control (gate), not the Common Access Card office (which is at LTG Maude Hall).",
     },
     "Family Housing Towers (5100s Block)": {
         "lat": 36.9574, "lon": 127.0139,

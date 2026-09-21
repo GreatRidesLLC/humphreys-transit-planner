@@ -69,10 +69,10 @@
       "source": "osm bus_stop 9248355468",
       "name_ko": "버스터미널"
     },
-    "CAC (Sentry Village)": {
+    "Sentry Village Gate": {
       "lat": 36.949,
       "lon": 127.0272,
-      "source": "estimated at the Sentry Village north entry gate (near OSM lift_gate 36.9490, 127.0273); Gold enters Sentry Village here between Morning Calm Center and USO",
+      "source": "estimated at the Sentry Village north entry gate (near OSM lift_gate 36.9490, 127.0273); Gold enters Sentry Village here between Morning Calm Center and USO. Renamed 2026-09-21 from 'CAC (Sentry Village)' — the Gold poster label 'CAC' referred to Central Access Control (the gate), not the Common Access Card office (which is at LTG Maude Hall).",
       "name_ko": null
     },
     "Central Issue Facility": {
