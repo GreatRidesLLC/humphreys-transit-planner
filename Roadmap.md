@@ -264,9 +264,24 @@ Promising enough to plan adoption. Not yet greenlit — Phase 1 gates below must
 
 **Phase 3 — Runtime for geolocation-origin trips** *(the case the matrix can't cover)*
 1. Add `/api/walk?flat=&flon=&tlat=&tlon=` route to the existing Cloudflare Worker (per ADR 0001). Worker holds the Mapbox secret; proxies to `mapbox/walking` Matrix API; returns `{ seconds, meters }`. Rate-limit + edge-cache per rounded coord pair.
-2. Client calls only when `userCoords` is set (i.e. "Nearest stop" button was used). Round to ~30 m grid before caching keyed lookup in `sessionStorage`.
-3. Fallback contract: any network failure or non-2xx falls straight through to haversine — Mapbox is enrichment, never a load-bearing dependency.
-4. Sanity wrapper: if Mapbox returns >2× haversine, distrust and fall through to haversine (guards against Mapbox routing around a fence that doesn't exist).
+2. Client calls only when `userCoords` is set (i.e. "Nearest stop" button was used). Round origin to a ~30 m grid cell before lookup; cache in `localStorage` (not `sessionStorage`) so repeat trips from the same phone at the same origin cost zero API calls across sessions.
+3. Cache-key versioning: prefix `localStorage` keys with a short hash of `stop_coords.json` + `buildings_osm.json`. When either file changes upstream, the prefix rotates and stale walks self-invalidate on the next lookup — no explicit purge needed. TTL otherwise: none (sidewalks don't move).
+4. Fallback contract: any network failure or non-2xx falls straight through to haversine — Mapbox is enrichment, never a load-bearing dependency.
+5. Sanity wrapper: if Mapbox returns >2× haversine, distrust and fall through to haversine (guards against Mapbox routing around a fence that doesn't exist).
+
+**Phase 3.5 — Shared cross-user cache** *(gated on Phase 3 shipping + Mapbox spend > $0)*
+Only worth building once real traffic shows repeat cold-cell hits — until then, per-device `localStorage` is enough.
+1. Add a Cloudflare KV binding (or D1 table) to the Worker, keyed by `originCell::stopId` (same 30 m grid as the client). First user in a cell pays Mapbox; every subsequent user hits KV.
+2. KV read is free-tier generous (100k reads/day); Mapbox calls decay toward the tail of the cell distribution as the hot set fills. Camp Humphreys footprint ~25 km² → ~25k possible cells at 30 m, but realistic hot set clusters on housing + PX + BT (~200-500 cells).
+3. Version-key the KV namespace the same way as `localStorage` (hash of coord source files) so a coord refresh invalidates the shared cache atomically.
+4. Fallback contract unchanged: KV miss → Mapbox → haversine on error.
+
+**Phase 3.9 — Promotion loop to static bundle** *(gated on Phase 3.5 shipping + KV data showing a durable hot set)*
+Asymptotic zero runtime cost. Only automate once KV proves *which* cells are hot — premature promotion would bloat the bundle with cold entries.
+1. Worker logs hit counts per `originCell::stopId` (aggregated, no PII — cell resolution ~30 m).
+2. Weekly (or on-demand) job harvests top-N hot cells, appends them to `walk_matrix.json`, opens a PR.
+3. Once a cell lands in the static bundle, the runtime path never queries Mapbox for it again — client checks the bundled matrix first, KV second, Mapbox third.
+4. Bundle-size ceiling: cap the promoted set (e.g. top 1000 cells) so the JSON stays small. Cold cells stay in KV / Mapbox forever.
 
 **Phase 4 — UX surfacing** *(if Phases 2-3 land clean)*
 1. Drop the `~` prefix on walk minutes when Mapbox-sourced (parallels the existing `pdf` vs `heuristic` source pattern on departures per `claude.md`). New source field on the walk leg: `"mapbox" | "heuristic"`.
