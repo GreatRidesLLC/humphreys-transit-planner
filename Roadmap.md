@@ -236,15 +236,69 @@ Open items to work through as the list grows:
 ### On-post walking directions (Mapbox)
 Current walk-leg heuristic is `haversine(origin, stop) / 5 km/h`, floored at 3 min (see `claude.md` "Walk leg"). Straight-line only — ignores buildings, fenced compounds, gate crossings, one-way roads. Fine for a rough ETA; not useful for turn-by-turn.
 
-Path forward suggested by PAO Director Nagan (2026-09-21 review): **Mapbox** as the geodata source ("where Waze gets its geodata"). Mapbox Directions API supplies real pedestrian paths + optionally polyline geometry for a map view.
+Path forward suggested by PAO Director Nagan (2026-09-21 review): **Mapbox** as the geodata source ("where Waze gets its geodata"). Mapbox Directions + Matrix APIs supply real pedestrian paths + optionally polyline geometry for a map view.
 
-Design questions to resolve before adopting:
-- **Backend vs client**: app is currently a fully static PWA per `docs/adr/0001-static-first-no-backend.md`. Client-side calls bind a Mapbox token as a build-time secret (mitigated by domain-referer restriction + usage caps). Server-side calls land in the existing Cloudflare Worker. Pick before writing code.
-- **Cost bounds**: Mapbox free tier is generous but not unlimited; model an expected call volume against `findTrips` invocation frequency before signing up. Cache aggressively — walk legs for the same (origin, stop) pair don't change.
-- **Scope**: only replace the walk leg, or also render a walking polyline on a resurrected map view? Map view was retired 2026-08-22 as half-baked (branch `archive/map-tab`); real walking polylines could be the reason to bring it back.
-- **On-post coverage**: verify Mapbox has on-post road / footpath data before committing. Camp Humphreys interior may be sparse in OSM upstream.
+**Data-quality probe (2026-09-21):** 7-pair diagnostic against `mapbox/walking` Directions API (script parked in scratchpad, promote to `scripts/mapbox_walk_probe.py` before Phase 2). Results:
+- Every pair returned a real route — no `NO ROUTE` failures, no straight-line fallbacks
+- Named on-post roads surfaced in step instructions (`American Street`, `Marne Avenue`) → real coverage, not a data desert
+- Distance ratios (mapbox / haversine): mostly 1.2-1.4× (expected sidewalk winding); one outlier at 2.5× (Downtown Plaza → Family Housing 5050s Block) still to be visually inspected on satellite before Phase 2
+- Short pair (CAC gate → USO, 184 m haversine) came back at 3 min — matches the current 3-min floor, so the floor stays
 
-Not yet greenlit — do not add Mapbox as a dep until cost + backend decisions are made.
+Promising enough to plan adoption. Not yet greenlit — Phase 1 gates below must clear first.
+
+#### Adoption plan (staged)
+
+**Phase 1 — Data-quality validation** *(no code changes)*
+1. Visual pass on the two flagged GeoJSON pairs (Downtown Plaza → 5050s, Pedestrian Gate → BT) in geojson.io on satellite basemap: reject if the polyline ghosts through buildings, phantom-crosses fences, or ignores gates; accept if it hits real footways.
+2. Ground-truth one walk (BT → PX): compare Mapbox's ~46 min estimate to actual clocked walk time. Reject if off by >30%.
+3. Fix known bad coord: `CAC (Sentry Village)` (Sentry Village Gate after PR #99) hand-pin is at Sentry Village entry, ~370 m from BT; verify by satellite before treating any Mapbox result involving it as ground truth.
+4. **GATE:** all three must clear before Phase 2. If Phase 1 rejects Mapbox, stay on haversine and mark the roadmap entry `HOLD`.
+
+**Phase 2 — Build-time precompute** *(the cheap, offline-friendly win)*
+1. New script `scripts/gen_walk_matrix.py`: one Mapbox Matrix API call for all 52 stop↔stop pairs (2704 durations in a single request), plus building↔stop pairs where a building is a common trip origin (~380 pairs, batched).
+2. Output `src/data/walk_matrix.json`: `{ "stopA::stopB": { "seconds": N, "meters": M, "source": "mapbox-walking-v5", "generated_at": "YYYY-MM-DD" } }`.
+3. `src/lib/routing.js` `walkMinutes(bldg, stop, coords)`: lookup matrix first; on miss, fall back to existing haversine. Behaviour is otherwise identical (still returns integer minutes, still floors at 3).
+4. New unit test: matrix hits produce non-null values; matrix misses land on the haversine path.
+5. Rebuild gated by content hash of `stop_coords.json` + `buildings_osm.json` — skip the API call in CI when nothing moved.
+6. Zero runtime API dependency. Works offline. Ships in the PWA bundle.
+
+**Phase 3 — Runtime for geolocation-origin trips** *(the case the matrix can't cover)*
+1. Add `/api/walk?flat=&flon=&tlat=&tlon=` route to the existing Cloudflare Worker (per ADR 0001). Worker holds the Mapbox secret; proxies to `mapbox/walking` Matrix API; returns `{ seconds, meters }`. Rate-limit + edge-cache per rounded coord pair.
+2. Client calls only when `userCoords` is set (i.e. "Nearest stop" button was used). Round origin to a ~30 m grid cell before lookup; cache in `localStorage` (not `sessionStorage`) so repeat trips from the same phone at the same origin cost zero API calls across sessions.
+3. Cache-key versioning: prefix `localStorage` keys with a short hash of `stop_coords.json` + `buildings_osm.json`. When either file changes upstream, the prefix rotates and stale walks self-invalidate on the next lookup — no explicit purge needed. TTL otherwise: none (sidewalks don't move).
+4. Fallback contract: any network failure or non-2xx falls straight through to haversine — Mapbox is enrichment, never a load-bearing dependency.
+5. Sanity wrapper: if Mapbox returns >2× haversine, distrust and fall through to haversine (guards against Mapbox routing around a fence that doesn't exist).
+
+**Phase 3.5 — Shared cross-user cache** *(gated on Phase 3 shipping + Mapbox spend > $0)*
+Only worth building once real traffic shows repeat cold-cell hits — until then, per-device `localStorage` is enough.
+1. Add a Cloudflare KV binding (or D1 table) to the Worker, keyed by `originCell::stopId` (same 30 m grid as the client). First user in a cell pays Mapbox; every subsequent user hits KV.
+2. KV read is free-tier generous (100k reads/day); Mapbox calls decay toward the tail of the cell distribution as the hot set fills. Camp Humphreys footprint ~25 km² → ~25k possible cells at 30 m, but realistic hot set clusters on housing + PX + BT (~200-500 cells).
+3. Version-key the KV namespace the same way as `localStorage` (hash of coord source files) so a coord refresh invalidates the shared cache atomically.
+4. Fallback contract unchanged: KV miss → Mapbox → haversine on error.
+
+**Phase 3.9 — Promotion loop to static bundle** *(gated on Phase 3.5 shipping + KV data showing a durable hot set)*
+Asymptotic zero runtime cost. Only automate once KV proves *which* cells are hot — premature promotion would bloat the bundle with cold entries.
+1. Worker logs hit counts per `originCell::stopId` (aggregated, no PII — cell resolution ~30 m).
+2. Weekly (or on-demand) job harvests top-N hot cells, appends them to `walk_matrix.json`, opens a PR.
+3. Once a cell lands in the static bundle, the runtime path never queries Mapbox for it again — client checks the bundled matrix first, KV second, Mapbox third.
+4. Bundle-size ceiling: cap the promoted set (e.g. top 1000 cells) so the JSON stays small. Cold cells stay in KV / Mapbox forever.
+
+**Phase 4 — UX surfacing** *(if Phases 2-3 land clean)*
+1. Drop the `~` prefix on walk minutes when Mapbox-sourced (parallels the existing `pdf` vs `heuristic` source pattern on departures per `claude.md`). New source field on the walk leg: `"mapbox" | "heuristic"`.
+2. Optional: turn-by-turn steps from Directions API `steps[]` for the origin walk leg, with `language=ko` param for the Korean locale. New UI surface.
+
+**Phase 5 — Optional: map polyline** *(gated on Phases 1-4 + explicit user greenlight)*
+Revive map tab from `archive/map-tab` to render Mapbox walking polylines. Reopens the 2026-08-22 decision to retire the tab; do not open lightly.
+
+#### Open questions before Phase 2
+
+- **Billing card**: Mapbox free tier is 100k Matrix + 100k Directions calls/mo. Build-time precompute is one-shot per rebuild (~5 matrix calls); runtime is one Matrix call per plan-with-geolocation (bounded by user volume). Comfortably under the free tier at current traffic, but Mapbox requires a card on file even to activate a free-tier account. Confirm with user before signing up.
+- **Token scoping**: build-time token = CI secret in GitHub Actions env; runtime token = Cloudflare Worker secret via `wrangler secret put MAPBOX_TOKEN`. Two separate tokens with URL restrictions per Mapbox best practice.
+- **Regenerate cadence**: matrix rebuild when `stop_coords.json` changes (new stops, refined hand-pins) or when Camp Humphreys OSM footway data materially improves upstream. Detect via content hash; log the trigger in the commit message.
+- **License compliance**: Mapbox Terms require attribution ("© Mapbox © OpenStreetMap") in the app footer if map tiles are shown; may be implied even for Directions-only usage — check ToS before Phase 4.
+
+#### Related memory
+See [[mapbox-walking-data]] for the origin of the suggestion and the base constraints; [[distribution-options]] + `docs/adr/0001-static-first-no-backend.md` for why the Worker proxy is the backend of choice.
 
 ### Korean string QA (KATUSA / KSC)
 First-draft translations flagged in shipped Korean MVP. Route + stop names stay English by design; long descriptive paragraphs on Off-Post remain English (out of MVP scope). Actively solicit a native reviewer via the launched feedback channel. Label Korean toggle as beta in v1 if reviewer not yet secured.
