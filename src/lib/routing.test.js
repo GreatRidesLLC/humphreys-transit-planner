@@ -7,7 +7,7 @@ import {
   findTrips, walkableTrip,
   haversineMeters, walkMinutes,
   STOP_COORDS, nearestStopTo,
-  BUILDING_COORDS,
+  BUILDING_COORDS, WALK_MATRIX,
   stopDistance,
 } from "./routing.js";
 
@@ -540,6 +540,60 @@ describe("geo helpers", () => {
       expect(near.stop).toBe(stop);
       expect(near.meters).toBeLessThan(50);
     });
+  });
+});
+
+describe("walkMinutes — WALK_MATRIX Mapbox path", () => {
+  it("loaded the walk_matrix.json bundle with the expected shape", () => {
+    expect(WALK_MATRIX).toBeDefined();
+    expect(WALK_MATRIX.bldgs).toBeDefined();
+    expect(WALK_MATRIX.stops).toBeDefined();
+    expect(Object.keys(WALK_MATRIX.bldgs).length).toBeGreaterThan(0);
+  });
+
+  it("prefers the precomputed Mapbox walk over haversine when a pair exists", () => {
+    // Bldg 12302 (VCC) → SLQs (12200s Block): haversine ≈ 427 m (≈ 6 min),
+    // Mapbox walking ≈ 1262 m (≈ 16 min) — the perimeter fence forces a
+    // long detour. A matrix hit must produce the Mapbox estimate, not the
+    // straight-line one.
+    const hit = WALK_MATRIX.bldgs["12302"]?.["SLQs (12200s Block)"];
+    expect(hit).toBeDefined();
+    const min = walkMinutes("12302", "SLQs (12200s Block)", null);
+    expect(min).toBe(Math.max(3, Math.ceil(hit.seconds / 60)));
+    expect(min).toBeGreaterThanOrEqual(10);
+  });
+
+  it("falls back to haversine for a bldg→stop pair not in the matrix", () => {
+    // The matrix only carries each bldg's nearest stop, so any other stop
+    // is a matrix miss. Bldg 6400 (LTG Maude Hall) → Bus Terminal is
+    // ~500 m as the crow flies → haversine ≈ 7 min, not the 3-min floor.
+    expect(WALK_MATRIX.bldgs["6400"]?.["Bus Terminal"]).toBeUndefined();
+    const min = walkMinutes("6400", "Bus Terminal", null);
+    const b = BUILDING_COORDS["6400"];
+    const s = STOP_COORDS["Bus Terminal"];
+    const expected = Math.max(
+      3,
+      Math.ceil(haversineMeters(b.lat, b.lon, s.lat, s.lon) / 83)
+    );
+    expect(min).toBe(expected);
+    expect(min).toBeGreaterThan(3);
+  });
+
+  it("floors at 3 min for unknown building numbers", () => {
+    expect(walkMinutes("999999", "Bus Terminal", null)).toBe(3);
+  });
+
+  it("ignores the matrix when user coords are supplied (Phase 3 path)", () => {
+    // Even for a bldg that has a matrix entry, an explicit userCoords
+    // wins — geolocation origins are handled at runtime, not build-time.
+    const user = { lat: 36.9606, lon: 127.0158 };
+    const stop = "Family Housing Towers (15th Street)";
+    const s = STOP_COORDS[stop];
+    const expected = Math.max(
+      3,
+      Math.ceil(haversineMeters(user.lat, user.lon, s.lat, s.lon) / 83)
+    );
+    expect(walkMinutes("6400", stop, user)).toBe(expected);
   });
 });
 
