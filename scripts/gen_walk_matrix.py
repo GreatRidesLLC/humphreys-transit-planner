@@ -136,8 +136,9 @@ def main():
             if existing.get("_meta", {}).get("source_hash") == src_hash:
                 result["stops"] = existing.get("stops", {})
                 result["bldgs"] = existing.get("bldgs", {})
-        except (json.JSONDecodeError, KeyError):
-            pass
+        except (json.JSONDecodeError, KeyError) as e:
+            # Existing cache is malformed/incomplete; ignore it and rebuild missing data.
+            print(f"Warning: ignoring invalid cache file {OUT_PATH}: {e}", file=sys.stderr)
 
     stop_names = [n for n, s in stops.items() if s.get("lat") is not None]
 
