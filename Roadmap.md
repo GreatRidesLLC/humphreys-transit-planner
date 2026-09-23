@@ -248,19 +248,21 @@ Promising enough to plan adoption. Not yet greenlit — Phase 1 gates below must
 
 #### Adoption plan (staged)
 
-**Phase 1 — Data-quality validation** *(no code changes)*
-1. Visual pass on the two flagged GeoJSON pairs (Downtown Plaza → 5050s, Pedestrian Gate → BT) in geojson.io on satellite basemap: reject if the polyline ghosts through buildings, phantom-crosses fences, or ignores gates; accept if it hits real footways.
-2. Ground-truth one walk (BT → PX): compare Mapbox's ~46 min estimate to actual clocked walk time. Reject if off by >30%.
-3. Fix known bad coord: `CAC (Sentry Village)` (Sentry Village Gate after PR #99) hand-pin is at Sentry Village entry, ~370 m from BT; verify by satellite before treating any Mapbox result involving it as ground truth.
-4. **GATE:** all three must clear before Phase 2. If Phase 1 rejects Mapbox, stay on haversine and mark the roadmap entry `HOLD`.
+**Phase 1 — Data-quality validation** ✅ **shipped 2026-09-23 (v1.3.0, PR #101)**
+1. Visual pass on the two flagged GeoJSON pairs (Downtown Plaza → 5050s, Pedestrian Gate → BT) in geojson.io on satellite basemap — **cleared**, real footways.
+2. Ground-truth one walk (BT → PX) vs Mapbox's ~46 min estimate — **cleared**, within ±30%.
+3. `CAC (Sentry Village)` coord fix — resolved via PR #99 (rename to `Sentry Village Gate`, coord retained as hand-pin at the north entry gate).
+4. Script promoted from scratchpad to `scripts/mapbox_walk_probe.py` (reproducible; per-pair GeoJSON to `scripts/mapbox_probe_output/` for satellite-basemap verification).
 
-**Phase 2 — Build-time precompute** *(the cheap, offline-friendly win)*
-1. New script `scripts/gen_walk_matrix.py`: one Mapbox Matrix API call for all 52 stop↔stop pairs (2704 durations in a single request), plus building↔stop pairs where a building is a common trip origin (~380 pairs, batched).
-2. Output `src/data/walk_matrix.json`: `{ "stopA::stopB": { "seconds": N, "meters": M, "source": "mapbox-walking-v5", "generated_at": "YYYY-MM-DD" } }`.
-3. `src/lib/routing.js` `walkMinutes(bldg, stop, coords)`: lookup matrix first; on miss, fall back to existing haversine. Behaviour is otherwise identical (still returns integer minutes, still floors at 3).
-4. New unit test: matrix hits produce non-null values; matrix misses land on the haversine path.
-5. Rebuild gated by content hash of `stop_coords.json` + `buildings_osm.json` — skip the API call in CI when nothing moved.
-6. Zero runtime API dependency. Works offline. Ships in the PWA bundle.
+**Phase 2 — Build-time precompute** ✅ **shipped 2026-09-23 (v1.3.0, PR #102)**
+1. `scripts/gen_walk_matrix.py` generates `src/data/walk_matrix.json`. Actual scope shipped: **2652 directional stop→stop pairs** (52 × 51) + **81 bldg→nearest-stop pairs** (all named OSM buildings within `OSM_NEAREST_CAP_M = 2000` m of any stop — matches App.jsx's search filter). 2733 total.
+2. Output shape is nested rather than the flat `"stopA::stopB"` originally sketched: `{ "_meta": {...}, "stops": { src: { dst: {seconds, meters} } }, "bldgs": { bldgNum: { stop: {seconds, meters} } } }`. `_meta.source_hash` is a SHA-256 of the two source coord files.
+3. Implementation used **Mapbox Directions per-pair, not the Matrix API** — Matrix's 25-coord cap requires nontrivial cross-batch composition for 52 stops, and free-tier Directions comfortably absorbs 2733 calls per rebuild (~3% of monthly quota). Rate-limited at 4 req/sec with 429/5xx retries (a naive 10-concurrent first pass ate 1604 HTTP 429s); checkpointed every 200 pairs so interrupted runs resume from where they stopped.
+4. `src/lib/routing.js` `walkMinutes(bldg, stop, coords)` consults `WALK_MATRIX.bldgs` first when `bldgNum` is set; matrix miss falls through to haversine. Behaviour is a strict superset (integer minutes, 3-min floor, geolocation origins still use haversine). 5 new vitest cases (bundle shape, known matrix hit vs haversine divergence at Bldg 12302 VCC → SLQs 12200s, matrix-miss fallback, unknown-bldg floor, userCoords override).
+5. Content-hash gate on `stop_coords.json` + `buildings_osm.json` — a rerun with an unchanged hash short-circuits without API calls; a partial file with a matching hash resumes rather than re-fetches.
+6. Zero runtime API dependency. Works offline. Ships in the PWA bundle (`src/data/walk_matrix.json`, ~253 KB).
+
+Only the **bldg→nearest-stop** slice is consumed by `walkMinutes` today; the **stop→stop** slice is generated and ready for a follow-up migration of `candidateStops()` from haversine to matrix (currently unmigrated by design — Phase 2's userland win is the building-origin walk leg).
 
 **Phase 3 — Runtime for geolocation-origin trips** *(the case the matrix can't cover)*
 1. Add `/api/walk?flat=&flon=&tlat=&tlon=` route to the existing Cloudflare Worker (per ADR 0001). Worker holds the Mapbox secret; proxies to `mapbox/walking` Matrix API; returns `{ seconds, meters }`. Rate-limit + edge-cache per rounded coord pair.
@@ -290,10 +292,10 @@ Asymptotic zero runtime cost. Only automate once KV proves *which* cells are hot
 **Phase 5 — Optional: map polyline** *(gated on Phases 1-4 + explicit user greenlight)*
 Revive map tab from `archive/map-tab` to render Mapbox walking polylines. Reopens the 2026-08-22 decision to retire the tab; do not open lightly.
 
-#### Open questions before Phase 2
+#### Open questions before Phase 3
 
-- **Billing card**: Mapbox free tier is 100k Matrix + 100k Directions calls/mo. Build-time precompute is one-shot per rebuild (~5 matrix calls); runtime is one Matrix call per plan-with-geolocation (bounded by user volume). Comfortably under the free tier at current traffic, but Mapbox requires a card on file even to activate a free-tier account. Confirm with user before signing up.
-- **Token scoping**: build-time token = CI secret in GitHub Actions env; runtime token = Cloudflare Worker secret via `wrangler secret put MAPBOX_TOKEN`. Two separate tokens with URL restrictions per Mapbox best practice.
+- **Billing card**: Mapbox free tier is 100k Matrix + 100k Directions calls/mo. Phase 2 shipped ~2.7k Directions calls per rebuild (well inside free tier); Phase 3 will add one Directions call per plan-with-geolocation (bounded by user volume). Mapbox required a card on file to activate the account.
+- **Token scoping**: build-time token used locally for Phase 2 via a gitignored `.env.mapbox` (KEY=VALUE, sourced with `set -a && . ./.env.mapbox && set +a`). Phase 3 runtime token → Cloudflare Worker secret via `wrangler secret put MAPBOX_TOKEN`. Two separate tokens with URL restrictions per Mapbox best practice. CI-side build-token still to wire when a coord refresh drives a matrix regeneration in CI (currently regenerated locally on demand).
 - **Regenerate cadence**: matrix rebuild when `stop_coords.json` changes (new stops, refined hand-pins) or when Camp Humphreys OSM footway data materially improves upstream. Detect via content hash; log the trigger in the commit message.
 - **License compliance**: Mapbox Terms require attribution ("© Mapbox © OpenStreetMap") in the app footer if map tiles are shown; may be implied even for Directions-only usage — check ToS before Phase 4.
 
