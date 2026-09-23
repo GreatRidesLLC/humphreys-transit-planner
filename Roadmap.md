@@ -264,12 +264,13 @@ Promising enough to plan adoption. Not yet greenlit — Phase 1 gates below must
 
 Only the **bldg→nearest-stop** slice is consumed by `walkMinutes` today; the **stop→stop** slice is generated and ready for a follow-up migration of `candidateStops()` from haversine to matrix (currently unmigrated by design — Phase 2's userland win is the building-origin walk leg).
 
-**Phase 3 — Runtime for geolocation-origin trips** *(the case the matrix can't cover)*
-1. Add `/api/walk?flat=&flon=&tlat=&tlon=` route to the existing Cloudflare Worker (per ADR 0001). Worker holds the Mapbox secret; proxies to `mapbox/walking` Matrix API; returns `{ seconds, meters }`. Rate-limit + edge-cache per rounded coord pair.
-2. Client calls only when `userCoords` is set (i.e. "Nearest stop" button was used). Round origin to a ~30 m grid cell before lookup; cache in `localStorage` (not `sessionStorage`) so repeat trips from the same phone at the same origin cost zero API calls across sessions.
-3. Cache-key versioning: prefix `localStorage` keys with a short hash of `stop_coords.json` + `buildings_osm.json`. When either file changes upstream, the prefix rotates and stale walks self-invalidate on the next lookup — no explicit purge needed. TTL otherwise: none (sidewalks don't move).
-4. Fallback contract: any network failure or non-2xx falls straight through to haversine — Mapbox is enrichment, never a load-bearing dependency.
-5. Sanity wrapper: if Mapbox returns >2× haversine, distrust and fall through to haversine (guards against Mapbox routing around a fence that doesn't exist).
+**Phase 3 — Runtime for geolocation-origin trips** ✅ **shipped 2026-09-24 (PR pending)**
+1. `worker/index.js` handles `GET /api/walk?flat=&flon=&tlat=&tlon=` on the existing Cloudflare Worker (per ADR 0001). Worker holds the `MAPBOX_TOKEN` secret; proxies to Mapbox Directions (`mapbox/walking`); returns `{ seconds, meters, source: "mapbox" }`. `caches.default` edge-caches per URL (already coord-rounded by the client) for 30 days; non-API paths hand off to the static-assets binding.
+2. `src/lib/walk-runtime.js` `fetchUserWalk(userCoords, stopName)` calls the Worker only when `userCoords` are set. Origin is snapped to a ~30 m grid (`roundCell`) before lookup and `localStorage`-cached so repeat trips from the same phone at the same origin cost zero API calls across sessions. Pairs under 60 m haversine skip the network entirely (GPS jitter dominates).
+3. Cache-key prefix `htp.walk.<source_hash>` where `source_hash` is read from `walk_matrix.json._meta.source_hash` (SHA-256 of `stop_coords.json` + `buildings_osm.json`). Regenerating the matrix rotates the prefix and self-invalidates every stale walk on next lookup. No explicit TTL beyond that.
+4. Fallback contract: any network failure, non-2xx, or malformed body returns `null` from `fetchUserWalk`, and `walkMinutes` falls straight through to haversine — Mapbox is enrichment, never load-bearing.
+5. Sanity wrapper: if Mapbox returns `meters > 2× haversine`, distrust and return `null` (guards against a route around a fence that doesn't exist).
+6. Wiring: `App.jsx search()` is now async — when `fCoords` is set it calls `prefetchUserWalks(fCoords, [pickedStop, ...nearbyStops(≤10 min)])`, builds a `Map<stopName, {seconds, meters}>`, and passes it as the new 9th arg to `findTrips`. `walkMinutes` and `candidateStops` accept the same map; when present they use Mapbox seconds, otherwise haversine. 10 new vitest cases across `walk-runtime.test.js` (roundCell, cache hit/miss, sanity reject, network fail, versioned prefix) and `routing.test.js` (override honoured, missing key falls through, 3-min floor holds).
 
 **Phase 3.5 — Shared cross-user cache** *(gated on Phase 3 shipping + Mapbox spend > $0)*
 Only worth building once real traffic shows repeat cold-cell hits — until then, per-device `localStorage` is enough.

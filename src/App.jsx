@@ -12,7 +12,9 @@ import {
   nextServiceStart,
   findTrips,
   BUILDING_COORDS,
+  nearbyStopNames,
 } from "./lib/routing.js";
+import { prefetchUserWalks } from "./lib/walk-runtime.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
@@ -1466,10 +1468,22 @@ export default function App() {
     }
   }, [searched, results, setPlanCount]);
 
-  const search=()=>{
+  const search = async () => {
     const ref = tMode === "now" ? new Date() : parseHMD(tTime, tDate);
     const mode = tMode === "arrive" ? "arrive" : "depart";
-    setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null));
+    // Phase 3: when the "Nearest stop" geolocation is in play, prefetch the
+    // Worker-proxied Mapbox walks for the picked stop + any stop within
+    // ~10 min haversine of the user. Overrides Map keyed by stopName →
+    // {seconds, meters, source}; walkMinutes uses it and falls through to
+    // haversine on any miss. Runs the planner synchronously either way.
+    let walkOverrides = null;
+    if (fCoords) {
+      const nearby = nearbyStopNames(fCoords, 10);
+      const targetStops = [fStop, ...nearby.filter(s => s !== fStop)];
+      try { walkOverrides = await prefetchUserWalks(fCoords, targetStops); }
+      catch { walkOverrides = null; }
+    }
+    setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides));
     setSrch(true);
     setEditing(false);
     setRecent(prev => {
