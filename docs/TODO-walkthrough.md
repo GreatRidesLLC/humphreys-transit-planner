@@ -4,7 +4,7 @@
 
 | Poster label | Canonical landed | Verification |
 |---|---|---|
-| CAC (S117, +3) | `CAC (Sentry Village)` | ❌ Unresolved — see block below |
+| CAC (S117, +3) | `Sentry Village Gate` | ✅ Resolved 2026-09-21 — poster "CAC" = Central Access Control (gate), renamed from placeholder `CAC (Sentry Village)`. See resolved block below. |
 | USO (S103, +4) / (S376, +37) | `USO Sentry Village` + `(Opposite)` | ⚠️ Bldg P301 confirmed (uso.org); two-shelter split unverified |
 | FH Twr 1 (S2083 out, S5061 ret) | `Family Housing Towers (Tropic Lightning Ave)` + `(5050s Block)` | ⚠️ Tropic Lightning Ave has multiple towers (army.mil); 5050s block name descriptive |
 | FH Twr 2 (S5072/S5070) | `Family Housing Towers (Taro Ave)` | ✅ Taro Ave towers confirmed (Waze: Blackhawk 5101, Apache 5102, Family Housing 5173) |
@@ -12,14 +12,15 @@
 | O-6 Housing (S663, +13/+26) | `Officer Housing` | ⚠️ No public source names an O-6-specific building; canonical is a descriptive placeholder |
 | Sentry Village PX (S451, +38) | `Sentry Village Shoppette` | ✅ AAFES-confirmed (AFN Humphreys) |
 
-**Unresolved: CAC (S117, +3 min from BT).** Public sources (USAG DES +
-FB) place both DEERS/ID Cards AND the Central Access Control Office
-at Bldg 6400 Maude Hall — but Bldg 6400 is ~2.9 km from BT, ruling
-out the +3-min offset. Sentry Village cluster is ~600-700 m from BT,
-consistent with the offset. Poster CAC is therefore a distinct third
-facility in the Sentry Village neighborhood. Canonical set to
-`CAC (Sentry Village)` in v1.1.1 as a placeholder; walk the route and
-capture the physical building name / stop signage to finalize.
+**Resolved: CAC (S117, +3 min from BT) → `Sentry Village Gate` (2026-09-21).**
+The Gold poster "CAC" refers to Central Access Control — the north
+entry gate to Sentry Village (near OSM lift_gate 36.9490/127.0273),
+consistent with the +3-min offset from BT. The Common Access Card
+(ID) office is at Bldg 6400 LTG Maude Hall and is aliased there
+(`"CAC"`, `"CAC Processing"`, `"CAC Office"`). The gate stop carries
+only Sentry Village entry aliases — no CAC-adjacent phrase points
+at the gate, so searches for CAC/DEERS/DBIDS unambiguously land at
+Maude Hall.
 
 Non-CAC canonicals are defensible descriptive names but not fully
 on-site verified. If a walk-through later disproves any of them,
