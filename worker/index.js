@@ -47,10 +47,12 @@ function parseCoord(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token) {
+async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin) {
   const url = `${MAPBOX_DIRECTIONS}/${fLon},${fLat};${tLon},${tLat}`
     + `?geometries=geojson&overview=false&steps=false&access_token=${token}`;
-  const r = await fetch(url, { cf: { cacheTtl: EDGE_TTL_S, cacheEverything: true } });
+  // Mapbox URL-restriction on public tokens matches the Referer header.
+  const headers = publicOrigin ? { Referer: `${publicOrigin}/` } : {};
+  const r = await fetch(url, { headers, cf: { cacheTtl: EDGE_TTL_S, cacheEverything: true } });
   if (!r.ok) throw new Error(`mapbox ${r.status}`);
   const body = await r.json();
   const route = body.routes?.[0];
@@ -83,7 +85,9 @@ async function handleWalk(request, env, ctx) {
   if (cached) return cached;
 
   try {
-    const { seconds, meters } = await fetchMapboxWalk(fLat, fLon, tLat, tLon, env.MAPBOX_TOKEN);
+    const { seconds, meters } = await fetchMapboxWalk(
+      fLat, fLon, tLat, tLon, env.MAPBOX_TOKEN, env.PUBLIC_ORIGIN,
+    );
     const res = json({ seconds, meters, source: "mapbox" });
     ctx.waitUntil(cache.put(cacheKey, res.clone()));
     return res;
