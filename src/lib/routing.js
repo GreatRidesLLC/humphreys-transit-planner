@@ -39,11 +39,18 @@ function secondsToWalkMin(seconds) {
   return Math.max(WALK_FLOOR_MIN, Math.ceil(seconds / 60));
 }
 
-export function walkMinutes(bldgNum, stopName, userCoords) {
+export function walkMinutes(bldgNum, stopName, userCoords, walkOverrides) {
   const s = STOP_COORDS[stopName];
-  // User geolocation origins are dynamic — Phase 3 will proxy Mapbox at
-  // runtime; for now the haversine estimate stands.
+  // User geolocation origins are dynamic. Phase 3 runtime path: the caller
+  // prefetched a Mapbox walk into walkOverrides (Map | plain object keyed by
+  // stopName → {seconds}); use it if present, else fall back to haversine.
   if (s && userCoords && userCoords.lat != null) {
+    const override = walkOverrides
+      ? (walkOverrides.get ? walkOverrides.get(stopName) : walkOverrides[stopName])
+      : null;
+    if (override && typeof override.seconds === "number") {
+      return secondsToWalkMin(override.seconds);
+    }
     const meters = haversineMeters(userCoords.lat, userCoords.lon, s.lat, s.lon);
     return metersToWalkMin(meters);
   }
@@ -57,6 +64,22 @@ export function walkMinutes(bldgNum, stopName, userCoords) {
   if (!b || !s || b.lat == null || s.lat == null) return WALK_FLOOR_MIN;
   const meters = haversineMeters(b.lat, b.lon, s.lat, s.lon);
   return metersToWalkMin(meters);
+}
+
+// Names of stops within `capMin` walking minutes of `coords`, using haversine
+// (the Mapbox prefetch hasn't happened yet when this is called). Bounded set
+// used to decide which pairs to prefetch from the Worker.
+export function nearbyStopNames(coords, capMin = 10) {
+  if (!coords || coords.lat == null) return [];
+  const out = [];
+  for (const [name, s] of Object.entries(STOP_COORDS)) {
+    if (s.lat == null) continue;
+    const meters = haversineMeters(coords.lat, coords.lon, s.lat, s.lon);
+    const min = Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
+    if (min <= capMin) out.push({ stop: name, min });
+  }
+  out.sort((a, b) => a.min - b.min);
+  return out.map(x => x.stop);
 }
 
 export function nearestStopTo(coords) {
@@ -100,15 +123,23 @@ const NEARBY_STOP_WALK_CAP_MIN = 10;
 // resolvable coords (user geo, building centroid, or the picked stop's own
 // coord) — with none of those we can only return the picked stop, since a
 // walk to anywhere else would be the 3-min mock.
-function candidateStops(primary, bldg, coords) {
-  const primaryWalk = walkMinutes(bldg, primary, coords);
+function candidateStops(primary, bldg, coords, walkOverrides) {
+  const primaryWalk = walkMinutes(bldg, primary, coords, walkOverrides);
   const oc = resolveCoords(bldg, primary, coords);
   const out = [{ stop: primary, walkMin: primaryWalk }];
   if (!oc) return out;
+  const usingUserCoords = coords && coords.lat != null;
   for (const [name, s] of Object.entries(STOP_COORDS)) {
     if (name === primary || s.lat == null) continue;
-    const meters = haversineMeters(oc.lat, oc.lon, s.lat, s.lon);
-    const min = Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
+    // When the user is at a live geolocation, prefer a Mapbox override if
+    // the caller prefetched one for this stop — otherwise haversine.
+    let min;
+    if (usingUserCoords) {
+      min = walkMinutes(null, name, coords, walkOverrides);
+    } else {
+      const meters = haversineMeters(oc.lat, oc.lon, s.lat, s.lon);
+      min = Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
+    }
     if (min <= NEARBY_STOP_WALK_CAP_MIN) out.push({ stop: name, walkMin: min });
   }
   return out.sort((a, b) => a.walkMin - b.walkMin);
@@ -499,7 +530,7 @@ export function nextServiceStart(r, now) {
 // optional user lat/lon (set by the "📍 Nearest stop" geolocation flow).
 // When either is present the walk leg uses haversine instead of the 3-min
 // mock. Floor stays at 3 min for the "find the stop, board the bus" buffer.
-export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoords) {
+export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoords, walkOverrides) {
   if (!from || !to) return { trips:[], filtered:[], overnight:[] };
   if (from === to) return { trips:[], sameStop:true, filtered:[], overnight:[] };
   const walkOnly = walkableTrip(from, to, fBldg, tBldg, fCoords, tCoords);
@@ -518,7 +549,7 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
       ROUTES[r1].stops.some(s => ROUTES[r2].stops.includes(s) && s !== from && s !== to)));
   const noPathEver = !hasDirectAny && !hasXferAny;
 
-  const originWalk = walkMinutes(fBldg, from, fCoords);
+  const originWalk = walkMinutes(fBldg, from, fCoords, walkOverrides);
   const destWalk = walkMinutes(tBldg, to, tCoords);
 
   const checkTime = mode === "depart" ? refTime : subMin(refTime, 60);
@@ -589,7 +620,7 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
   // sort at the end (by total time) keeps the picked-pair transfer if it
   // still wins overall.
   if (!hasDirectAny) {
-    const originStops = candidateStops(from, fBldg, fCoords);
+    const originStops = candidateStops(from, fBldg, fCoords, walkOverrides);
     const destStops   = candidateStops(to,   tBldg, tCoords);
     for (const o of originStops) for (const d of destStops) {
       if (o.stop === from && d.stop === to) continue;

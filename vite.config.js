@@ -15,6 +15,9 @@ export default defineConfig({
   // so Vite HMR misses them. Poll every 500 ms in dev to catch changes.
   server: {
     watch: { usePolling: true, interval: 500 },
+    proxy: {
+      '/api': 'http://localhost:8787',
+    },
   },
   plugins: [
     react(),

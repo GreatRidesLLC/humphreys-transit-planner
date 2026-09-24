@@ -4,8 +4,9 @@ The app ships as a static SPA served by Cloudflare Workers Static Assets (Worker
 
 ## Repo state (already wired)
 
-- `wrangler.jsonc` — points `assets.directory` at `./dist` with `not_found_handling: "single-page-application"` for SPA fallback
-- `public/_headers` — CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP/CORP, plus per-path cache rules. Vite copies to `dist/_headers` on build; Workers Static Assets parses it the same way Pages does (SPA has no Worker code, so every rule applies)
+- `wrangler.jsonc` — `main: "worker/index.js"` for the `/api/walk` Mapbox proxy (Phase 3 runtime walk legs); `assets.directory` at `./dist` with `not_found_handling: "single-page-application"` and `binding: "ASSETS"` so the Worker hands non-API paths to the static-assets binding
+- `worker/index.js` — Cloudflare Worker: handles `GET /api/walk?flat=&flon=&tlat=&tlon=` (proxies Mapbox Directions API using the `MAPBOX_TOKEN` secret, 30-day edge cache) and falls through to static assets for everything else
+- `public/_headers` — CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP/CORP, plus per-path cache rules. Vite copies to `dist/_headers` on build; Workers Static Assets parses it the same way Pages does
 - `npm run build` — Vite + vite-plugin-pwa; emits `dist/` including `sw.js` and precached manifest
 
 Nothing in CI touches Cloudflare. Deploys happen when Workers Builds sees a push to a watched branch.
@@ -25,7 +26,18 @@ Cloudflare dashboard → **Workers & Pages** → **Create** → **Import a repos
 | Root directory | *(repo root)* |
 | Node version | `20` (matches CI `.github/workflows/ci.yml`) |
 
-Environment variables: none required for the current build.
+Environment variables: none required for the build itself.
+
+### Worker secrets (Phase 3)
+
+`worker/index.js` needs `MAPBOX_TOKEN` at runtime for the `/api/walk` proxy. Set it once per environment via the CLI:
+
+```
+npx wrangler secret put MAPBOX_TOKEN
+# paste a URL-restricted Mapbox public token (scoped to https://humphreysbus.app/*)
+```
+
+Without the secret the endpoint returns HTTP 500 and the client falls through to haversine — nothing else breaks. A second `dev.humphreysbus.app`-scoped token belongs on the preview environment when Workers Builds attaches one.
 
 ## Branch → URL mapping
 
