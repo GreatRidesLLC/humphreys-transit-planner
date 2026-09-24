@@ -40,3 +40,7 @@ notes/
 .env
 .env.*
 !.env.example
+
+# Wrangler dev secrets (MAPBOX_TOKEN etc.) — never commit
+.dev.vars
+.dev.vars.*
