@@ -92,6 +92,9 @@ async function handleWalk(request, env, ctx) {
     ctx.waitUntil(cache.put(cacheKey, res.clone()));
     return res;
   } catch (e) {
+    // Log the real error server-side for `wrangler tail` diagnosis.
+    // Client response stays canned so no stack trace leaks (CodeQL b95a6c5).
+    console.error("mapbox walk failed:", e?.message || e);
     return json({ error: "upstream routing failed" }, 502);
   }
 }
