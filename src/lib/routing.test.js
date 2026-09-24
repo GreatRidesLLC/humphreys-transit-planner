@@ -597,6 +597,39 @@ describe("walkMinutes — WALK_MATRIX Mapbox path", () => {
   });
 });
 
+describe("walkMinutes — Phase 3 override path", () => {
+  it("uses override seconds when userCoords + override supplied (Map)", () => {
+    const user = { lat: 36.9606, lon: 127.0158 };
+    const stop = "Bus Terminal";
+    const overrides = new Map([[stop, { seconds: 480, meters: 640, source: "mapbox" }]]);
+    // 480 s → ceil(8) = 8 min, well above the 3-min floor.
+    expect(walkMinutes(null, stop, user, overrides)).toBe(8);
+  });
+
+  it("uses override seconds when passed as a plain object", () => {
+    const user = { lat: 36.9606, lon: 127.0158 };
+    const stop = "Bus Terminal";
+    const overrides = { [stop]: { seconds: 720, meters: 960, source: "mapbox" } };
+    expect(walkMinutes(null, stop, user, overrides)).toBe(12);
+  });
+
+  it("falls through to haversine when the override map has no entry", () => {
+    const user = { lat: 36.9606, lon: 127.0158 };
+    const stop = "Bus Terminal";
+    const s = STOP_COORDS[stop];
+    const expected = Math.max(3, Math.ceil(haversineMeters(user.lat, user.lon, s.lat, s.lon) / 83));
+    // Empty Map — must not affect the haversine result.
+    expect(walkMinutes(null, stop, user, new Map())).toBe(expected);
+  });
+
+  it("respects the 3-min floor even with a very short override", () => {
+    const user = { lat: 36.9606, lon: 127.0158 };
+    const stop = "Bus Terminal";
+    const overrides = new Map([[stop, { seconds: 45, meters: 60, source: "mapbox" }]]);
+    expect(walkMinutes(null, stop, user, overrides)).toBe(3);
+  });
+});
+
 describe("nextDeparture source", () => {
   it("reports pdf for a stop with a transcribed timetable", () => {
     const d = nextDeparture(ROUTES.GOLD, "Bus Terminal", satAt(12, 0));

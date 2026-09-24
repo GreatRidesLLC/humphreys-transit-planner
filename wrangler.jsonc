@@ -2,8 +2,18 @@
   "$schema": "https://json.schemastore.org/wrangler.json",
   "name": "humphreys-transit-planner",
   "compatibility_date": "2026-06-19",
+  "main": "worker/index.js",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS"
+  },
+  // PUBLIC_ORIGIN: sent as Referer on outbound Mapbox calls so a URL-restricted
+  // public token accepts them. Not a secret; committed here.
+  "vars": {
+    "PUBLIC_ORIGIN": "https://humphreysbus.app"
   }
+  // Secret: MAPBOX_TOKEN (Mapbox Directions API, walk-leg proxy).
+  //   set via: wrangler secret put MAPBOX_TOKEN
+  // See worker/index.js and Roadmap.md → Phase 3.
 }
