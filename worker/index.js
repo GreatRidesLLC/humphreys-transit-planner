@@ -92,7 +92,7 @@ async function handleWalk(request, env, ctx) {
     ctx.waitUntil(cache.put(cacheKey, res.clone()));
     return res;
   } catch (e) {
-    return json({ error: String(e.message || e) }, 502);
+    return json({ error: "upstream routing failed" }, 502);
   }
 }
 
