@@ -12,9 +12,10 @@ import {
   nextServiceStart,
   findTrips,
   BUILDING_COORDS,
+  STOP_COORDS,
   nearbyStopNames,
 } from "./lib/routing.js";
-import { prefetchUserWalks } from "./lib/walk-runtime.js";
+import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
@@ -168,6 +169,10 @@ const STRINGS = {
     minutes: m => `${m} min`,
     walkToStopMin: (m, stop) => `Walk ${m} min to ${stop}`,
     walkToDestMin: m => `Walk ${m} min to destination`,
+    showSteps: "Show directions",
+    hideSteps: "Hide directions",
+    stepsAttribution: "© Mapbox © OpenStreetMap",
+    stepDistance: m => m >= 1000 ? `${(m/1000).toFixed(1)} km` : `${m} m`,
     boardWait: (route, w) => ["Board ", route, ` · wait ~${w} min`],
     transferWait: (route, w) => ["Transfer to ", route, ` · wait ~${w} min`],
     alightRoute: route => ["Alight ", route],
@@ -299,6 +304,10 @@ const STRINGS = {
     minutes: m => `${m}분`,
     walkToStopMin: (m, stop) => `${stop}까지 도보 ${m}분`,
     walkToDestMin: m => `목적지까지 도보 ${m}분`,
+    showSteps: "안내 보기",
+    hideSteps: "안내 숨기기",
+    stepsAttribution: "© Mapbox © OpenStreetMap",
+    stepDistance: m => m >= 1000 ? `${(m/1000).toFixed(1)} km` : `${m} m`,
     boardWait: (route, w) => [route, ` 탑승 · 대기 ~${w}분`],
     transferWait: (route, w) => [route, `(으)로 환승 · 대기 ~${w}분`],
     alightRoute: route => [route, " 하차"],
@@ -823,9 +832,10 @@ function timelineRows(trip, t) {
   for (const l of trip.legs) {
     if (l.k === "xfer") continue;                      // folded into the node below
     if (l.k === "walk") {
+      const steps = Array.isArray(l.steps) && l.steps.length ? l.steps : null;
       rows.push(l.dest
-        ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt) }
-        : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true });
+        ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt), steps }
+        : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true, steps });
       continue;
     }
     const i = buses.indexOf(l);
@@ -845,6 +855,29 @@ function timelineRows(trip, t) {
     }
   }
   return rows;
+}
+
+function WalkSteps({ steps }) {
+  const { t } = useT();
+  return (
+    <details className="mt-1 group">
+      <summary className="cursor-pointer text-[11.5px] leading-4 text-link underline underline-offset-2 marker:hidden [&::-webkit-details-marker]:hidden">
+        <span className="group-open:hidden">{t.showSteps}</span>
+        <span className="hidden group-open:inline">{t.hideSteps}</span>
+      </summary>
+      <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-[11.5px] leading-[15px] text-muted-foreground">
+        {steps.map((s, i) => (
+          <li key={i}>
+            <span className="text-foreground">{s.instruction}</span>
+            {s.distance > 0 && (
+              <span className="ml-1.5 text-faint">· {t.stepDistance(s.distance)}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+      <div className="mt-1 text-[10.5px] leading-4 text-faint">{t.stepsAttribution}</div>
+    </details>
+  );
 }
 
 function TimelineRow({ row, prev, next }) {
@@ -879,7 +912,10 @@ function TimelineRow({ row, prev, next }) {
       </div>
       <div className={cn("flex min-w-0 flex-1 items-start gap-2.5", next ? (row.big||walk ? "pb-3" : "pb-2.5") : "pb-0")}>
         {walk ? (
-          <div className="min-w-0 flex-1 text-xs leading-4 text-muted-foreground">{row.label}</div>
+          <div className="min-w-0 flex-1 text-xs leading-4 text-muted-foreground">
+            {row.label}
+            {row.steps && <WalkSteps steps={row.steps}/>}
+          </div>
         ) : row.big ? (
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <div className="text-[14.5px] leading-5 font-semibold text-foreground">{row.stop}</div>
@@ -1005,7 +1041,7 @@ function OtherTrips({ trips }) {
 }
 
 // ─── Advisory cards (walk / same-stop) ────────────────────────────────────────
-function AdvisoryCard({ icon: Icon, title, body, emphasis = false }) {
+function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null }) {
   return (
     <Card className={cn(
       "shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]",
@@ -1028,6 +1064,9 @@ function AdvisoryCard({ icon: Icon, title, body, emphasis = false }) {
           "pt-2 leading-[1.6]",
           emphasis ? "text-[14px] text-advisory-text" : "text-[13px] text-muted-foreground",
         )}>{body}</div>
+        {steps && steps.length > 0 && (
+          <div className="mt-3 w-full text-left"><WalkSteps steps={steps}/></div>
+        )}
       </CardContent>
     </Card>
   );
@@ -1477,13 +1516,78 @@ export default function App() {
     // {seconds, meters, source}; walkMinutes uses it and falls through to
     // haversine on any miss. Runs the planner synchronously either way.
     let walkOverrides = null;
+    let destWalkOverrides = null;
+    // Origin walk prefetch — geolocation covers the picked stop + everything
+    // within a 10-min haversine; a bldg origin covers the same 10-min ring
+    // computed off the building centroid so the fallback pair search can
+    // surface Mapbox steps too.
     if (fCoords) {
       const nearby = nearbyStopNames(fCoords, 10);
       const targetStops = [fStop, ...nearby.filter(s => s !== fStop)];
-      try { walkOverrides = await prefetchUserWalks(fCoords, targetStops); }
+      try { walkOverrides = await prefetchUserWalks(fCoords, targetStops, { lang }); }
       catch { walkOverrides = null; }
+    } else if (fBldg) {
+      const b = BUILDING_COORDS[fBldg];
+      const nearby = b && b.lat != null ? nearbyStopNames({ lat: b.lat, lon: b.lon }, 10) : [];
+      const targetStops = [fStop, ...nearby.filter(s => s !== fStop)];
+      try { walkOverrides = await prefetchBuildingWalks(fBldg, targetStops, { lang }); }
+      catch { walkOverrides = null; }
+    } else {
+      // Stop-only origin: user picked a bus stop as their start. The walk to
+      // that stop itself is a 3-min buffer, but findTrips' fallback pair
+      // search may still route through a nearby stop (e.g. picked stop is
+      // trial-route-only and OOS). Prefetch from the stop's own coord to
+      // its nearby stops so those candidate walks carry Mapbox steps.
+      const s = STOP_COORDS[fStop];
+      if (s && s.lat != null) {
+        const nearby = nearbyStopNames({ lat: s.lat, lon: s.lon }, 10).filter(x => x !== fStop);
+        try { walkOverrides = await prefetchUserWalks({ lat: s.lat, lon: s.lon }, nearby, { lang }); }
+        catch { walkOverrides = null; }
+      }
     }
-    setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides));
+    // Destination walk prefetch — mirror the origin logic. Kept in its own
+    // Map because steps are direction-dependent: a nearby stop that appears
+    // as both an origin candidate and a dest candidate needs *different*
+    // maneuver text on each leg.
+    if (tBldg) {
+      const b = BUILDING_COORDS[tBldg];
+      const nearby = b && b.lat != null ? nearbyStopNames({ lat: b.lat, lon: b.lon }, 10) : [];
+      const targetStops = [tStop, ...nearby.filter(s => s !== tStop)];
+      try { destWalkOverrides = await prefetchBuildingWalks(tBldg, targetStops, { lang }); }
+      catch { destWalkOverrides = null; }
+    } else {
+      // Stop-only destination: same reasoning as the origin branch. Nearby
+      // alight candidates get real steps for the walk from that alight stop
+      // to the picked destination stop.
+      const s = STOP_COORDS[tStop];
+      if (s && s.lat != null) {
+        const nearby = nearbyStopNames({ lat: s.lat, lon: s.lon }, 10).filter(x => x !== tStop);
+        try { destWalkOverrides = await prefetchUserWalks({ lat: s.lat, lon: s.lon }, nearby, { lang }); }
+        catch { destWalkOverrides = null; }
+      }
+    }
+    const trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides, destWalkOverrides);
+    // When the planner recommends walking the whole way, fetch turn-by-turn
+    // for that direct pair too so the advisory card can show steps.
+    if (trips.walkOnly) {
+      // Mirror routing.js resolveCoords: user geo → building centroid →
+      // stop coord. Stop-only pairs (no building on either side) still get
+      // real turn-by-turn as long as the stops themselves have coords.
+      const originCoords = fCoords
+        || (fBldg ? BUILDING_COORDS[fBldg] : null)
+        || STOP_COORDS[fStop];
+      const destCoords = (tBldg ? BUILDING_COORDS[tBldg] : null)
+        || STOP_COORDS[tStop];
+      if (originCoords?.lat != null && destCoords?.lat != null) {
+        try {
+          const hit = await fetchDirectWalk(originCoords, destCoords, { lang });
+          if (hit) {
+            trips.walkOnly = { ...trips.walkOnly, seconds: hit.seconds, steps: hit.steps, source: "mapbox" };
+          }
+        } catch { /* keep the haversine walkOnly */ }
+      }
+    }
+    setRes(trips);
     setSrch(true);
     setEditing(false);
     setRecent(prev => {
@@ -1800,9 +1904,10 @@ export default function App() {
                 <AdvisoryCard icon={MapPin} title={t.sameStopTitle} body={t.sameStopBody}/>
               ) : !results.trips.length ? (() => {
                 if (results.walkOnly) {
-                  const { minutes, meters } = results.walkOnly;
+                  const { minutes, meters, steps } = results.walkOnly;
                   return <AdvisoryCard icon={Footprints} title={t.walkInsteadTitle}
-                    body={t.walkInsteadBody(minutes, meters)}/>;
+                    body={t.walkInsteadBody(minutes, meters)}
+                    steps={steps}/>;
                 }
                 const overnight = results.overnight || [];
                 const overnightDirect = overnight.filter(o => o.type === "direct");
@@ -1861,6 +1966,7 @@ export default function App() {
                   {results.walkOnly && (
                     <AdvisoryCard icon={Footprints} title={t.walkFasterTitle}
                       body={t.walkFasterBody(results.walkOnly.minutes, results.walkOnly.meters)}
+                      steps={results.walkOnly.steps}
                       emphasis/>
                   )}
                   <FastestTrip trip={results.trips[0]}/>

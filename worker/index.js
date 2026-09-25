@@ -6,8 +6,11 @@
 //      (Roadmap Phase 3). The Mapbox token stays server-side; the client
 //      never sees it.
 //
-// GET /api/walk?flat=<>&flon=<>&tlat=<>&tlon=<>
-//   → 200 { seconds, meters, source: "mapbox" }
+// GET /api/walk?flat=<>&flon=<>&tlat=<>&tlon=<>&lang=<en|ko>
+//   → 200 { seconds, meters, steps, source: "mapbox" }
+//     - steps: [{ instruction, distance, duration }] — Mapbox pedestrian
+//       maneuvers in the requested language (en default). Empty array if
+//       Mapbox returned no legs (defensive; not observed in practice).
 //   → 502 on Mapbox failure (client falls back to haversine)
 //   → 400 on malformed input
 //
@@ -47,9 +50,114 @@ function parseCoord(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin) {
+const SUPPORTED_LANGS = new Set(["en", "ko"]);
+
+// On-post OSM road names are bilingual (`11th Street/11번가`). Mapbox's
+// turn-by-turn engine substitutes that verbatim into instructions in both
+// locales, so the ko output ends up with English road names embedded and
+// vice versa. Strip the non-matching half based on the requested lang; only
+// rewrite when the two sides are actually cross-script (one Latin, one
+// Hangul) so mixed slashes like "Family Mini Mall / Gas Station" pass
+// through untouched.
+const HANGUL_RE = /[가-힣]/;
+const LATIN_RE = /[A-Za-z]/;
+function stripBilingualPairs(text, lang) {
+  return text.replace(/([^/]+)\/([^/]+)/g, (m, a, b) => {
+    const aT = a.trim(), bT = b.trim();
+    if (!aT || !bT) return m;
+    const aKo = HANGUL_RE.test(aT), bKo = HANGUL_RE.test(bT);
+    const aEn = LATIN_RE.test(aT), bEn = LATIN_RE.test(bT);
+    const bilingual = (aKo && !aEn && bEn && !bKo) || (aEn && !aKo && bKo && !bEn);
+    if (!bilingual) return m;
+    // Keep the side matching the requested locale; preserve any leading /
+    // trailing whitespace from the original capture so surrounding text
+    // spacing (e.g. "on Foo/한.") isn't lost.
+    const chosen = lang === "ko" ? (aKo ? aT : bT) : (aEn ? aT : bT);
+    const leadingSpace = a.match(/^\s*/)[0];
+    const trailingSpace = b.match(/\s*$/)[0];
+    return `${leadingSpace}${chosen}${trailingSpace}`;
+  });
+}
+
+// Streets/road names Mapbox uses for on-post named ways. Anything else in
+// the `name` field is treated as an unnamed footpath and does not count as a
+// "road change" for the purpose of summarizing steps.
+function isGenericWay(name) {
+  if (!name || typeof name !== "string") return true;
+  const n = name.toLowerCase().trim();
+  if (!n) return true;
+  return n === "walkway" || n === "the walkway" || n === "footway" || n === "path" || n === "sidewalk";
+}
+
+// A meaningful maneuver from the walker's point of view: the maneuver type
+// that always deserves a mention regardless of road context.
+function isKeyManeuver(type, modifier) {
+  if (type === "depart" || type === "arrive") return true;
+  if (type === "roundabout" || type === "exit roundabout" || type === "fork") return true;
+  if (typeof modifier === "string" && (modifier.includes("sharp") || modifier === "uturn")) return true;
+  return false;
+}
+
+// Turn Mapbox's fine-grained step list into a short, walker-usable summary:
+// only the maneuvers that change *something*  — the road you're on, a big
+// bend, or the start/end of the walk. Skipped steps' distance + duration
+// roll into the previous kept step so the on-screen numbers still reflect
+// how far you walk before the next real turn.
+function summarizeSteps(rawSteps) {
+  if (!rawSteps.length) return [];
+  const kept = [];
+  let lastRoad = null;
+  for (let i = 0; i < rawSteps.length; i++) {
+    const step = rawSteps[i];
+    const maneuver = step.maneuver || {};
+    const instruction = maneuver.instruction;
+    if (!instruction) continue;
+    const type = maneuver.type;
+    const modifier = maneuver.modifier;
+    const road = isGenericWay(step.name) ? null : step.name.trim();
+    const roadChange = road && road !== lastRoad;
+    const isLast = i === rawSteps.length - 1;
+    const keep = isLast || isKeyManeuver(type, modifier) || roadChange;
+    const chunk = {
+      instruction,
+      distance: Math.round(step.distance ?? 0),
+      duration: Math.round(step.duration ?? 0),
+    };
+    if (keep) {
+      kept.push(chunk);
+      if (road) lastRoad = road;
+    } else if (kept.length > 0) {
+      // Roll this minor step into the previous kept survivor so the walk
+      // distance shown accounts for the whole segment between real turns.
+      const prev = kept[kept.length - 1];
+      prev.distance += chunk.distance;
+      prev.duration += chunk.duration;
+    } else {
+      // No kept survivor yet — force-keep this step as the anchor rather
+      // than lose distance from the start of the walk.
+      kept.push(chunk);
+      if (road) lastRoad = road;
+    }
+  }
+  return kept;
+}
+
+function extractSteps(route, lang) {
+  const raw = [];
+  for (const leg of route.legs || []) {
+    for (const step of leg.steps || []) {
+      if (!step?.maneuver?.instruction) continue;
+      raw.push(step);
+    }
+  }
+  const kept = summarizeSteps(raw);
+  return kept.map(s => ({ ...s, instruction: stripBilingualPairs(s.instruction, lang) }));
+}
+
+async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin, lang) {
+  const langParam = SUPPORTED_LANGS.has(lang) ? lang : "en";
   const url = `${MAPBOX_DIRECTIONS}/${fLon},${fLat};${tLon},${tLat}`
-    + `?geometries=geojson&overview=false&steps=false&access_token=${token}`;
+    + `?geometries=geojson&overview=false&steps=true&language=${langParam}&access_token=${token}`;
   // Mapbox URL-restriction on public tokens matches the Referer header.
   const headers = publicOrigin ? { Referer: `${publicOrigin}/` } : {};
   const r = await fetch(url, { headers, cf: { cacheTtl: EDGE_TTL_S, cacheEverything: true } });
@@ -57,7 +165,11 @@ async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin) {
   const body = await r.json();
   const route = body.routes?.[0];
   if (!route) throw new Error("no route");
-  return { seconds: Math.round(route.duration), meters: Math.round(route.distance) };
+  return {
+    seconds: Math.round(route.duration),
+    meters: Math.round(route.distance),
+    steps: extractSteps(route, langParam),
+  };
 }
 
 async function handleWalk(request, env, ctx) {
@@ -66,14 +178,17 @@ async function handleWalk(request, env, ctx) {
   const fLon = parseCoord(url.searchParams.get("flon"));
   const tLat = parseCoord(url.searchParams.get("tlat"));
   const tLon = parseCoord(url.searchParams.get("tlon"));
+  const lang = url.searchParams.get("lang") || "en";
   if (fLat == null || fLon == null || tLat == null || tLon == null) {
     return badRequest("flat, flon, tlat, tlon required");
   }
-  // Camp Humphreys is ~36.96N, 127.03E. Reject wildly out-of-region requests
-  // so a misused endpoint doesn't burn Mapbox quota.
-  if (Math.abs(fLat - 37) > 1 || Math.abs(tLat - 37) > 1
-      || Math.abs(fLon - 127) > 1 || Math.abs(tLon - 127) > 1) {
-    return badRequest("coords outside supported region");
+  // Camp Humphreys bbox (derived from stop_coords.json + small pad for GPS
+  // jitter at gates). On-post-only directions is a product rule, not just a
+  // quota guard — off-post pairs get a 400 so the client falls back to the
+  // haversine mock rather than leaking a Korean-street turn-by-turn.
+  const inBox = (lat, lon) => lat >= 36.945 && lat <= 36.980 && lon >= 126.985 && lon <= 127.045;
+  if (!inBox(fLat, fLon) || !inBox(tLat, tLon)) {
+    return badRequest("coords outside on-post area");
   }
   if (!env.MAPBOX_TOKEN) return json({ error: "server misconfigured" }, 500);
 
@@ -85,10 +200,10 @@ async function handleWalk(request, env, ctx) {
   if (cached) return cached;
 
   try {
-    const { seconds, meters } = await fetchMapboxWalk(
-      fLat, fLon, tLat, tLon, env.MAPBOX_TOKEN, env.PUBLIC_ORIGIN,
+    const { seconds, meters, steps } = await fetchMapboxWalk(
+      fLat, fLon, tLat, tLon, env.MAPBOX_TOKEN, env.PUBLIC_ORIGIN, lang,
     );
-    const res = json({ seconds, meters, source: "mapbox" });
+    const res = json({ seconds, meters, steps, source: "mapbox" });
     ctx.waitUntil(cache.put(cacheKey, res.clone()));
     return res;
   } catch (e) {
