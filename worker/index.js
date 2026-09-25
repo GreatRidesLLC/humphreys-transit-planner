@@ -52,6 +52,33 @@ function parseCoord(v) {
 
 const SUPPORTED_LANGS = new Set(["en", "ko"]);
 
+// On-post OSM road names are bilingual (`11th Street/11번가`). Mapbox's
+// turn-by-turn engine substitutes that verbatim into instructions in both
+// locales, so the ko output ends up with English road names embedded and
+// vice versa. Strip the non-matching half based on the requested lang; only
+// rewrite when the two sides are actually cross-script (one Latin, one
+// Hangul) so mixed slashes like "Family Mini Mall / Gas Station" pass
+// through untouched.
+const HANGUL_RE = /[가-힣]/;
+const LATIN_RE = /[A-Za-z]/;
+function stripBilingualPairs(text, lang) {
+  return text.replace(/([^/]+)\/([^/]+)/g, (m, a, b) => {
+    const aT = a.trim(), bT = b.trim();
+    if (!aT || !bT) return m;
+    const aKo = HANGUL_RE.test(aT), bKo = HANGUL_RE.test(bT);
+    const aEn = LATIN_RE.test(aT), bEn = LATIN_RE.test(bT);
+    const bilingual = (aKo && !aEn && bEn && !bKo) || (aEn && !aKo && bKo && !bEn);
+    if (!bilingual) return m;
+    // Keep the side matching the requested locale; preserve any leading /
+    // trailing whitespace from the original capture so surrounding text
+    // spacing (e.g. "on Foo/한.") isn't lost.
+    const chosen = lang === "ko" ? (aKo ? aT : bT) : (aEn ? aT : bT);
+    const leadingSpace = a.match(/^\s*/)[0];
+    const trailingSpace = b.match(/\s*$/)[0];
+    return `${leadingSpace}${chosen}${trailingSpace}`;
+  });
+}
+
 // Streets/road names Mapbox uses for on-post named ways. Anything else in
 // the `name` field is treated as an unnamed footpath and does not count as a
 // "road change" for the purpose of summarizing steps.
@@ -115,7 +142,7 @@ function summarizeSteps(rawSteps) {
   return kept;
 }
 
-function extractSteps(route) {
+function extractSteps(route, lang) {
   const raw = [];
   for (const leg of route.legs || []) {
     for (const step of leg.steps || []) {
@@ -123,7 +150,8 @@ function extractSteps(route) {
       raw.push(step);
     }
   }
-  return summarizeSteps(raw);
+  const kept = summarizeSteps(raw);
+  return kept.map(s => ({ ...s, instruction: stripBilingualPairs(s.instruction, lang) }));
 }
 
 async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin, lang) {
@@ -140,7 +168,7 @@ async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin, lang
   return {
     seconds: Math.round(route.duration),
     meters: Math.round(route.distance),
-    steps: extractSteps(route),
+    steps: extractSteps(route, langParam),
   };
 }
 
