@@ -286,9 +286,16 @@ Asymptotic zero runtime cost. Only automate once KV proves *which* cells are hot
 3. Once a cell lands in the static bundle, the runtime path never queries Mapbox for it again — client checks the bundled matrix first, KV second, Mapbox third.
 4. Bundle-size ceiling: cap the promoted set (e.g. top 1000 cells) so the JSON stays small. Cold cells stay in KV / Mapbox forever.
 
-**Phase 4 — UX surfacing** *(if Phases 2-3 land clean)*
-1. Drop the `~` prefix on walk minutes when Mapbox-sourced (parallels the existing `pdf` vs `heuristic` source pattern on departures per `claude.md`). New source field on the walk leg: `"mapbox" | "heuristic"`.
-2. Optional: turn-by-turn steps from Directions API `steps[]` for the origin walk leg, with `language=ko` param for the Korean locale. New UI surface.
+**Phase 4 — UX surfacing** ✅ **shipped 2026-09-26 (v1.5.0, PR #112)**
+1. Source field on walk legs (`"mapbox" | "heuristic"`) — shipped. `walkLegInfo()` in `src/lib/routing.js` returns `{dur, steps, source}`; a matrix hit, geolocation override, or building override all report `"mapbox"`. The `~` prefix on walk minutes was already absent from `walkToStopMin` / `walkToDestMin` (only `walkMin`, a dead string, still carries it), so the intended "drop ~" delta was a no-op — the source tag now drives future UI polish (e.g. attribution) directly.
+2. Turn-by-turn steps from Directions API — shipped, with three refinements beyond the original scope:
+   - **All walk legs** carry steps, not just origin: geolocation origin, building origin, building destination, walking-only advisory card, and stop-only pairs. `<WalkSteps>` disclosure sits under each leg's row + inside the "Walking is faster / Try walking" advisory. `<details>` element for native accessibility; EN + KO strings.
+   - **Summarization on the Worker** — raw Mapbox pedestrian steps are collapsed to depart + named-road changes + sharp bends + arrive. Skipped micro-steps' distance rolls into the previous survivor so on-screen meters reflect the walk to the next real turn. 8-step "turn left onto the walkway" noise → 3-4 usable moves.
+   - **On-post-only guard** — client `isOnPost(lat, lon)` bbox check (`36.945–36.980 × 126.985–127.045`) short-circuits fetches; Worker 400s off-post pairs. Product rule, not just quota guard.
+   - **Bilingual name strip** — on-post OSM tags roads as `English/한국어`; Worker regex keeps only the side matching the requested `lang` when the pair is cross-script.
+   - **`STEPS_SCHEMA_V` cache-bust lever** — bumped on any Worker step-processing change so stale localStorage / edge cache doesn't leak old output. Currently at v3.
+
+**Known non-issue** (decided 2026-09-26 not to fix): step text doesn't re-translate on lang toggle. Steps are data cached at plan time; toggle only swaps static UI strings. Re-plan picks up the other locale's cached bucket. Fix path is a `useEffect(..., [lang])` that swaps steps in place from the other-lang localStorage entries — no extra Mapbox calls if the pair was visited in both langs.
 
 **Phase 5 — Optional: map polyline** *(gated on Phases 1-4 + explicit user greenlight)*
 Revive map tab from `archive/map-tab` to render Mapbox walking polylines. Reopens the 2026-08-22 decision to retire the tab; do not open lightly.
@@ -298,7 +305,7 @@ Revive map tab from `archive/map-tab` to render Mapbox walking polylines. Reopen
 - **Billing card**: Mapbox free tier is 100k Matrix + 100k Directions calls/mo. Phase 2 shipped ~2.7k Directions calls per rebuild (well inside free tier); Phase 3 will add one Directions call per plan-with-geolocation (bounded by user volume). Mapbox required a card on file to activate the account.
 - **Token scoping**: build-time token used locally for Phase 2 via a gitignored `.env.mapbox` (KEY=VALUE, sourced with `set -a && . ./.env.mapbox && set +a`). Phase 3 runtime token → Cloudflare Worker secret via `wrangler secret put MAPBOX_TOKEN`. Two separate tokens with URL restrictions per Mapbox best practice. CI-side build-token still to wire when a coord refresh drives a matrix regeneration in CI (currently regenerated locally on demand).
 - **Regenerate cadence**: matrix rebuild when `stop_coords.json` changes (new stops, refined hand-pins) or when Camp Humphreys OSM footway data materially improves upstream. Detect via content hash; log the trigger in the commit message.
-- **License compliance**: Mapbox Terms require attribution ("© Mapbox © OpenStreetMap") in the app footer if map tiles are shown; may be implied even for Directions-only usage — check ToS before Phase 4.
+- **License compliance**: `© Mapbox © OpenStreetMap` attribution line ships under every `<WalkSteps>` disclosure (v1.5.0), so Directions-only usage is covered. No footer-wide attribution added yet — Mapbox ToS is satisfied by the per-instance credit next to the rendered directions.
 
 #### Related memory
 See [[mapbox-walking-data]] for the origin of the suggestion and the base constraints; [[distribution-options]] + `docs/adr/0001-static-first-no-backend.md` for why the Worker proxy is the backend of choice.
