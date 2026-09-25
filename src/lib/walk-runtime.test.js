@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   roundCell, fetchUserWalk, prefetchUserWalks,
-  fetchBuildingWalk, prefetchBuildingWalks, isOnPost, _internal,
+  fetchBuildingWalk, prefetchBuildingWalks,
+  fetchDirectWalk, isOnPost, _internal,
 } from "./walk-runtime.js";
 import { STOP_COORDS, BUILDING_COORDS, haversineMeters } from "./routing.js";
 
@@ -221,6 +222,30 @@ describe("fetchBuildingWalk", () => {
     // Second call hits localStorage, not the network.
     await fetchBuildingWalk(bldgNum, stop, { fetch: fetchMock, lang: "ko" });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("fetchDirectWalk proxies + caches origin→dest walk without a stop", async () => {
+    const steps = [{ instruction: "Head north", distance: 40, duration: 30 }];
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({ seconds: 240, meters: 320, steps, source: "mapbox" }),
+    });
+    const origin = { lat: 36.9606, lon: 127.0158 };
+    const dest = { lat: 36.9633, lon: 127.0227 };
+    const first = await fetchDirectWalk(origin, dest, { fetch: fetchMock, lang: "ko" });
+    expect(first.steps).toEqual(steps);
+    expect(first.source).toBe("mapbox");
+    // Cached: second call hits localStorage.
+    await fetchDirectWalk(origin, dest, { fetch: fetchMock, lang: "ko" });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("fetchDirectWalk returns null when either endpoint is off-post", async () => {
+    const fetchMock = vi.fn();
+    const onPost = { lat: 36.9606, lon: 127.0158 };
+    const offPost = { lat: 37.55, lon: 126.98 };
+    expect(await fetchDirectWalk(offPost, onPost, { fetch: fetchMock })).toBeNull();
+    expect(await fetchDirectWalk(onPost, offPost, { fetch: fetchMock })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("prefetchBuildingWalks returns a Map only for successful stops", async () => {

@@ -218,5 +218,54 @@ export async function prefetchBuildingWalks(bldgNum, stopNames, opts = {}) {
   return out;
 }
 
+// Direct origin→destination walk (no bus). Used when the trip planner
+// suggests walking the whole way — the walkable-trip advisory card. Cached
+// by rounded origin + rounded dest cells + lang.
+export async function fetchDirectWalk(originCoords, destCoords, opts = {}) {
+  if (!originCoords || originCoords.lat == null) return null;
+  if (!destCoords || destCoords.lat == null) return null;
+  if (!isOnPost(originCoords.lat, originCoords.lon)) return null;
+  if (!isOnPost(destCoords.lat, destCoords.lon)) return null;
+
+  const straight = haversineMeters(originCoords.lat, originCoords.lon, destCoords.lat, destCoords.lon);
+  if (straight < MIN_METERS_FOR_MAPBOX) return null;
+
+  const lang = normalizeLang(opts.lang);
+  const oCell = roundCell(originCoords.lat, originCoords.lon);
+  const dCell = roundCell(destCoords.lat, destCoords.lon);
+  const key = `${CACHE_PREFIX}:${lang}:direct:${oCell.lat.toFixed(5)},${oCell.lon.toFixed(5)}::${dCell.lat.toFixed(5)},${dCell.lon.toFixed(5)}`;
+  const cached = lsGet(key);
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached);
+      if (parsed && typeof parsed.seconds === "number") return parsed;
+    } catch { /* corrupted entry — refetch below */ }
+  }
+
+  const fetchImpl = opts.fetch || globalThis.fetch;
+  if (!fetchImpl) return null;
+
+  const url = `/api/walk?flat=${oCell.lat}&flon=${oCell.lon}&tlat=${dCell.lat}&tlon=${dCell.lon}&lang=${lang}`;
+  let body;
+  try {
+    const r = await fetchImpl(url);
+    if (!r || !r.ok) return null;
+    body = await r.json();
+  } catch {
+    return null;
+  }
+  if (!body || typeof body.seconds !== "number" || typeof body.meters !== "number") return null;
+  if (body.meters > straight * SANITY_RATIO) return null;
+
+  const value = {
+    seconds: body.seconds,
+    meters: body.meters,
+    steps: sanitizeSteps(body.steps),
+    source: "mapbox",
+  };
+  lsSet(key, JSON.stringify(value));
+  return value;
+}
+
 // Exposed for testing.
 export const _internal = { CACHE_PREFIX, LAT_CELL, LON_CELL, SANITY_RATIO, MIN_METERS_FOR_MAPBOX };

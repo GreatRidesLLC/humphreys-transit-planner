@@ -14,7 +14,7 @@ import {
   BUILDING_COORDS,
   nearbyStopNames,
 } from "./lib/routing.js";
-import { prefetchUserWalks, prefetchBuildingWalks } from "./lib/walk-runtime.js";
+import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
@@ -1040,7 +1040,7 @@ function OtherTrips({ trips }) {
 }
 
 // ─── Advisory cards (walk / same-stop) ────────────────────────────────────────
-function AdvisoryCard({ icon: Icon, title, body, emphasis = false }) {
+function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null }) {
   return (
     <Card className={cn(
       "shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]",
@@ -1063,6 +1063,9 @@ function AdvisoryCard({ icon: Icon, title, body, emphasis = false }) {
           "pt-2 leading-[1.6]",
           emphasis ? "text-[14px] text-advisory-text" : "text-[13px] text-muted-foreground",
         )}>{body}</div>
+        {steps && steps.length > 0 && (
+          <div className="mt-3 w-full text-left"><WalkSteps steps={steps}/></div>
+        )}
       </CardContent>
     </Card>
   );
@@ -1540,7 +1543,22 @@ export default function App() {
       try { destWalkOverrides = await prefetchBuildingWalks(tBldg, targetStops, { lang }); }
       catch { destWalkOverrides = null; }
     }
-    setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides, destWalkOverrides));
+    const trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides, destWalkOverrides);
+    // When the planner recommends walking the whole way, fetch turn-by-turn
+    // for that direct pair too so the advisory card can show steps.
+    if (trips.walkOnly) {
+      const originCoords = fCoords || (fBldg ? BUILDING_COORDS[fBldg] : null);
+      const destCoords = tBldg ? BUILDING_COORDS[tBldg] : null;
+      if (originCoords?.lat != null && destCoords?.lat != null) {
+        try {
+          const hit = await fetchDirectWalk(originCoords, destCoords, { lang });
+          if (hit) {
+            trips.walkOnly = { ...trips.walkOnly, seconds: hit.seconds, steps: hit.steps, source: "mapbox" };
+          }
+        } catch { /* keep the haversine walkOnly */ }
+      }
+    }
+    setRes(trips);
     setSrch(true);
     setEditing(false);
     setRecent(prev => {
@@ -1857,9 +1875,10 @@ export default function App() {
                 <AdvisoryCard icon={MapPin} title={t.sameStopTitle} body={t.sameStopBody}/>
               ) : !results.trips.length ? (() => {
                 if (results.walkOnly) {
-                  const { minutes, meters } = results.walkOnly;
+                  const { minutes, meters, steps } = results.walkOnly;
                   return <AdvisoryCard icon={Footprints} title={t.walkInsteadTitle}
-                    body={t.walkInsteadBody(minutes, meters)}/>;
+                    body={t.walkInsteadBody(minutes, meters)}
+                    steps={steps}/>;
                 }
                 const overnight = results.overnight || [];
                 const overnightDirect = overnight.filter(o => o.type === "direct");
@@ -1918,6 +1937,7 @@ export default function App() {
                   {results.walkOnly && (
                     <AdvisoryCard icon={Footprints} title={t.walkFasterTitle}
                       body={t.walkFasterBody(results.walkOnly.minutes, results.walkOnly.meters)}
+                      steps={results.walkOnly.steps}
                       emphasis/>
                   )}
                   <FastestTrip trip={results.trips[0]}/>
