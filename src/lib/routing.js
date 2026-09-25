@@ -154,9 +154,21 @@ function candidateStops(primary, bldg, coords, walkOverrides) {
     if (usingUserCoords) {
       info = walkLegInfo(null, name, coords, walkOverrides);
     } else {
-      const meters = haversineMeters(oc.lat, oc.lon, s.lat, s.lon);
-      const min = Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
-      info = { dur: min, steps: null, source: "heuristic" };
+      // Non-user origin (bldg or stop): honour a prefetched Mapbox override
+      // for this nearby stop when the caller supplied one. Falls through to
+      // haversine on miss so the existing behaviour is preserved.
+      const override = lookupOverride(walkOverrides, name);
+      if (override && typeof override.seconds === "number") {
+        info = {
+          dur: secondsToWalkMin(override.seconds),
+          steps: Array.isArray(override.steps) ? override.steps : null,
+          source: "mapbox",
+        };
+      } else {
+        const meters = haversineMeters(oc.lat, oc.lon, s.lat, s.lon);
+        const min = Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
+        info = { dur: min, steps: null, source: "heuristic" };
+      }
     }
     if (info.dur <= NEARBY_STOP_WALK_CAP_MIN) {
       out.push({ stop: name, walkMin: info.dur, steps: info.steps, source: info.source });

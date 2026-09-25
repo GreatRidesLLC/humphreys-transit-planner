@@ -1532,6 +1532,18 @@ export default function App() {
       const targetStops = [fStop, ...nearby.filter(s => s !== fStop)];
       try { walkOverrides = await prefetchBuildingWalks(fBldg, targetStops, { lang }); }
       catch { walkOverrides = null; }
+    } else {
+      // Stop-only origin: user picked a bus stop as their start. The walk to
+      // that stop itself is a 3-min buffer, but findTrips' fallback pair
+      // search may still route through a nearby stop (e.g. picked stop is
+      // trial-route-only and OOS). Prefetch from the stop's own coord to
+      // its nearby stops so those candidate walks carry Mapbox steps.
+      const s = STOP_COORDS[fStop];
+      if (s && s.lat != null) {
+        const nearby = nearbyStopNames({ lat: s.lat, lon: s.lon }, 10).filter(x => x !== fStop);
+        try { walkOverrides = await prefetchUserWalks({ lat: s.lat, lon: s.lon }, nearby, { lang }); }
+        catch { walkOverrides = null; }
+      }
     }
     // Destination walk prefetch — mirror the origin logic. Kept in its own
     // Map because steps are direction-dependent: a nearby stop that appears
@@ -1543,6 +1555,16 @@ export default function App() {
       const targetStops = [tStop, ...nearby.filter(s => s !== tStop)];
       try { destWalkOverrides = await prefetchBuildingWalks(tBldg, targetStops, { lang }); }
       catch { destWalkOverrides = null; }
+    } else {
+      // Stop-only destination: same reasoning as the origin branch. Nearby
+      // alight candidates get real steps for the walk from that alight stop
+      // to the picked destination stop.
+      const s = STOP_COORDS[tStop];
+      if (s && s.lat != null) {
+        const nearby = nearbyStopNames({ lat: s.lat, lon: s.lon }, 10).filter(x => x !== tStop);
+        try { destWalkOverrides = await prefetchUserWalks({ lat: s.lat, lon: s.lon }, nearby, { lang }); }
+        catch { destWalkOverrides = null; }
+      }
     }
     const trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides, destWalkOverrides);
     // When the planner recommends walking the whole way, fetch turn-by-turn
