@@ -5,7 +5,7 @@ import {
   nextScheduledDeparture, prevScheduledDeparture,
   nextDeparture, freqAt, nextServiceStart,
   findTrips, walkableTrip,
-  haversineMeters, walkMinutes,
+  haversineMeters, walkMinutes, walkLegInfo,
   STOP_COORDS, nearestStopTo,
   BUILDING_COORDS, WALK_MATRIX,
   stopDistance,
@@ -627,6 +627,80 @@ describe("walkMinutes — Phase 3 override path", () => {
     const stop = "Bus Terminal";
     const overrides = new Map([[stop, { seconds: 45, meters: 60, source: "mapbox" }]]);
     expect(walkMinutes(null, stop, user, overrides)).toBe(3);
+  });
+});
+
+describe("walkLegInfo — provenance + steps", () => {
+  const user = { lat: 36.9606, lon: 127.0158 };
+  const stop = "Bus Terminal";
+  const steps = [
+    { instruction: "Head north on American Street", distance: 120, duration: 90 },
+    { instruction: "Turn left onto Marne Avenue", distance: 80, duration: 60 },
+  ];
+
+  it("returns mapbox source + steps when an override supplies them", () => {
+    const overrides = new Map([[stop, { seconds: 480, meters: 640, steps, source: "mapbox" }]]);
+    const info = walkLegInfo(null, stop, user, overrides);
+    expect(info.dur).toBe(8);
+    expect(info.source).toBe("mapbox");
+    expect(info.steps).toEqual(steps);
+  });
+
+  it("returns heuristic source + null steps when no override present", () => {
+    const info = walkLegInfo(null, stop, user, new Map());
+    expect(info.source).toBe("heuristic");
+    expect(info.steps).toBeNull();
+  });
+
+  it("honors an override on the building path too (Phase 4 building fetch)", () => {
+    const bldg = Object.keys(BUILDING_COORDS).find(k => BUILDING_COORDS[k]?.lat != null);
+    const overrides = new Map([[stop, { seconds: 360, meters: 480, steps, source: "mapbox" }]]);
+    const info = walkLegInfo(bldg, stop, null, overrides);
+    expect(info.dur).toBe(6);
+    expect(info.source).toBe("mapbox");
+    expect(info.steps).toEqual(steps);
+  });
+
+  it("tags a matrix hit as mapbox even though no steps were bundled", () => {
+    const bldg = "12302";
+    const s = STOP_COORDS["SLQs 12200s"];
+    if (!s) return;
+    const info = walkLegInfo(bldg, "SLQs 12200s", null);
+    if (WALK_MATRIX.bldgs?.[bldg]?.["SLQs 12200s"]) {
+      expect(info.source).toBe("mapbox");
+      expect(info.steps).toBeNull();
+    }
+  });
+});
+
+describe("findTrips — origin walk leg carries steps", () => {
+  it("attaches Mapbox steps + source onto the origin walk leg", () => {
+    const from = "Bus Terminal";
+    const to = "Main Exchange (PX)";
+    const user = { lat: 36.9606, lon: 127.0158 };
+    const steps = [
+      { instruction: "Walk toward the Bus Terminal", distance: 120, duration: 90 },
+    ];
+    const overrides = new Map([[from, { seconds: 300, meters: 400, steps, source: "mapbox" }]]);
+    const r = findTrips(from, to, monAt(10, 0), "depart", null, null, user, null, overrides);
+    expect(r.trips.length).toBeGreaterThan(0);
+    const originLeg = r.trips[0].legs[0];
+    expect(originLeg.k).toBe("walk");
+    expect(originLeg.source).toBe("mapbox");
+    expect(originLeg.steps).toEqual(steps);
+  });
+
+  it("leaves the destination walk leg as heuristic with no steps", () => {
+    const from = "Bus Terminal";
+    const to = "Main Exchange (PX)";
+    const user = { lat: 36.9606, lon: 127.0158 };
+    const overrides = new Map([[from, { seconds: 300, meters: 400, steps: [{ instruction: "x", distance: 10, duration: 5 }], source: "mapbox" }]]);
+    const r = findTrips(from, to, monAt(10, 0), "depart", null, null, user, null, overrides);
+    const legs = r.trips[0].legs;
+    const destLeg = legs[legs.length - 1];
+    expect(destLeg.k).toBe("walk");
+    expect(destLeg.source).toBe("heuristic");
+    expect(destLeg.steps).toBeNull();
   });
 });
 
