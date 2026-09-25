@@ -52,20 +52,78 @@ function parseCoord(v) {
 
 const SUPPORTED_LANGS = new Set(["en", "ko"]);
 
-function extractSteps(route) {
-  const out = [];
-  for (const leg of route.legs || []) {
-    for (const step of leg.steps || []) {
-      const instruction = step.maneuver?.instruction;
-      if (!instruction) continue;
-      out.push({
-        instruction,
-        distance: Math.round(step.distance ?? 0),
-        duration: Math.round(step.duration ?? 0),
-      });
+// Streets/road names Mapbox uses for on-post named ways. Anything else in
+// the `name` field is treated as an unnamed footpath and does not count as a
+// "road change" for the purpose of summarizing steps.
+function isGenericWay(name) {
+  if (!name || typeof name !== "string") return true;
+  const n = name.toLowerCase().trim();
+  if (!n) return true;
+  return n === "walkway" || n === "the walkway" || n === "footway" || n === "path" || n === "sidewalk";
+}
+
+// A meaningful maneuver from the walker's point of view: the maneuver type
+// that always deserves a mention regardless of road context.
+function isKeyManeuver(type, modifier) {
+  if (type === "depart" || type === "arrive") return true;
+  if (type === "roundabout" || type === "exit roundabout" || type === "fork") return true;
+  if (typeof modifier === "string" && (modifier.includes("sharp") || modifier === "uturn")) return true;
+  return false;
+}
+
+// Turn Mapbox's fine-grained step list into a short, walker-usable summary:
+// only the maneuvers that change *something*  — the road you're on, a big
+// bend, or the start/end of the walk. Skipped steps' distance + duration
+// roll into the previous kept step so the on-screen numbers still reflect
+// how far you walk before the next real turn.
+function summarizeSteps(rawSteps) {
+  if (!rawSteps.length) return [];
+  const kept = [];
+  let lastRoad = null;
+  for (let i = 0; i < rawSteps.length; i++) {
+    const step = rawSteps[i];
+    const maneuver = step.maneuver || {};
+    const instruction = maneuver.instruction;
+    if (!instruction) continue;
+    const type = maneuver.type;
+    const modifier = maneuver.modifier;
+    const road = isGenericWay(step.name) ? null : step.name.trim();
+    const roadChange = road && road !== lastRoad;
+    const isLast = i === rawSteps.length - 1;
+    const keep = isLast || isKeyManeuver(type, modifier) || roadChange;
+    const chunk = {
+      instruction,
+      distance: Math.round(step.distance ?? 0),
+      duration: Math.round(step.duration ?? 0),
+    };
+    if (keep) {
+      kept.push(chunk);
+      if (road) lastRoad = road;
+    } else if (kept.length > 0) {
+      // Roll this minor step into the previous kept survivor so the walk
+      // distance shown accounts for the whole segment between real turns.
+      const prev = kept[kept.length - 1];
+      prev.distance += chunk.distance;
+      prev.duration += chunk.duration;
+    } else {
+      // No kept survivor yet — force-keep this step as the anchor rather
+      // than lose distance from the start of the walk.
+      kept.push(chunk);
+      if (road) lastRoad = road;
     }
   }
-  return out;
+  return kept;
+}
+
+function extractSteps(route) {
+  const raw = [];
+  for (const leg of route.legs || []) {
+    for (const step of leg.steps || []) {
+      if (!step?.maneuver?.instruction) continue;
+      raw.push(step);
+    }
+  }
+  return summarizeSteps(raw);
 }
 
 async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin, lang) {

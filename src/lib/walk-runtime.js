@@ -23,7 +23,11 @@ const LAT_CELL = 0.00027;
 const LON_CELL = 0.00034;
 
 const VERSION = WALK_MATRIX_JSON?._meta?.source_hash || "unversioned";
-const CACHE_PREFIX = `htp.walk.${VERSION}`;
+// Bump when the step-summarizing logic in the worker changes — partitions
+// both localStorage and the CDN edge cache from any previously stored
+// fine-grained step list so users don't see stale "turn left 22m" fluff.
+const STEPS_SCHEMA_V = 2;
+const CACHE_PREFIX = `htp.walk.${VERSION}.v${STEPS_SCHEMA_V}`;
 // >2× haversine means Mapbox routed around something that probably isn't
 // there (a mismapped fence, a phantom footway). Distrust and fall through.
 const SANITY_RATIO = 2.0;
@@ -117,7 +121,7 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   const fetchImpl = opts.fetch || globalThis.fetch;
   if (!fetchImpl) return null;
 
-  const url = `/api/walk?flat=${cell.lat}&flon=${cell.lon}&tlat=${stop.lat}&tlon=${stop.lon}&lang=${lang}`;
+  const url = `/api/walk?flat=${cell.lat}&flon=${cell.lon}&tlat=${stop.lat}&tlon=${stop.lon}&lang=${lang}&v=${STEPS_SCHEMA_V}`;
   let body;
   try {
     const r = await fetchImpl(url);
@@ -183,7 +187,7 @@ export async function fetchBuildingWalk(bldgNum, stopName, opts = {}) {
   const fetchImpl = opts.fetch || globalThis.fetch;
   if (!fetchImpl) return null;
 
-  const url = `/api/walk?flat=${b.lat}&flon=${b.lon}&tlat=${stop.lat}&tlon=${stop.lon}&lang=${lang}`;
+  const url = `/api/walk?flat=${b.lat}&flon=${b.lon}&tlat=${stop.lat}&tlon=${stop.lon}&lang=${lang}&v=${STEPS_SCHEMA_V}`;
   let body;
   try {
     const r = await fetchImpl(url);
@@ -245,7 +249,7 @@ export async function fetchDirectWalk(originCoords, destCoords, opts = {}) {
   const fetchImpl = opts.fetch || globalThis.fetch;
   if (!fetchImpl) return null;
 
-  const url = `/api/walk?flat=${oCell.lat}&flon=${oCell.lon}&tlat=${dCell.lat}&tlon=${dCell.lon}&lang=${lang}`;
+  const url = `/api/walk?flat=${oCell.lat}&flon=${oCell.lon}&tlat=${dCell.lat}&tlon=${dCell.lon}&lang=${lang}&v=${STEPS_SCHEMA_V}`;
   let body;
   try {
     const r = await fetchImpl(url);
