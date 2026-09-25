@@ -12,6 +12,7 @@ import {
   nextServiceStart,
   findTrips,
   BUILDING_COORDS,
+  STOP_COORDS,
   nearbyStopNames,
 } from "./lib/routing.js";
 import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
@@ -1547,8 +1548,14 @@ export default function App() {
     // When the planner recommends walking the whole way, fetch turn-by-turn
     // for that direct pair too so the advisory card can show steps.
     if (trips.walkOnly) {
-      const originCoords = fCoords || (fBldg ? BUILDING_COORDS[fBldg] : null);
-      const destCoords = tBldg ? BUILDING_COORDS[tBldg] : null;
+      // Mirror routing.js resolveCoords: user geo → building centroid →
+      // stop coord. Stop-only pairs (no building on either side) still get
+      // real turn-by-turn as long as the stops themselves have coords.
+      const originCoords = fCoords
+        || (fBldg ? BUILDING_COORDS[fBldg] : null)
+        || STOP_COORDS[fStop];
+      const destCoords = (tBldg ? BUILDING_COORDS[tBldg] : null)
+        || STOP_COORDS[tStop];
       if (originCoords?.lat != null && destCoords?.lat != null) {
         try {
           const hit = await fetchDirectWalk(originCoords, destCoords, { lang });
