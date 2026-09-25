@@ -31,6 +31,19 @@ const SANITY_RATIO = 2.0;
 // isn't worth it, and haversine is already inside the noise band.
 const MIN_METERS_FOR_MAPBOX = 60;
 
+// Tight bounding box around Camp Humphreys, derived from the real stop
+// coord range in `stop_coords.json` (36.9478–36.9773 lat, 126.9864–127.0432
+// lon) with a small padding for GPS jitter at gate perimeters. Any coord
+// outside this box is considered off-post; no Mapbox call is made for it,
+// and the walk leg falls through to haversine — matching the app's rule
+// that turn-by-turn directions only cover on-post movement.
+const ON_POST_BBOX = { latMin: 36.945, latMax: 36.980, lonMin: 126.985, lonMax: 127.045 };
+
+export function isOnPost(lat, lon) {
+  return lat >= ON_POST_BBOX.latMin && lat <= ON_POST_BBOX.latMax
+    && lon >= ON_POST_BBOX.lonMin && lon <= ON_POST_BBOX.lonMax;
+}
+
 export function roundCell(lat, lon) {
   return {
     lat: Math.round(lat / LAT_CELL) * LAT_CELL,
@@ -83,6 +96,9 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   const stop = STOP_COORDS[stopName];
   if (!stop || stop.lat == null) return null;
   if (!userCoords || userCoords.lat == null) return null;
+  // Off-post users get no turn-by-turn — the app's coverage is on-post only.
+  if (!isOnPost(userCoords.lat, userCoords.lon)) return null;
+  if (!isOnPost(stop.lat, stop.lon)) return null;
 
   const straight = haversineMeters(userCoords.lat, userCoords.lon, stop.lat, stop.lon);
   if (straight < MIN_METERS_FOR_MAPBOX) return null;
@@ -147,6 +163,9 @@ export async function fetchBuildingWalk(bldgNum, stopName, opts = {}) {
   const stop = STOP_COORDS[stopName];
   const b = BUILDING_COORDS[bldgNum];
   if (!stop || stop.lat == null || !b || b.lat == null) return null;
+  // Defensive: BUILDING_COORDS + STOP_COORDS are on-post by construction, but
+  // the bbox check keeps the invariant tight against future data changes.
+  if (!isOnPost(b.lat, b.lon) || !isOnPost(stop.lat, stop.lon)) return null;
 
   const straight = haversineMeters(b.lat, b.lon, stop.lat, stop.lon);
   if (straight < MIN_METERS_FOR_MAPBOX) return null;

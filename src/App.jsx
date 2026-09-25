@@ -1512,18 +1512,35 @@ export default function App() {
     // {seconds, meters, source}; walkMinutes uses it and falls through to
     // haversine on any miss. Runs the planner synchronously either way.
     let walkOverrides = null;
+    let destWalkOverrides = null;
+    // Origin walk prefetch — geolocation covers the picked stop + everything
+    // within a 10-min haversine; a bldg origin covers the same 10-min ring
+    // computed off the building centroid so the fallback pair search can
+    // surface Mapbox steps too.
     if (fCoords) {
       const nearby = nearbyStopNames(fCoords, 10);
       const targetStops = [fStop, ...nearby.filter(s => s !== fStop)];
       try { walkOverrides = await prefetchUserWalks(fCoords, targetStops, { lang }); }
       catch { walkOverrides = null; }
     } else if (fBldg) {
-      // Building origin: matrix has duration but no steps. Fetch the walk to
-      // the picked stop once so the timeline can show turn-by-turn text.
-      try { walkOverrides = await prefetchBuildingWalks(fBldg, [fStop], { lang }); }
+      const b = BUILDING_COORDS[fBldg];
+      const nearby = b && b.lat != null ? nearbyStopNames({ lat: b.lat, lon: b.lon }, 10) : [];
+      const targetStops = [fStop, ...nearby.filter(s => s !== fStop)];
+      try { walkOverrides = await prefetchBuildingWalks(fBldg, targetStops, { lang }); }
       catch { walkOverrides = null; }
     }
-    setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides));
+    // Destination walk prefetch — mirror the origin logic. Kept in its own
+    // Map because steps are direction-dependent: a nearby stop that appears
+    // as both an origin candidate and a dest candidate needs *different*
+    // maneuver text on each leg.
+    if (tBldg) {
+      const b = BUILDING_COORDS[tBldg];
+      const nearby = b && b.lat != null ? nearbyStopNames({ lat: b.lat, lon: b.lon }, 10) : [];
+      const targetStops = [tStop, ...nearby.filter(s => s !== tStop)];
+      try { destWalkOverrides = await prefetchBuildingWalks(tBldg, targetStops, { lang }); }
+      catch { destWalkOverrides = null; }
+    }
+    setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides, destWalkOverrides));
     setSrch(true);
     setEditing(false);
     setRecent(prev => {

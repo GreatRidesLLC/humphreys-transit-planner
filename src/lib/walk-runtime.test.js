@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   roundCell, fetchUserWalk, prefetchUserWalks,
-  fetchBuildingWalk, prefetchBuildingWalks, _internal,
+  fetchBuildingWalk, prefetchBuildingWalks, isOnPost, _internal,
 } from "./walk-runtime.js";
 import { STOP_COORDS, BUILDING_COORDS, haversineMeters } from "./routing.js";
 
@@ -37,9 +37,30 @@ describe("roundCell", () => {
   });
 });
 
+describe("isOnPost", () => {
+  it("accepts a coord inside the Camp Humphreys bbox", () => {
+    expect(isOnPost(36.9606, 127.0158)).toBe(true);
+  });
+  it("rejects a coord clearly off-post (e.g. Pyeongtaek Station area)", () => {
+    // Pyeongtaek Station ~36.99N 127.09E — outside the box.
+    expect(isOnPost(36.99, 127.09)).toBe(false);
+  });
+  it("rejects a coord far south (e.g. Seoul)", () => {
+    expect(isOnPost(37.55, 126.98)).toBe(false);
+  });
+});
+
 describe("fetchUserWalk", () => {
   const user = { lat: 36.9606, lon: 127.0158 };
   const stop = "Bus Terminal";
+
+  it("returns null when the user is off-post", async () => {
+    const fetchMock = vi.fn();
+    // Same lon, but lat outside the northern bbox edge (~36.980).
+    const offPost = { lat: 37.10, lon: 127.03 };
+    expect(await fetchUserWalk(offPost, stop, { fetch: fetchMock })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
   it("returns null when userCoords are missing", async () => {
     const fetchMock = vi.fn();

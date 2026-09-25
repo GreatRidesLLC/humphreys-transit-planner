@@ -96,11 +96,13 @@ async function handleWalk(request, env, ctx) {
   if (fLat == null || fLon == null || tLat == null || tLon == null) {
     return badRequest("flat, flon, tlat, tlon required");
   }
-  // Camp Humphreys is ~36.96N, 127.03E. Reject wildly out-of-region requests
-  // so a misused endpoint doesn't burn Mapbox quota.
-  if (Math.abs(fLat - 37) > 1 || Math.abs(tLat - 37) > 1
-      || Math.abs(fLon - 127) > 1 || Math.abs(tLon - 127) > 1) {
-    return badRequest("coords outside supported region");
+  // Camp Humphreys bbox (derived from stop_coords.json + small pad for GPS
+  // jitter at gates). On-post-only directions is a product rule, not just a
+  // quota guard — off-post pairs get a 400 so the client falls back to the
+  // haversine mock rather than leaking a Korean-street turn-by-turn.
+  const inBox = (lat, lon) => lat >= 36.945 && lat <= 36.980 && lon >= 126.985 && lon <= 127.045;
+  if (!inBox(fLat, fLon) || !inBox(tLat, tLon)) {
+    return badRequest("coords outside on-post area");
   }
   if (!env.MAPBOX_TOKEN) return json({ error: "server misconfigured" }, 500);
 

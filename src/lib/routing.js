@@ -550,7 +550,7 @@ export function nextServiceStart(r, now) {
 // optional user lat/lon (set by the "📍 Nearest stop" geolocation flow).
 // When either is present the walk leg uses haversine instead of the 3-min
 // mock. Floor stays at 3 min for the "find the stop, board the bus" buffer.
-export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoords, walkOverrides) {
+export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoords, walkOverrides, destWalkOverrides) {
   if (!from || !to) return { trips:[], filtered:[], overnight:[] };
   if (from === to) return { trips:[], sameStop:true, filtered:[], overnight:[] };
   const walkOnly = walkableTrip(from, to, fBldg, tBldg, fCoords, tCoords);
@@ -570,7 +570,7 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
   const noPathEver = !hasDirectAny && !hasXferAny;
 
   const originInfo = walkLegInfo(fBldg, from, fCoords, walkOverrides);
-  const destInfo = walkLegInfo(tBldg, to, tCoords);
+  const destInfo = walkLegInfo(tBldg, to, tCoords, destWalkOverrides);
 
   const checkTime = mode === "depart" ? refTime : subMin(refTime, 60);
 
@@ -643,7 +643,7 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
   // still wins overall.
   if (!hasDirectAny) {
     const originStops = candidateStops(from, fBldg, fCoords, walkOverrides);
-    const destStops   = candidateStops(to,   tBldg, tCoords);
+    const destStops   = candidateStops(to,   tBldg, tCoords, destWalkOverrides);
     for (const o of originStops) for (const d of destStops) {
       if (o.stop === from && d.stop === to) continue;
       if (o.stop === d.stop) continue;
