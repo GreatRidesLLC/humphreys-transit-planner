@@ -6,8 +6,11 @@
 //      (Roadmap Phase 3). The Mapbox token stays server-side; the client
 //      never sees it.
 //
-// GET /api/walk?flat=<>&flon=<>&tlat=<>&tlon=<>
-//   → 200 { seconds, meters, source: "mapbox" }
+// GET /api/walk?flat=<>&flon=<>&tlat=<>&tlon=<>&lang=<en|ko>
+//   → 200 { seconds, meters, steps, source: "mapbox" }
+//     - steps: [{ instruction, distance, duration }] — Mapbox pedestrian
+//       maneuvers in the requested language (en default). Empty array if
+//       Mapbox returned no legs (defensive; not observed in practice).
 //   → 502 on Mapbox failure (client falls back to haversine)
 //   → 400 on malformed input
 //
@@ -47,9 +50,28 @@ function parseCoord(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin) {
+const SUPPORTED_LANGS = new Set(["en", "ko"]);
+
+function extractSteps(route) {
+  const out = [];
+  for (const leg of route.legs || []) {
+    for (const step of leg.steps || []) {
+      const instruction = step.maneuver?.instruction;
+      if (!instruction) continue;
+      out.push({
+        instruction,
+        distance: Math.round(step.distance ?? 0),
+        duration: Math.round(step.duration ?? 0),
+      });
+    }
+  }
+  return out;
+}
+
+async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin, lang) {
+  const langParam = SUPPORTED_LANGS.has(lang) ? lang : "en";
   const url = `${MAPBOX_DIRECTIONS}/${fLon},${fLat};${tLon},${tLat}`
-    + `?geometries=geojson&overview=false&steps=false&access_token=${token}`;
+    + `?geometries=geojson&overview=false&steps=true&language=${langParam}&access_token=${token}`;
   // Mapbox URL-restriction on public tokens matches the Referer header.
   const headers = publicOrigin ? { Referer: `${publicOrigin}/` } : {};
   const r = await fetch(url, { headers, cf: { cacheTtl: EDGE_TTL_S, cacheEverything: true } });
@@ -57,7 +79,11 @@ async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin) {
   const body = await r.json();
   const route = body.routes?.[0];
   if (!route) throw new Error("no route");
-  return { seconds: Math.round(route.duration), meters: Math.round(route.distance) };
+  return {
+    seconds: Math.round(route.duration),
+    meters: Math.round(route.distance),
+    steps: extractSteps(route),
+  };
 }
 
 async function handleWalk(request, env, ctx) {
@@ -66,6 +92,7 @@ async function handleWalk(request, env, ctx) {
   const fLon = parseCoord(url.searchParams.get("flon"));
   const tLat = parseCoord(url.searchParams.get("tlat"));
   const tLon = parseCoord(url.searchParams.get("tlon"));
+  const lang = url.searchParams.get("lang") || "en";
   if (fLat == null || fLon == null || tLat == null || tLon == null) {
     return badRequest("flat, flon, tlat, tlon required");
   }
@@ -85,10 +112,10 @@ async function handleWalk(request, env, ctx) {
   if (cached) return cached;
 
   try {
-    const { seconds, meters } = await fetchMapboxWalk(
-      fLat, fLon, tLat, tLon, env.MAPBOX_TOKEN, env.PUBLIC_ORIGIN,
+    const { seconds, meters, steps } = await fetchMapboxWalk(
+      fLat, fLon, tLat, tLon, env.MAPBOX_TOKEN, env.PUBLIC_ORIGIN, lang,
     );
-    const res = json({ seconds, meters, source: "mapbox" });
+    const res = json({ seconds, meters, steps, source: "mapbox" });
     ctx.waitUntil(cache.put(cacheKey, res.clone()));
     return res;
   } catch (e) {

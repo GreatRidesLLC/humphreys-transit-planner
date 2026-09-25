@@ -67,16 +67,50 @@ describe("fetchUserWalk", () => {
       ok: true, json: async () => ({ seconds, meters, source: "mapbox" }),
     });
     const first = await fetchUserWalk(user, stop, { fetch: fetchMock });
-    expect(first).toEqual({ seconds, meters, source: "mapbox" });
+    // steps defaults to [] when Mapbox response omits them.
+    expect(first).toEqual({ seconds, meters, steps: [], source: "mapbox" });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const url = fetchMock.mock.calls[0][0];
     expect(url).toMatch(/^\/api\/walk\?/);
     expect(url).toContain("flat=");
     expect(url).toContain("tlat=");
+    // Default lang appended so the Worker knows what to request from Mapbox.
+    expect(url).toContain("lang=en");
     // Second call must hit localStorage, not the network.
     const second = await fetchUserWalk(user, stop, { fetch: fetchMock });
     expect(second).toEqual(first);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("stores turn-by-turn steps from the response", async () => {
+    const steps = [
+      { instruction: "Head north on American Street", distance: 120, duration: 90 },
+      { instruction: "Turn left onto Marne Avenue", distance: 80, duration: 60 },
+    ];
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({ seconds: 300, meters: 400, steps, source: "mapbox" }),
+    });
+    const hit = await fetchUserWalk(user, stop, { fetch: fetchMock });
+    expect(hit.steps).toEqual(steps);
+    // Cached entry round-trips through JSON with steps intact.
+    const cached = await fetchUserWalk(user, stop, { fetch: fetchMock });
+    expect(cached.steps).toEqual(steps);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes lang through the URL and separates cache entries by lang", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({ seconds: 300, meters: 400, steps: [], source: "mapbox" }),
+    });
+    await fetchUserWalk(user, stop, { fetch: fetchMock, lang: "ko" });
+    const url = fetchMock.mock.calls[0][0];
+    expect(url).toContain("lang=ko");
+    // A second call at a different lang must refetch, not hit the ko cache.
+    await fetchUserWalk(user, stop, { fetch: fetchMock, lang: "en" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // But another ko call hits cache.
+    await fetchUserWalk(user, stop, { fetch: fetchMock, lang: "ko" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it("rejects Mapbox routes >2× haversine (sanity check)", async () => {

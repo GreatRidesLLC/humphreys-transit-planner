@@ -38,8 +38,14 @@ export function roundCell(lat, lon) {
   };
 }
 
-function cacheKey(userCell, stopName) {
-  return `${CACHE_PREFIX}:${userCell.lat.toFixed(5)},${userCell.lon.toFixed(5)}::${stopName}`;
+const SUPPORTED_LANGS = new Set(["en", "ko"]);
+
+function normalizeLang(lang) {
+  return SUPPORTED_LANGS.has(lang) ? lang : "en";
+}
+
+function cacheKey(userCell, stopName, lang) {
+  return `${CACHE_PREFIX}:${lang}:${userCell.lat.toFixed(5)},${userCell.lon.toFixed(5)}::${stopName}`;
 }
 
 function lsGet(key) {
@@ -50,7 +56,21 @@ function lsSet(key, value) {
   try { globalThis.localStorage?.setItem(key, value); } catch { /* quota / private mode */ }
 }
 
-// Returns {seconds, meters, source: "mapbox"} on success, or null on any
+function sanitizeSteps(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const s of raw) {
+    if (!s || typeof s.instruction !== "string") continue;
+    out.push({
+      instruction: s.instruction,
+      distance: Number.isFinite(s.distance) ? s.distance : 0,
+      duration: Number.isFinite(s.duration) ? s.duration : 0,
+    });
+  }
+  return out;
+}
+
+// Returns {seconds, meters, steps, source: "mapbox"} on success, or null on any
 // failure (network, sanity reject, invalid response). Callers must be
 // prepared for null and fall back to haversine.
 export async function fetchUserWalk(userCoords, stopName, opts = {}) {
@@ -61,8 +81,9 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   const straight = haversineMeters(userCoords.lat, userCoords.lon, stop.lat, stop.lon);
   if (straight < MIN_METERS_FOR_MAPBOX) return null;
 
+  const lang = normalizeLang(opts.lang);
   const cell = roundCell(userCoords.lat, userCoords.lon);
-  const key = cacheKey(cell, stopName);
+  const key = cacheKey(cell, stopName, lang);
   const cached = lsGet(key);
   if (cached) {
     try {
@@ -74,7 +95,7 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   const fetchImpl = opts.fetch || globalThis.fetch;
   if (!fetchImpl) return null;
 
-  const url = `/api/walk?flat=${cell.lat}&flon=${cell.lon}&tlat=${stop.lat}&tlon=${stop.lon}`;
+  const url = `/api/walk?flat=${cell.lat}&flon=${cell.lon}&tlat=${stop.lat}&tlon=${stop.lon}&lang=${lang}`;
   let body;
   try {
     const r = await fetchImpl(url);
@@ -89,13 +110,18 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   // its route probably threaded a nonexistent path.
   if (body.meters > straight * SANITY_RATIO) return null;
 
-  const value = { seconds: body.seconds, meters: body.meters, source: "mapbox" };
+  const value = {
+    seconds: body.seconds,
+    meters: body.meters,
+    steps: sanitizeSteps(body.steps),
+    source: "mapbox",
+  };
   lsSet(key, JSON.stringify(value));
   return value;
 }
 
 // Batch prefetch for a set of stops from one origin. Returns a Map of
-// stopName → {seconds, meters, source} for those that succeeded. Missing
+// stopName → {seconds, meters, steps, source} for those that succeeded. Missing
 // entries mean "fall through to haversine". Never throws.
 export async function prefetchUserWalks(userCoords, stopNames, opts = {}) {
   const out = new Map();

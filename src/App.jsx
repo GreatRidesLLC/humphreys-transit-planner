@@ -168,6 +168,10 @@ const STRINGS = {
     minutes: m => `${m} min`,
     walkToStopMin: (m, stop) => `Walk ${m} min to ${stop}`,
     walkToDestMin: m => `Walk ${m} min to destination`,
+    showSteps: "Show directions",
+    hideSteps: "Hide directions",
+    stepsAttribution: "© Mapbox © OpenStreetMap",
+    stepDistance: m => m >= 1000 ? `${(m/1000).toFixed(1)} km` : `${m} m`,
     boardWait: (route, w) => ["Board ", route, ` · wait ~${w} min`],
     transferWait: (route, w) => ["Transfer to ", route, ` · wait ~${w} min`],
     alightRoute: route => ["Alight ", route],
@@ -299,6 +303,10 @@ const STRINGS = {
     minutes: m => `${m}분`,
     walkToStopMin: (m, stop) => `${stop}까지 도보 ${m}분`,
     walkToDestMin: m => `목적지까지 도보 ${m}분`,
+    showSteps: "안내 보기",
+    hideSteps: "안내 숨기기",
+    stepsAttribution: "© Mapbox © OpenStreetMap",
+    stepDistance: m => m >= 1000 ? `${(m/1000).toFixed(1)} km` : `${m} m`,
     boardWait: (route, w) => [route, ` 탑승 · 대기 ~${w}분`],
     transferWait: (route, w) => [route, `(으)로 환승 · 대기 ~${w}분`],
     alightRoute: route => [route, " 하차"],
@@ -823,9 +831,10 @@ function timelineRows(trip, t) {
   for (const l of trip.legs) {
     if (l.k === "xfer") continue;                      // folded into the node below
     if (l.k === "walk") {
+      const steps = Array.isArray(l.steps) && l.steps.length ? l.steps : null;
       rows.push(l.dest
-        ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt) }
-        : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true });
+        ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt), steps }
+        : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true, steps });
       continue;
     }
     const i = buses.indexOf(l);
@@ -845,6 +854,29 @@ function timelineRows(trip, t) {
     }
   }
   return rows;
+}
+
+function WalkSteps({ steps }) {
+  const { t } = useT();
+  return (
+    <details className="mt-1 group">
+      <summary className="cursor-pointer text-[11.5px] leading-4 text-link underline underline-offset-2 marker:hidden [&::-webkit-details-marker]:hidden">
+        <span className="group-open:hidden">{t.showSteps}</span>
+        <span className="hidden group-open:inline">{t.hideSteps}</span>
+      </summary>
+      <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-[11.5px] leading-[15px] text-muted-foreground">
+        {steps.map((s, i) => (
+          <li key={i}>
+            <span className="text-foreground">{s.instruction}</span>
+            {s.distance > 0 && (
+              <span className="ml-1.5 text-faint">· {t.stepDistance(s.distance)}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+      <div className="mt-1 text-[10.5px] leading-4 text-faint">{t.stepsAttribution}</div>
+    </details>
+  );
 }
 
 function TimelineRow({ row, prev, next }) {
@@ -879,7 +911,10 @@ function TimelineRow({ row, prev, next }) {
       </div>
       <div className={cn("flex min-w-0 flex-1 items-start gap-2.5", next ? (row.big||walk ? "pb-3" : "pb-2.5") : "pb-0")}>
         {walk ? (
-          <div className="min-w-0 flex-1 text-xs leading-4 text-muted-foreground">{row.label}</div>
+          <div className="min-w-0 flex-1 text-xs leading-4 text-muted-foreground">
+            {row.label}
+            {row.steps && <WalkSteps steps={row.steps}/>}
+          </div>
         ) : row.big ? (
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <div className="text-[14.5px] leading-5 font-semibold text-foreground">{row.stop}</div>
@@ -1480,7 +1515,7 @@ export default function App() {
     if (fCoords) {
       const nearby = nearbyStopNames(fCoords, 10);
       const targetStops = [fStop, ...nearby.filter(s => s !== fStop)];
-      try { walkOverrides = await prefetchUserWalks(fCoords, targetStops); }
+      try { walkOverrides = await prefetchUserWalks(fCoords, targetStops, { lang }); }
       catch { walkOverrides = null; }
     }
     setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides));
