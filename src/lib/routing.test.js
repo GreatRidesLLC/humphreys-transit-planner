@@ -652,6 +652,15 @@ describe("walkLegInfo — provenance + steps", () => {
     expect(info.steps).toBeNull();
   });
 
+  it("honors an override on the building path too (Phase 4 building fetch)", () => {
+    const bldg = Object.keys(BUILDING_COORDS).find(k => BUILDING_COORDS[k]?.lat != null);
+    const overrides = new Map([[stop, { seconds: 360, meters: 480, steps, source: "mapbox" }]]);
+    const info = walkLegInfo(bldg, stop, null, overrides);
+    expect(info.dur).toBe(6);
+    expect(info.source).toBe("mapbox");
+    expect(info.steps).toEqual(steps);
+  });
+
   it("tags a matrix hit as mapbox even though no steps were bundled", () => {
     const bldg = "12302";
     const s = STOP_COORDS["SLQs 12200s"];

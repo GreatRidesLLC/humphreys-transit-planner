@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
-  roundCell, fetchUserWalk, prefetchUserWalks, _internal,
+  roundCell, fetchUserWalk, prefetchUserWalks,
+  fetchBuildingWalk, prefetchBuildingWalks, _internal,
 } from "./walk-runtime.js";
-import { STOP_COORDS, haversineMeters } from "./routing.js";
+import { STOP_COORDS, BUILDING_COORDS, haversineMeters } from "./routing.js";
 
 // Minimal in-memory localStorage — the module reads/writes globalThis.localStorage.
 function makeLocalStorage() {
@@ -170,5 +171,44 @@ describe("prefetchUserWalks", () => {
   it("returns an empty Map when userCoords are missing", async () => {
     const result = await prefetchUserWalks(null, ["Bus Terminal"], { fetch: vi.fn() });
     expect(result.size).toBe(0);
+  });
+});
+
+describe("fetchBuildingWalk", () => {
+  // Any real bldg from BUILDING_COORDS with a lat/lon.
+  const bldgNum = Object.keys(BUILDING_COORDS).find(k => BUILDING_COORDS[k]?.lat != null);
+  const stop = "Bus Terminal";
+
+  it("returns null for unknown building", async () => {
+    const fetchMock = vi.fn();
+    expect(await fetchBuildingWalk("nope", stop, { fetch: fetchMock })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("proxies through /api/walk with the building coord and lang, caches by bldg num", async () => {
+    const steps = [{ instruction: "Head south", distance: 40, duration: 30 }];
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({ seconds: 240, meters: 320, steps, source: "mapbox" }),
+    });
+    const first = await fetchBuildingWalk(bldgNum, stop, { fetch: fetchMock, lang: "ko" });
+    expect(first).toEqual({ seconds: 240, meters: 320, steps, source: "mapbox" });
+    const url = fetchMock.mock.calls[0][0];
+    expect(url).toContain("lang=ko");
+    // The bldg's real coord should be in the URL, not a user cell.
+    const b = BUILDING_COORDS[bldgNum];
+    expect(url).toContain(`flat=${b.lat}`);
+    // Second call hits localStorage, not the network.
+    await fetchBuildingWalk(bldgNum, stop, { fetch: fetchMock, lang: "ko" });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("prefetchBuildingWalks returns a Map only for successful stops", async () => {
+    const fetchMock = vi.fn(async () => {
+      if (fetchMock.mock.calls.length === 2) return { ok: false, status: 500 };
+      return { ok: true, json: async () => ({ seconds: 200, meters: 260, steps: [], source: "mapbox" }) };
+    });
+    const result = await prefetchBuildingWalks(bldgNum, [stop, "Main Exchange (PX)"], { fetch: fetchMock });
+    expect(result).toBeInstanceOf(Map);
+    expect(result.size).toBe(1);
   });
 });

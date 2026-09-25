@@ -55,15 +55,17 @@ export function walkMinutes(bldgNum, stopName, userCoords, walkOverrides) {
 // with `steps:null`.
 export function walkLegInfo(bldgNum, stopName, userCoords, walkOverrides) {
   const s = STOP_COORDS[stopName];
+  // Runtime override wins over every static source — this is the freshly
+  // fetched Mapbox walk for the current origin (geolocation OR building).
+  const override = lookupOverride(walkOverrides, stopName);
+  if (override && typeof override.seconds === "number") {
+    return {
+      dur: secondsToWalkMin(override.seconds),
+      steps: Array.isArray(override.steps) ? override.steps : null,
+      source: "mapbox",
+    };
+  }
   if (s && userCoords && userCoords.lat != null) {
-    const override = lookupOverride(walkOverrides, stopName);
-    if (override && typeof override.seconds === "number") {
-      return {
-        dur: secondsToWalkMin(override.seconds),
-        steps: Array.isArray(override.steps) ? override.steps : null,
-        source: "mapbox",
-      };
-    }
     const meters = haversineMeters(userCoords.lat, userCoords.lon, s.lat, s.lon);
     return { dur: metersToWalkMin(meters), steps: null, source: "heuristic" };
   }

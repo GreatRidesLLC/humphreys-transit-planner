@@ -14,7 +14,7 @@ import {
   BUILDING_COORDS,
   nearbyStopNames,
 } from "./lib/routing.js";
-import { prefetchUserWalks } from "./lib/walk-runtime.js";
+import { prefetchUserWalks, prefetchBuildingWalks } from "./lib/walk-runtime.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
@@ -1516,6 +1516,11 @@ export default function App() {
       const nearby = nearbyStopNames(fCoords, 10);
       const targetStops = [fStop, ...nearby.filter(s => s !== fStop)];
       try { walkOverrides = await prefetchUserWalks(fCoords, targetStops, { lang }); }
+      catch { walkOverrides = null; }
+    } else if (fBldg) {
+      // Building origin: matrix has duration but no steps. Fetch the walk to
+      // the picked stop once so the timeline can show turn-by-turn text.
+      try { walkOverrides = await prefetchBuildingWalks(fBldg, [fStop], { lang }); }
       catch { walkOverrides = null; }
     }
     setRes(findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides));
