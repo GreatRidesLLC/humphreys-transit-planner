@@ -7,17 +7,21 @@ mapped building — user-geolocation origins are Phase 3, not here).
 
 Scope:
     stop -> stop      52 stops × 51 = 2652 pairs, both directions
-    bldg -> nearest   81 named OSM buildings within 2 km of any stop
-                      (matches App.jsx OSM_NEAREST_CAP_M = 2000)
+    bldg -> top-K     81 named OSM buildings × up to BLDG_TOP_K_STOPS
+                      stops within 2 km (matches App.jsx
+                      OSM_NEAREST_CAP_M = 2000). K > 1 gives findTrips
+                      real walk times for alternate-stop suggestions,
+                      not just the single closest stop.
 
 Output: src/data/walk_matrix.json — nested dict, `stops[src][dst]` and
 `bldgs[bldg][stop]` each carry `{seconds, meters}`. `_meta.source_hash`
 is a SHA-256 of the two source coord files; a rerun with an unchanged
-hash short-circuits without hitting the API.
+hash short-circuits without hitting the API. Widening K only adds
+missing pair keys on the next run; existing entries are kept.
 
 Reads MAPBOX_TOKEN from env. `source .env.mapbox` before running.
-Requires network. Free-tier Mapbox comfortably absorbs ~2.7k Directions
-calls per rebuild.
+Requires network. Free-tier Mapbox comfortably absorbs ~3k Directions
+calls per rebuild (K=5 adds ~325 bldg pairs on top of the stop matrix).
 """
 
 import hashlib
@@ -41,6 +45,12 @@ OUT_PATH = REPO / "src/data/walk_matrix.json"
 # Matches App.jsx OSM_NEAREST_CAP_M — buildings farther than this from any
 # stop are outside the shuttle footprint and never surface in search.
 OSM_NEAREST_CAP_M = 2000
+
+# Precompute walk times to the K nearest stops per building (within the
+# cap above), not just the single closest. Lets findTrips render real
+# Mapbox walk times when it recommends an alternate stop that happens to
+# have a better bus. Set to 1 to restore the original nearest-only mode.
+BLDG_TOP_K_STOPS = 5
 
 # Mapbox Directions free-tier caps around 300 req/min (~5/sec). Keep a
 # small headroom to survive burst variance and background traffic.
@@ -80,15 +90,17 @@ def content_hash(*paths):
     return h.hexdigest()[:16]
 
 
-def nearest_stop(lat, lon, stops):
-    best_name, best_m = None, float("inf")
+def nearest_stops(lat, lon, stops, k, cap_m):
+    """Return up to k (name, meters) pairs within cap_m, closest first."""
+    ranked = []
     for name, s in stops.items():
         if s.get("lat") is None:
             continue
         m = haversine_m(lat, lon, s["lat"], s["lon"])
-        if m < best_m:
-            best_name, best_m = name, m
-    return best_name, best_m
+        if m <= cap_m:
+            ranked.append((name, m))
+    ranked.sort(key=lambda x: x[1])
+    return ranked[:k]
 
 
 def fetch_walking(a_lon, a_lat, b_lon, b_lat):
@@ -157,13 +169,12 @@ def main():
     for bnum, b in bldgs.items():
         if not b.get("name") or b.get("lat") is None:
             continue
-        name, dist = nearest_stop(b["lat"], b["lon"], stops)
-        if not name or dist > OSM_NEAREST_CAP_M:
-            continue
-        if result["bldgs"].get(bnum, {}).get(name) is not None:
-            continue
-        s = stops[name]
-        tasks.append((b["lat"], b["lon"], s["lat"], s["lon"], ("bldgs", bnum, name)))
+        top = nearest_stops(b["lat"], b["lon"], stops, BLDG_TOP_K_STOPS, OSM_NEAREST_CAP_M)
+        for name, _dist in top:
+            if result["bldgs"].get(bnum, {}).get(name) is not None:
+                continue
+            s = stops[name]
+            tasks.append((b["lat"], b["lon"], s["lat"], s["lon"], ("bldgs", bnum, name)))
 
     already_have = (sum(len(v) for v in result["stops"].values())
                     + sum(len(v) for v in result["bldgs"].values()))
