@@ -14,6 +14,7 @@ import {
   BUILDING_COORDS,
   STOP_COORDS,
   nearbyStopNames,
+  haversineMeters,
 } from "./lib/routing.js";
 import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
 import { usePlaceSearch } from "./lib/search-runtime.js";
@@ -230,6 +231,9 @@ const STRINGS = {
     mapaAppStore: "App Store",
     mapaPlayStore: "Google Play",
     feedbackLink: "Report an issue or suggest a fix",
+    sorryNoDirections: "Sorry, we don't have walking directions for this trip yet.",
+    sorryNoTrip: "Sorry, we don't have the data to help with this trip yet.",
+    sorryTellUs: "Tell us about it so we can log it and find a fix",
     noticeTitle: "Before you start",
     noticeBody: "This is an unofficial, community-built trip planner. It is not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. For official garrison information, use MAPA (My Army Post App), the official U.S. Army app — linked at the bottom of every page.",
     noticeAck: "I understand — continue",
@@ -370,6 +374,9 @@ const STRINGS = {
     mapaAppStore: "App Store",
     mapaPlayStore: "Google Play",
     feedbackLink: "오류 신고 또는 수정 제안",
+    sorryNoDirections: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다.",
+    sorryNoTrip: "죄송합니다. 이 여정을 안내할 데이터가 아직 없습니다.",
+    sorryTellUs: "알려주시면 기록하고 해결 방법을 찾겠습니다",
     noticeTitle: "시작하기 전에",
     noticeBody: "이 앱은 비공식 사용자 제작 교통 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 공식 기지 정보는 미 육군 공식 앱 MAPA(My Army Post App)를 이용하세요. 링크는 각 페이지 하단에 있습니다.",
     noticeAck: "확인했습니다 — 계속",
@@ -588,6 +595,9 @@ const PILL_HALF = HIT44 + " h-full rounded-none px-1.5 text-muted-foreground hov
 // top-K. The router still considers every stop within a 10-min walk; ones
 // past the 5 nearest use the haversine estimate.
 const WALK_PREFETCH_K = 5;
+// Mirrors the Worker's MAX_WALK_M: longer direct walks are refused there,
+// so the client doesn't ask.
+const DIRECT_WALK_MAX_M = 2500;
 
 const loadWhenPicker = () => import("@/components/trip-when-picker.jsx");
 const TripWhenPicker = lazy(loadWhenPicker);
@@ -1094,8 +1104,21 @@ function OtherTrips({ trips }) {
   );
 }
 
+// Shown when we leave the user without actionable help (no walking
+// directions, or no way to connect the trip): apologise and point at the
+// feedback form so the gap gets logged.
+function SorryNote({ text }) {
+  const { t } = useT();
+  return (
+    <div className="pt-3 text-[12.5px] leading-[1.6] text-muted-foreground">
+      {text}{" "}
+      <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">{t.sorryTellUs}</a>
+    </div>
+  );
+}
+
 // ─── Advisory cards (walk / same-stop) ────────────────────────────────────────
-function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null }) {
+function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null, sorry = null }) {
   return (
     <Card className={cn(
       "shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]",
@@ -1121,13 +1144,14 @@ function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null 
         {steps && steps.length > 0 && (
           <div className="mt-3 w-full text-left"><WalkSteps steps={steps}/></div>
         )}
+        {sorry && <SorryNote text={sorry}/>}
       </CardContent>
     </Card>
   );
 }
 
 // ─── No trips ─────────────────────────────────────────────────────────────────
-function NoTrips({ body, endTimes, onTryTomorrow, onChangeTime }) {
+function NoTrips({ body, endTimes, onTryTomorrow, onChangeTime, sorry = null }) {
   const { t } = useT();
   return (
     <Card className="border bg-card shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]">
@@ -1148,6 +1172,7 @@ function NoTrips({ body, endTimes, onTryTomorrow, onChangeTime }) {
             ))}
           </div>
         )}
+        {sorry && <SorryNote text={sorry}/>}
         <div className="flex w-full gap-2 pt-4">
           <Button variant="outline" onClick={onTryTomorrow} className={NOTRIPS_BTN}>{t.tryTomorrow}</Button>
           <Button variant="outline" onClick={onChangeTime} className={NOTRIPS_BTN}>{t.changeTime}</Button>
@@ -1621,9 +1646,12 @@ export default function App() {
       }
     }
     const trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides, destWalkOverrides);
-    // When the planner recommends walking the whole way, fetch turn-by-turn
-    // for that direct pair too so the advisory card can show steps.
-    if (trips.walkOnly) {
+    // Fetch turn-by-turn for the direct pair when the planner recommends
+    // walking, or when no shuttle path exists at all. In the second case
+    // Mapbox is the only help left, so it is offered even past the planner's
+    // 15-min walk cap (the Worker still refuses pairs over 2.5 km).
+    const noShuttlePath = !trips.sameStop && !trips.trips.length && !trips.walkOnly && trips.noPathEver;
+    if (trips.walkOnly || noShuttlePath) {
       // Mirror routing.js resolveCoords: user geo → building centroid →
       // stop coord. Stop-only pairs (no building on either side) still get
       // real turn-by-turn as long as the stops themselves have coords.
@@ -1632,11 +1660,19 @@ export default function App() {
         || STOP_COORDS[fStop];
       const destCoords = (tBldg ? BUILDING_COORDS[tBldg] : null)
         || STOP_COORDS[tStop];
-      if (originCoords?.lat != null && destCoords?.lat != null) {
+      if (originCoords?.lat != null && destCoords?.lat != null
+          && haversineMeters(originCoords.lat, originCoords.lon, destCoords.lat, destCoords.lon) <= DIRECT_WALK_MAX_M) {
         try {
           const hit = await fetchDirectWalk(originCoords, destCoords, { lang });
           if (hit) {
-            trips.walkOnly = { ...trips.walkOnly, seconds: hit.seconds, steps: hit.steps, source: "mapbox" };
+            // The Mapbox walk replaces the straight-line estimate, including
+            // time and distance. If the real walk is no faster than the best
+            // bus (e.g. around the airfield fence), drop "Walking is faster".
+            const minutes = Math.max(1, Math.ceil(hit.seconds / 60));
+            const best = trips.trips[0];
+            trips.walkOnly = best && best.total <= minutes ? null : {
+              minutes, meters: hit.meters, seconds: hit.seconds, steps: hit.steps, source: "mapbox",
+            };
           }
         } catch { /* keep the haversine walkOnly */ }
       }
@@ -1961,12 +1997,12 @@ export default function App() {
                   const { minutes, meters, steps } = results.walkOnly;
                   return <AdvisoryCard icon={Footprints} title={t.walkInsteadTitle}
                     body={t.walkInsteadBody(minutes, meters)}
-                    steps={steps}/>;
+                    steps={steps} sorry={steps?.length ? null : t.sorryNoDirections}/>;
                 }
                 const overnight = results.overnight || [];
                 const overnightDirect = overnight.filter(o => o.type === "direct");
                 const overnightXfer = overnight.filter(o => o.type === "xfer");
-                let body, ids = [];
+                let body, ids = [], sorry = null;
                 if (overnightDirect.length) {
                   ids = idsFromNames([...new Set(overnightDirect.flatMap(o => o.routes))]);
                   body = t.noTripsOvernightDirect(<RouteNameList ids={ids} full/>);
@@ -1991,11 +2027,13 @@ export default function App() {
                   parts.push(<br key="br2"/>);
                   parts.push(t.noPathNoShared);
                   body = parts;
+                  sorry = t.sorryNoTrip;
                 } else if (results.filtered.length > 0) {
                   ids = idsFromNames(results.filtered);
                   body = t.noTripsOOS(<RouteNameList ids={ids} full/>);
                 } else {
                   body = [t.noTripsNoPath];
+                  sorry = t.sorryNoTrip;
                 }
                 // Mono line of when each named route actually stops for the day
                 // — or when it next resumes, if it does not run today at all
@@ -2013,7 +2051,7 @@ export default function App() {
                     return { id, hm, kind: "resume" };
                   })
                   .filter(Boolean);
-                return <NoTrips body={body} endTimes={ends.length ? ends : null}
+                return <NoTrips body={body} sorry={sorry} endTimes={ends.length ? ends : null}
                   onTryTomorrow={tryTomorrow} onChangeTime={changeTime}/>;
               })() : (
                 <>
@@ -2021,6 +2059,7 @@ export default function App() {
                     <AdvisoryCard icon={Footprints} title={t.walkFasterTitle}
                       body={t.walkFasterBody(results.walkOnly.minutes, results.walkOnly.meters)}
                       steps={results.walkOnly.steps}
+                      sorry={results.walkOnly.steps?.length ? null : t.sorryNoDirections}
                       emphasis/>
                   )}
                   <FastestTrip trip={results.trips[0]}/>
