@@ -36,6 +36,56 @@ const SEARCH_EDGE_TTL_S = 60 * 60 * 24; // 1 day (search)
 // jitter at the gates. Off-post pairs/queries never round-trip Mapbox.
 const HUMPHREYS_BBOX = { minLat: 36.945, maxLat: 36.980, minLon: 126.985, maxLon: 127.045 };
 const HUMPHREYS_BBOX_STR = `${HUMPHREYS_BBOX.minLon},${HUMPHREYS_BBOX.minLat},${HUMPHREYS_BBOX.maxLon},${HUMPHREYS_BBOX.maxLat}`;
+// Cost guards. Every Mapbox call is billed, so the Worker bounds what a
+// cache-busting client can make it spend:
+//   - Walk endpoints are snapped server-side to the same ~30 m grid the
+//     client uses (walk-runtime.js roundCell), so jittered coords collapse
+//     onto one cache entry instead of minting a fresh billed pair each time.
+//   - Pairs further apart than MAX_WALK_M are refused. The client only asks
+//     for stops within a 10-min walk, a 15-min walk-only trip, or an OSM
+//     building's nearest stop (capped at 2 km), so nothing legit is longer.
+//   - API_LIMITER (wrangler.jsonc) caps upstream Mapbox calls per client IP.
+//     It is only consulted on an edge-cache miss: cached answers cost nothing
+//     and are never throttled. A 429 is handled like any failure by the
+//     client (haversine walk, local-only search).
+const LAT_CELL = 0.00027;
+const LON_CELL = 0.00034;
+const MAX_WALK_M = 2500;
+
+function snap(v, cell) {
+  return Number((Math.round(v / cell) * cell).toFixed(6));
+}
+
+function haversineMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// true when this client may make another billed upstream call. Fails open
+// if the binding is missing (local dev without it) or the limiter errors:
+// the limiter is a guard, never a reason to break the app.
+async function underUpstreamLimit(request, env) {
+  if (!env.API_LIMITER) return true;
+  const ip = request.headers.get("cf-connecting-ip") || "unknown";
+  try {
+    const { success } = await env.API_LIMITER.limit({ key: ip });
+    return success;
+  } catch {
+    return true;
+  }
+}
+
+function tooMany() {
+  return new Response(JSON.stringify({ error: "rate limited" }), {
+    status: 429,
+    headers: { "Content-Type": "application/json", "Retry-After": "60", ...CORS_HEADERS },
+  });
+}
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -195,28 +245,42 @@ async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin, lang
 
 async function handleWalk(request, env, ctx) {
   const url = new URL(request.url);
-  const fLat = parseCoord(url.searchParams.get("flat"));
-  const fLon = parseCoord(url.searchParams.get("flon"));
-  const tLat = parseCoord(url.searchParams.get("tlat"));
-  const tLon = parseCoord(url.searchParams.get("tlon"));
+  const rawFLat = parseCoord(url.searchParams.get("flat"));
+  const rawFLon = parseCoord(url.searchParams.get("flon"));
+  const rawTLat = parseCoord(url.searchParams.get("tlat"));
+  const rawTLon = parseCoord(url.searchParams.get("tlon"));
   const lang = url.searchParams.get("lang") || "en";
-  if (fLat == null || fLon == null || tLat == null || tLon == null) {
+  if (rawFLat == null || rawFLon == null || rawTLat == null || rawTLon == null) {
     return badRequest("flat, flon, tlat, tlon required");
   }
+  const fLat = snap(rawFLat, LAT_CELL), fLon = snap(rawFLon, LON_CELL);
+  const tLat = snap(rawTLat, LAT_CELL), tLon = snap(rawTLon, LON_CELL);
   // On-post-only directions is a product rule, not just a quota guard —
   // off-post pairs get a 400 so the client falls back to the haversine
   // mock rather than leaking a Korean-street turn-by-turn.
   if (!inHumphreysBbox(fLat, fLon) || !inHumphreysBbox(tLat, tLon)) {
     return badRequest("coords outside on-post area");
   }
+  if (haversineMeters(fLat, fLon, tLat, tLon) > MAX_WALK_M) {
+    return badRequest("walk too long");
+  }
   if (!env.MAPBOX_TOKEN) return json({ error: "server misconfigured" }, 500);
 
-  // Edge-cache probe. The URL is already the cache key (coord-rounded on the
-  // client), so a repeat cell hits cache without a Mapbox call.
+  // Edge-cache probe, keyed on the snapped coords (plus lang and the
+  // client's v= schema tag) so any request inside the same cells shares one
+  // entry. Other query params are dropped from the key on purpose.
   const cache = caches.default;
-  const cacheKey = new Request(url.toString(), { method: "GET" });
+  const keyUrl = new URL(url.origin + url.pathname);
+  keyUrl.searchParams.set("flat", fLat);
+  keyUrl.searchParams.set("flon", fLon);
+  keyUrl.searchParams.set("tlat", tLat);
+  keyUrl.searchParams.set("tlon", tLon);
+  keyUrl.searchParams.set("lang", SUPPORTED_LANGS.has(lang) ? lang : "en");
+  keyUrl.searchParams.set("v", url.searchParams.get("v") || "");
+  const cacheKey = new Request(keyUrl.toString(), { method: "GET" });
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
+  if (!(await underUpstreamLimit(request, env))) return tooMany();
 
   try {
     const { seconds, meters, steps } = await fetchMapboxWalk(
@@ -249,6 +313,7 @@ async function handleSearch(request, env, ctx) {
   const cacheKey = new Request(url.toString(), { method: "GET" });
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
+  if (!(await underUpstreamLimit(request, env))) return tooMany();
 
   // bbox hard-clamp keeps results on-post. Same rectangle handleWalk uses
   // as its coord gate — a hit here is a coord that also passes /api/walk.
