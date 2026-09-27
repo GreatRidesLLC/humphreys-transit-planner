@@ -306,7 +306,11 @@ Asymptotic zero runtime cost. Only automate once KV proves *which* cells are hot
    - 2.5 km max walk pair.
    - Runtime walk prefetch capped at the 5 nearest stops per trip end (`WALK_PREFETCH_K`), average 9.0 → 4.7 Directions calls.
    - Mapbox billing limits set in the dashboard.
-4. *Not started:* Isochrone "stops reachable in N min"; a `BUILDINGS` directory sweep via Search Box POIs (deprioritized because of patchy coverage inside the DoD footprint and rename churn).
+4. **Places everywhere** (PR pending, 2026-09-28).
+   - `scripts/fetch_osm_places.py` → `src/data/places_osm.json` adds 26 named OSM places that have no building number. Humphreys Central Elementary School was the reported gap.
+   - Mapbox place search now runs in **To** as well as From. Place destinations carry `tCoords`.
+   - Destination walks are now fetched in the right direction (alight stop → destination). They were previously requested destination → stop, so steps read backwards.
+5. *Not started:* Isochrone "stops reachable in N min"; a `BUILDINGS` directory sweep via Search Box POIs (deprioritized because of patchy coverage inside the DoD footprint and rename churn).
 
 Free tiers, checked 2026-09-27: Directions 100k req/mo, Search Box `/forward` 50k req/mo (billed per request, not per session).
 
