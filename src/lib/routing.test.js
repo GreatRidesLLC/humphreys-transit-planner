@@ -9,6 +9,7 @@ import {
   STOP_COORDS, nearestStopTo,
   BUILDING_COORDS, WALK_MATRIX,
   stopDistance,
+  nearbyStopNames,
 } from "./routing.js";
 
 // Reference dates: 2026-06-29 is a Monday, 2026-07-03 Friday, 2026-07-04 Saturday.
@@ -742,5 +743,14 @@ describe("nextServiceStart", () => {
     const d = nextServiceStart(ROUTES.BLUE, satAt(9, 0));
     expect(d.getDay()).toBe(1);
     expect(d.getHours()).toBe(8);
+  });
+});
+
+describe("nearbyStopNames limit", () => {
+  const coords = { lat: 36.9642, lon: 127.0024 };
+  it("keeps only the N nearest, in the same order as the unlimited list", () => {
+    const all = nearbyStopNames(coords, 10);
+    expect(all.length).toBeGreaterThan(5);
+    expect(nearbyStopNames(coords, 10, 5)).toEqual(all.slice(0, 5));
   });
 });

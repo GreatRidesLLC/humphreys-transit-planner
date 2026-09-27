@@ -572,6 +572,12 @@ const HIT44 = "relative after:absolute after:inset-x-0 after:-inset-y-[10px] aft
 // Half of the header pill: square corners so the two halves meet on the
 // divider, full height so the 44px hit area sits symmetrically around it.
 const PILL_HALF = HIT44 + " h-full rounded-none px-1.5 text-muted-foreground hover:text-foreground";
+// Stops per trip end that get a runtime Mapbox walk (each one a billed
+// Directions call on a cache miss). Matches the walk matrix's per-building
+// top-K. The router still considers every stop within a 10-min walk; ones
+// past the 5 nearest use the haversine estimate.
+const WALK_PREFETCH_K = 5;
+
 const loadWhenPicker = () => import("@/components/trip-when-picker.jsx");
 const TripWhenPicker = lazy(loadWhenPicker);
 
@@ -1522,14 +1528,14 @@ export default function App() {
     // computed off the building centroid so the fallback pair search can
     // surface Mapbox steps too.
     if (fCoords) {
-      const nearby = nearbyStopNames(fCoords, 10);
-      const targetStops = [fStop, ...nearby.filter(s => s !== fStop)];
+      const nearby = nearbyStopNames(fCoords, 10, WALK_PREFETCH_K);
+      const targetStops = [fStop, ...nearby.filter(s => s !== fStop)].slice(0, WALK_PREFETCH_K);
       try { walkOverrides = await prefetchUserWalks(fCoords, targetStops, { lang }); }
       catch { walkOverrides = null; }
     } else if (fBldg) {
       const b = BUILDING_COORDS[fBldg];
-      const nearby = b && b.lat != null ? nearbyStopNames({ lat: b.lat, lon: b.lon }, 10) : [];
-      const targetStops = [fStop, ...nearby.filter(s => s !== fStop)];
+      const nearby = b && b.lat != null ? nearbyStopNames({ lat: b.lat, lon: b.lon }, 10, WALK_PREFETCH_K) : [];
+      const targetStops = [fStop, ...nearby.filter(s => s !== fStop)].slice(0, WALK_PREFETCH_K);
       try { walkOverrides = await prefetchBuildingWalks(fBldg, targetStops, { lang }); }
       catch { walkOverrides = null; }
     } else {
@@ -1540,7 +1546,7 @@ export default function App() {
       // its nearby stops so those candidate walks carry Mapbox steps.
       const s = STOP_COORDS[fStop];
       if (s && s.lat != null) {
-        const nearby = nearbyStopNames({ lat: s.lat, lon: s.lon }, 10).filter(x => x !== fStop);
+        const nearby = nearbyStopNames({ lat: s.lat, lon: s.lon }, 10, WALK_PREFETCH_K + 1).filter(x => x !== fStop).slice(0, WALK_PREFETCH_K);
         try { walkOverrides = await prefetchUserWalks({ lat: s.lat, lon: s.lon }, nearby, { lang }); }
         catch { walkOverrides = null; }
       }
@@ -1551,8 +1557,8 @@ export default function App() {
     // maneuver text on each leg.
     if (tBldg) {
       const b = BUILDING_COORDS[tBldg];
-      const nearby = b && b.lat != null ? nearbyStopNames({ lat: b.lat, lon: b.lon }, 10) : [];
-      const targetStops = [tStop, ...nearby.filter(s => s !== tStop)];
+      const nearby = b && b.lat != null ? nearbyStopNames({ lat: b.lat, lon: b.lon }, 10, WALK_PREFETCH_K) : [];
+      const targetStops = [tStop, ...nearby.filter(s => s !== tStop)].slice(0, WALK_PREFETCH_K);
       try { destWalkOverrides = await prefetchBuildingWalks(tBldg, targetStops, { lang }); }
       catch { destWalkOverrides = null; }
     } else {
@@ -1561,7 +1567,7 @@ export default function App() {
       // to the picked destination stop.
       const s = STOP_COORDS[tStop];
       if (s && s.lat != null) {
-        const nearby = nearbyStopNames({ lat: s.lat, lon: s.lon }, 10).filter(x => x !== tStop);
+        const nearby = nearbyStopNames({ lat: s.lat, lon: s.lon }, 10, WALK_PREFETCH_K + 1).filter(x => x !== tStop).slice(0, WALK_PREFETCH_K);
         try { destWalkOverrides = await prefetchUserWalks({ lat: s.lat, lon: s.lon }, nearby, { lang }); }
         catch { destWalkOverrides = null; }
       }
