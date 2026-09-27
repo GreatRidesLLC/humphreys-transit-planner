@@ -264,7 +264,7 @@ Promising enough to plan adoption. Not yet greenlit — Phase 1 gates below must
 
 Only the **bldg→nearest-stop** slice is consumed by `walkMinutes` today; the **stop→stop** slice is generated and ready for a follow-up migration of `candidateStops()` from haversine to matrix (currently unmigrated by design — Phase 2's userland win is the building-origin walk leg).
 
-**Phase 3 — Runtime for geolocation-origin trips** ✅ **shipped 2026-09-24 (PR pending)**
+**Phase 3 — Runtime for geolocation-origin trips** ✅ **shipped 2026-09-24 (v1.4.0)**
 1. `worker/index.js` handles `GET /api/walk?flat=&flon=&tlat=&tlon=` on the existing Cloudflare Worker (per ADR 0001). Worker holds the `MAPBOX_TOKEN` secret; proxies to Mapbox Directions (`mapbox/walking`); returns `{ seconds, meters, source: "mapbox" }`. `caches.default` edge-caches per URL (already coord-rounded by the client) for 30 days; non-API paths hand off to the static-assets binding.
 2. `src/lib/walk-runtime.js` `fetchUserWalk(userCoords, stopName)` calls the Worker only when `userCoords` are set. Origin is snapped to a ~30 m grid (`roundCell`) before lookup and `localStorage`-cached so repeat trips from the same phone at the same origin cost zero API calls across sessions. Pairs under 60 m haversine skip the network entirely (GPS jitter dominates).
 3. Cache-key prefix `htp.walk.<source_hash>` where `source_hash` is read from `walk_matrix.json._meta.source_hash` (SHA-256 of `stop_coords.json` + `buildings_osm.json`). Regenerating the matrix rotates the prefix and self-invalidates every stale walk on next lookup. No explicit TTL beyond that.
@@ -297,6 +297,19 @@ Asymptotic zero runtime cost. Only automate once KV proves *which* cells are hot
 
 **Known non-issue** (decided 2026-09-26 not to fix): step text doesn't re-translate on lang toggle. Steps are data cached at plan time; toggle only swaps static UI strings. Re-plan picks up the other locale's cached bucket. Fix path is a `useEffect(..., [lang])` that swaps steps in place from the other-lang localStorage entries — no extra Mapbox calls if the pair was visited in both langs.
 
+**Coverage expansion** ✅ **shipped 2026-09-27 (v1.6.0)**. Widens where real Mapbox walks apply, so fewer trips fall back to the haversine estimate.
+1. **Building → top-5 stops in the matrix** (PR #114). `BLDG_TOP_K_STOPS = 5` in `scripts/gen_walk_matrix.py`. Building pairs went from 81 to 405 and `walk_matrix.json` from 250 to 283 KB. Alternative board stops now get real walk times.
+2. **Free-text place origin** (PRs #115, #116, #120). The Worker `/api/search` proxies Mapbox **Search Box `/forward`**, bbox-clamped to post, with `proximity` pinned to post centre. Geocoding v6 was tried first and dropped because it indexes streets only, with no POIs. The From dropdown lists a "Places" section (`© Mapbox`) below local matches. A picked place becomes `fCoords {kind: "place"}` plus its nearest stop, reusing the geolocation walk path. Client: `src/lib/search-runtime.js`, with a 300 ms debounce and a 1-day per-query `localStorage` cache. Recents and favorites keep the place.
+3. **Cost guards** (PRs #118, #119).
+   - `API_LIMITER` ratelimit binding: 40 billed Mapbox calls/min per IP, checked only on an edge-cache miss.
+   - Server-side 30 m snap on `/api/walk` so jittered coords share a cache entry.
+   - 2.5 km max walk pair.
+   - Runtime walk prefetch capped at the 5 nearest stops per trip end (`WALK_PREFETCH_K`), average 9.0 → 4.7 Directions calls.
+   - Mapbox billing limits set in the dashboard.
+4. *Not started:* Isochrone "stops reachable in N min"; a `BUILDINGS` directory sweep via Search Box POIs (deprioritized because of patchy coverage inside the DoD footprint and rename churn).
+
+Free tiers, checked 2026-09-27: Directions 100k req/mo, Search Box `/forward` 50k req/mo (billed per request, not per session).
+
 **Phase 5 — Optional: map polyline** *(gated on Phases 1-4 + explicit user greenlight)*
 Revive map tab from `archive/map-tab` to render Mapbox walking polylines. Reopens the 2026-08-22 decision to retire the tab; do not open lightly.
 
@@ -305,7 +318,7 @@ Revive map tab from `archive/map-tab` to render Mapbox walking polylines. Reopen
 - **Billing card**: Mapbox free tier is 100k Matrix + 100k Directions calls/mo. Phase 2 shipped ~2.7k Directions calls per rebuild (well inside free tier); Phase 3 will add one Directions call per plan-with-geolocation (bounded by user volume). Mapbox required a card on file to activate the account.
 - **Token scoping**: build-time token used locally for Phase 2 via a gitignored `.env.mapbox` (KEY=VALUE, sourced with `set -a && . ./.env.mapbox && set +a`). Phase 3 runtime token → Cloudflare Worker secret via `wrangler secret put MAPBOX_TOKEN`. Two separate tokens with URL restrictions per Mapbox best practice. CI-side build-token still to wire when a coord refresh drives a matrix regeneration in CI (currently regenerated locally on demand).
 - **Regenerate cadence**: matrix rebuild when `stop_coords.json` changes (new stops, refined hand-pins) or when Camp Humphreys OSM footway data materially improves upstream. Detect via content hash; log the trigger in the commit message.
-- **License compliance**: `© Mapbox © OpenStreetMap` attribution line ships under every `<WalkSteps>` disclosure (v1.5.0), so Directions-only usage is covered. No footer-wide attribution added yet — Mapbox ToS is satisfied by the per-instance credit next to the rendered directions.
+- **License compliance**: `© Mapbox © OpenStreetMap` attribution line ships under every `<WalkSteps>` disclosure (v1.5.0), so Directions-only usage is covered. Search results carry `© Mapbox` on the Places section header (v1.6.0). No footer-wide attribution added yet — Mapbox ToS is satisfied by the per-instance credit next to the rendered directions.
 
 #### Related memory
 See [[mapbox-walking-data]] for the origin of the suggestion and the base constraints; [[distribution-options]] + `docs/adr/0001-static-first-no-backend.md` for why the Worker proxy is the backend of choice.
