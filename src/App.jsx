@@ -234,6 +234,8 @@ const STRINGS = {
     sorryNoDirections: "Sorry, we don't have walking directions for this trip yet.",
     sorryNoTrip: "Sorry, we don't have the data to help with this trip yet.",
     sorryTellUs: "Tell us about it so we can log it and find a fix",
+    walkLegSorry: "Sorry, we don't have walking directions for this leg yet.",
+    walkLegSorryEst: "Sorry, we don't have walking directions for this leg yet. The time is padded 1.5× to be safe.",
     noticeTitle: "Before you start",
     noticeBody: "This is an unofficial, community-built trip planner. It is not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. For official garrison information, use MAPA (My Army Post App), the official U.S. Army app — linked at the bottom of every page.",
     noticeAck: "I understand — continue",
@@ -377,6 +379,8 @@ const STRINGS = {
     sorryNoDirections: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다.",
     sorryNoTrip: "죄송합니다. 이 여정을 안내할 데이터가 아직 없습니다.",
     sorryTellUs: "알려주시면 기록하고 해결 방법을 찾겠습니다",
+    walkLegSorry: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다.",
+    walkLegSorryEst: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다. 여유 있게 예상 시간을 1.5배로 잡았습니다.",
     noticeTitle: "시작하기 전에",
     noticeBody: "이 앱은 비공식 사용자 제작 교통 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 공식 기지 정보는 미 육군 공식 앱 MAPA(My Army Post App)를 이용하세요. 링크는 각 페이지 하단에 있습니다.",
     noticeAck: "확인했습니다 — 계속",
@@ -897,9 +901,14 @@ function timelineRows(trip, t) {
     if (l.k === "xfer") continue;                      // folded into the node below
     if (l.k === "walk") {
       const steps = Array.isArray(l.steps) && l.steps.length ? l.steps : null;
+      // A real walk with no directions still gets the trip (the rider can
+      // find their own way to the stop), plus an apology. "stop" legs are the
+      // buffer at a picked stop: nothing to walk, nothing to apologise for.
+      const sorry = steps || l.source === "stop" ? null
+        : l.source === "heuristic" ? t.walkLegSorryEst : t.walkLegSorry;
       rows.push(l.dest
-        ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt), steps }
-        : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true, steps });
+        ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt), steps, sorry }
+        : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true, steps, sorry });
       continue;
     }
     const i = buses.indexOf(l);
@@ -979,6 +988,7 @@ function TimelineRow({ row, prev, next }) {
           <div className="min-w-0 flex-1 text-xs leading-4 text-muted-foreground">
             {row.label}
             {row.steps && <WalkSteps steps={row.steps}/>}
+            {row.sorry && <SorryNote text={row.sorry} className="pt-1 text-[11.5px] leading-4"/>}
           </div>
         ) : row.big ? (
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -1107,10 +1117,10 @@ function OtherTrips({ trips }) {
 // Shown when we leave the user without actionable help (no walking
 // directions, or no way to connect the trip): apologise and point at the
 // feedback form so the gap gets logged.
-function SorryNote({ text }) {
+function SorryNote({ text, className }) {
   const { t } = useT();
   return (
-    <div className="pt-3 text-[12.5px] leading-[1.6] text-muted-foreground">
+    <div className={cn("pt-3 text-[12.5px] leading-[1.6] text-muted-foreground", className)}>
       {text}{" "}
       <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">{t.sorryTellUs}</a>
     </div>
