@@ -1118,7 +1118,7 @@ function SorryNote({ text }) {
 }
 
 // ─── Advisory cards (walk / same-stop) ────────────────────────────────────────
-function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null, sorry = null }) {
+function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null }) {
   return (
     <Card className={cn(
       "shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]",
@@ -1144,7 +1144,6 @@ function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null,
         {steps && steps.length > 0 && (
           <div className="mt-3 w-full text-left"><WalkSteps steps={steps}/></div>
         )}
-        {sorry && <SorryNote text={sorry}/>}
       </CardContent>
     </Card>
   );
@@ -1677,12 +1676,13 @@ export default function App() {
         } catch { /* keep the haversine walkOnly */ }
       }
     }
-    // Without a Mapbox walk the advice rests on a straight line, which can
-    // cut through a fence or across the airfield. Never let that guess
-    // outrank a bus: it survives only when no bus serves the trip, where the
-    // card also carries the SorryNote.
-    if (trips.walkOnly && trips.walkOnly.source !== "mapbox" && trips.trips.length) {
+    // A walking option must come with directions. Without a Mapbox route
+    // the advice rests on a straight line, which can cut through a fence or
+    // across the airfield, so it is dropped. If that leaves no trip at all,
+    // NoTrips apologises for the missing directions and links feedback.
+    if (trips.walkOnly && trips.walkOnly.source !== "mapbox") {
       trips.walkOnly = null;
+      trips.walkNoDirections = true;
     }
     setRes(trips);
     setSrch(true);
@@ -2004,7 +2004,7 @@ export default function App() {
                   const { minutes, meters, steps } = results.walkOnly;
                   return <AdvisoryCard icon={Footprints} title={t.walkInsteadTitle}
                     body={t.walkInsteadBody(minutes, meters)}
-                    steps={steps} sorry={steps?.length ? null : t.sorryNoDirections}/>;
+                    steps={steps}/>;
                 }
                 const overnight = results.overnight || [];
                 const overnightDirect = overnight.filter(o => o.type === "direct");
@@ -2058,7 +2058,7 @@ export default function App() {
                     return { id, hm, kind: "resume" };
                   })
                   .filter(Boolean);
-                return <NoTrips body={body} sorry={sorry} endTimes={ends.length ? ends : null}
+                return <NoTrips body={body} sorry={sorry || (results.walkNoDirections ? t.sorryNoDirections : null)} endTimes={ends.length ? ends : null}
                   onTryTomorrow={tryTomorrow} onChangeTime={changeTime}/>;
               })() : (
                 <>
