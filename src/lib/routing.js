@@ -85,10 +85,11 @@ export function walkLegInfo(bldgNum, stopName, userCoords, walkOverrides) {
   return { dur: metersToWalkMin(meters), steps: null, source: "heuristic" };
 }
 
-// Names of stops within `capMin` walking minutes of `coords`, using haversine
-// (the Mapbox prefetch hasn't happened yet when this is called). Bounded set
-// used to decide which pairs to prefetch from the Worker.
-export function nearbyStopNames(coords, capMin = 10) {
+// Names of stops within `capMin` walking minutes of `coords`, nearest first,
+// using haversine (the Mapbox prefetch hasn't happened yet when this is
+// called). `limit` keeps only the closest N. Bounded set used to decide which
+// pairs to prefetch from the Worker.
+export function nearbyStopNames(coords, capMin = 10, limit = Infinity) {
   if (!coords || coords.lat == null) return [];
   const out = [];
   for (const [name, s] of Object.entries(STOP_COORDS)) {
@@ -98,7 +99,7 @@ export function nearbyStopNames(coords, capMin = 10) {
     if (min <= capMin) out.push({ stop: name, min });
   }
   out.sort((a, b) => a.min - b.min);
-  return out.map(x => x.stop);
+  return out.slice(0, limit).map(x => x.stop);
 }
 
 export function nearestStopTo(coords) {

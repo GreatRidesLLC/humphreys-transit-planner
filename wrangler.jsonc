@@ -12,7 +12,15 @@
   // public token accepts them. Not a secret; committed here.
   "vars": {
     "PUBLIC_ORIGIN": "https://humphreysbus.app"
-  }
+  },
+  // Per-client-IP cap on billed Mapbox calls (edge-cache misses only; see
+  // worker/index.js cost guards). A plan from a new spot costs ~5-12 misses
+  // and a place search a few more, so 40/min leaves headroom for shared
+  // barracks / carrier NAT while stopping a script. namespace_id is an
+  // arbitrary account-unique integer.
+  "ratelimits": [
+    { "name": "API_LIMITER", "namespace_id": "1001", "simple": { "limit": 40, "period": 60 } }
+  ]
   // Secret: MAPBOX_TOKEN (Mapbox Directions API, walk-leg proxy).
   //   set via: wrangler secret put MAPBOX_TOKEN
   // See worker/index.js and Roadmap.md → Phase 3.

@@ -1,39 +1,119 @@
 {
   "_meta": {
-    "bldg_count": 81,
+    "bldg_count": 405,
     "checkpoint": "final",
-    "generated_at": "2026-09-23",
-    "pair_count": 2733,
+    "generated_at": "2026-09-26",
+    "pair_count": 3057,
     "source": "mapbox-walking-v5",
     "source_hash": "6013384938de7e39",
     "stop_count": 52
   },
   "bldgs": {
     "101": {
+      "KTO Museum": {
+        "meters": 241.5,
+        "seconds": 168.7
+      },
+      "Lodging": {
+        "meters": 106.6,
+        "seconds": 69.8
+      },
+      "Sentry Village Gate": {
+        "meters": 143.7,
+        "seconds": 96.1
+      },
       "USO Sentry Village": {
         "meters": 197.5,
         "seconds": 142.1
+      },
+      "USO Sentry Village (Opposite)": {
+        "meters": 273.2,
+        "seconds": 204.5
       }
     },
     "111": {
+      "KTO Museum": {
+        "meters": 268.7,
+        "seconds": 189.1
+      },
       "Lodging": {
         "meters": 142.4,
         "seconds": 97.8
+      },
+      "Sentry Village Burger King": {
+        "meters": 154.4,
+        "seconds": 113.2
+      },
+      "Sentry Village Gate": {
+        "meters": 179.5,
+        "seconds": 124.1
+      },
+      "USO Sentry Village": {
+        "meters": 335.5,
+        "seconds": 245.8
       }
     },
     "112": {
+      "KTO Museum": {
+        "meters": 106.1,
+        "seconds": 67.4
+      },
       "Sentry Village Burger King": {
         "meters": 67.9,
         "seconds": 49.1
+      },
+      "Sentry Village Mini Mall": {
+        "meters": 135.9,
+        "seconds": 91.1
+      },
+      "Sentry Village Shoppette": {
+        "meters": 106.5,
+        "seconds": 70.8
+      },
+      "USO Sentry Village": {
+        "meters": 172.9,
+        "seconds": 124.1
       }
     },
     "1228": {
       "Desiderio ATC Tower": {
         "meters": 379.2,
         "seconds": 304.9
+      },
+      "Eighth Army HQ": {
+        "meters": 1062.2,
+        "seconds": 754.8
+      },
+      "Pedestrian Gate": {
+        "meters": 446.6,
+        "seconds": 343.2
+      },
+      "Provider Grill DFAC": {
+        "meters": 639.5,
+        "seconds": 447.6
+      },
+      "SLQs (12200s Block)": {
+        "meters": 710.1,
+        "seconds": 514.6
       }
     },
     "12302": {
+      "Corps of Engineers": {
+        "meters": 1614.5,
+        "seconds": 1142.3
+      },
+      "Desiderio ATC Tower": {
+        "meters": 1539.8,
+        "seconds": 1145.3
+      },
+      "Eighth Army HQ": {
+        "meters": 997.0,
+        "seconds": 726.0
+      },
+      "Provider Grill DFAC": {
+        "meters": 1491.0,
+        "seconds": 1065.9
+      },
       "SLQs (12200s Block)": {
         "meters": 1261.5,
         "seconds": 932.0
@@ -43,405 +123,1493 @@
       "Desiderio ATC Tower": {
         "meters": 435.8,
         "seconds": 348.1
+      },
+      "Eighth Army HQ": {
+        "meters": 1118.7,
+        "seconds": 798.1
+      },
+      "Pedestrian Gate": {
+        "meters": 420.2,
+        "seconds": 327.8
+      },
+      "Provider Grill DFAC": {
+        "meters": 629.9,
+        "seconds": 444.9
+      },
+      "SLQs (12200s Block)": {
+        "meters": 766.6,
+        "seconds": 557.8
       }
     },
     "12380": {
+      "Desiderio ATC Tower": {
+        "meters": 768.6,
+        "seconds": 579.7
+      },
       "Eighth Army HQ": {
         "meters": 213.9,
         "seconds": 153.0
+      },
+      "Provider Grill DFAC": {
+        "meters": 862.0,
+        "seconds": 612.5
+      },
+      "SLQs (12200s Block)": {
+        "meters": 490.7,
+        "seconds": 367.6
+      },
+      "Turner Fitness Center": {
+        "meters": 4280.5,
+        "seconds": 3129.7
       }
     },
     "12400": {
+      "Desiderio ATC Tower": {
+        "meters": 1086.8,
+        "seconds": 815.7
+      },
       "Eighth Army HQ": {
         "meters": 393.4,
         "seconds": 296.8
+      },
+      "Provider Grill DFAC": {
+        "meters": 1180.2,
+        "seconds": 848.5
+      },
+      "SLQs (12200s Block)": {
+        "meters": 808.9,
+        "seconds": 603.6
+      },
+      "Turner Fitness Center": {
+        "meters": 3959.0,
+        "seconds": 2899.9
       }
     },
     "12410": {
+      "Airfield Operations": {
+        "meters": 3277.9,
+        "seconds": 2429.8
+      },
+      "Desiderio ATC Tower": {
+        "meters": 1250.6,
+        "seconds": 928.6
+      },
       "Eighth Army HQ": {
         "meters": 557.2,
         "seconds": 409.7
+      },
+      "SLQs (12200s Block)": {
+        "meters": 972.7,
+        "seconds": 716.5
+      },
+      "Turner Fitness Center": {
+        "meters": 3822.5,
+        "seconds": 2835.0
       }
     },
     "12412": {
+      "Airfield Operations": {
+        "meters": 3383.7,
+        "seconds": 2441.8
+      },
+      "Corps of Engineers": {
+        "meters": 1177.5,
+        "seconds": 843.2
+      },
+      "Desiderio ATC Tower": {
+        "meters": 1136.8,
+        "seconds": 857.3
+      },
       "Eighth Army HQ": {
         "meters": 448.6,
         "seconds": 338.0
+      },
+      "SLQs (12200s Block)": {
+        "meters": 858.9,
+        "seconds": 645.2
       }
     },
     "125": {
+      "Barracks (700s Block)": {
+        "meters": 372.2,
+        "seconds": 268.7
+      },
+      "Lodging": {
+        "meters": 359.8,
+        "seconds": 242.8
+      },
       "Morning Calm Center": {
         "meters": 110.1,
         "seconds": 71.9
+      },
+      "Sentry Village Burger King": {
+        "meters": 510.5,
+        "seconds": 354.1
+      },
+      "Sentry Village Gate": {
+        "meters": 396.9,
+        "seconds": 269.1
       }
     },
     "12600": {
+      "Airfield Operations": {
+        "meters": 2362.5,
+        "seconds": 1697.9
+      },
       "Corps of Engineers": {
         "meters": 229.1,
         "seconds": 160.2
+      },
+      "Eighth Army HQ": {
+        "meters": 1568.8,
+        "seconds": 1146.0
+      },
+      "Spartan DFAC": {
+        "meters": 1731.5,
+        "seconds": 1233.3
+      },
+      "TMP / Driver's Licensing": {
+        "meters": 1850.6,
+        "seconds": 1336.9
       }
     },
     "12601": {
+      "Airfield Operations": {
+        "meters": 2484.2,
+        "seconds": 1792.3
+      },
       "Corps of Engineers": {
         "meters": 350.8,
         "seconds": 254.6
+      },
+      "Eighth Army HQ": {
+        "meters": 1459.7,
+        "seconds": 1077.1
+      },
+      "TMP / Driver's Licensing": {
+        "meters": 1972.3,
+        "seconds": 1431.4
+      },
+      "Turner Fitness Center": {
+        "meters": 3028.8,
+        "seconds": 2197.5
       }
     },
     "1291": {
+      "Desiderio ATC Tower": {
+        "meters": 516.1,
+        "seconds": 408.2
+      },
+      "Eighth Army HQ": {
+        "meters": 1110.0,
+        "seconds": 780.7
+      },
+      "Pedestrian Gate": {
+        "meters": 939.1,
+        "seconds": 698.3
+      },
       "Provider Grill DFAC": {
         "meters": 136.2,
         "seconds": 88.5
+      },
+      "SLQs (12200s Block)": {
+        "meters": 490.6,
+        "seconds": 349.2
       }
     },
     "1296": {
+      "Desiderio ATC Tower": {
+        "meters": 534.4,
+        "seconds": 403.3
+      },
+      "Eighth Army HQ": {
+        "meters": 1180.6,
+        "seconds": 821.3
+      },
+      "Pedestrian Gate": {
+        "meters": 668.4,
+        "seconds": 482.6
+      },
       "Provider Grill DFAC": {
         "meters": 204.6,
         "seconds": 126.2
+      },
+      "SLQs (12200s Block)": {
+        "meters": 561.1,
+        "seconds": 389.8
       }
     },
     "13000": {
+      "Airfield Operations": {
+        "meters": 2698.7,
+        "seconds": 1960.7
+      },
       "Corps of Engineers": {
         "meters": 487.7,
         "seconds": 359.3
+      },
+      "Eighth Army HQ": {
+        "meters": 1442.0,
+        "seconds": 1067.6
+      },
+      "TMP / Driver's Licensing": {
+        "meters": 2186.8,
+        "seconds": 1599.8
+      },
+      "Turner Fitness Center": {
+        "meters": 3243.3,
+        "seconds": 2365.9
       }
     },
     "13013": {
+      "Airfield Operations": {
+        "meters": 2692.4,
+        "seconds": 1950.6
+      },
       "Corps of Engineers": {
         "meters": 482.1,
         "seconds": 350.7
+      },
+      "Eighth Army HQ": {
+        "meters": 1435.6,
+        "seconds": 1057.4
+      },
+      "TMP / Driver's Licensing": {
+        "meters": 2180.4,
+        "seconds": 1589.6
+      },
+      "Turner Fitness Center": {
+        "meters": 3237.0,
+        "seconds": 2355.7
       }
     },
     "13019": {
+      "Airfield Operations": {
+        "meters": 2799.4,
+        "seconds": 2018.3
+      },
       "Corps of Engineers": {
         "meters": 589.2,
         "seconds": 418.5
+      },
+      "Eighth Army HQ": {
+        "meters": 1542.7,
+        "seconds": 1125.2
+      },
+      "TMP / Driver's Licensing": {
+        "meters": 2287.5,
+        "seconds": 1657.4
+      },
+      "Turner Fitness Center": {
+        "meters": 3344.1,
+        "seconds": 2423.5
       }
     },
     "1432": {
+      "Desiderio ATC Tower": {
+        "meters": 990.0,
+        "seconds": 727.0
+      },
+      "Law Enforcement Center (DES)": {
+        "meters": 2156.4,
+        "seconds": 1568.3
+      },
       "Pedestrian Gate": {
         "meters": 373.2,
         "seconds": 277.2
+      },
+      "Provider Grill DFAC": {
+        "meters": 1057.6,
+        "seconds": 743.0
+      },
+      "SLQs (12200s Block)": {
+        "meters": 1320.9,
+        "seconds": 936.7
       }
     },
     "1750": {
+      "Barracks (700s Block)": {
+        "meters": 892.2,
+        "seconds": 618.4
+      },
+      "Brian D. Allgood Hospital": {
+        "meters": 961.8,
+        "seconds": 694.9
+      },
+      "Bus Terminal": {
+        "meters": 1014.0,
+        "seconds": 723.0
+      },
       "Law Enforcement Center (DES)": {
         "meters": 464.6,
         "seconds": 336.3
+      },
+      "Morning Calm Center": {
+        "meters": 1191.7,
+        "seconds": 820.5
       }
     },
     "1949": {
       "Collier Fitness Center": {
         "meters": 103.6,
         "seconds": 75.3
+      },
+      "Freedom Chapel": {
+        "meters": 357.1,
+        "seconds": 264.1
+      },
+      "MSG Jenkins Medical Clinic": {
+        "meters": 522.8,
+        "seconds": 393.3
+      },
+      "USO Sentry Village": {
+        "meters": 678.5,
+        "seconds": 500.6
+      },
+      "USO Sentry Village (Opposite)": {
+        "meters": 569.6,
+        "seconds": 430.0
       }
     },
     "2063": {
+      "Airfield Operations": {
+        "meters": 590.3,
+        "seconds": 404.3
+      },
+      "Barracks (6000s Block)": {
+        "meters": 1025.3,
+        "seconds": 704.2
+      },
+      "Family Housing Towers (Tropic Lightning Ave)": {
+        "meters": 852.7,
+        "seconds": 584.5
+      },
+      "Talon Cafe DFAC": {
+        "meters": 606.7,
+        "seconds": 406.7
+      },
       "Turner Fitness Center": {
         "meters": 75.0,
         "seconds": 47.5
       }
     },
     "2097": {
+      "Airfield Operations": {
+        "meters": 729.8,
+        "seconds": 500.3
+      },
+      "Barracks (6000s Block)": {
+        "meters": 969.2,
+        "seconds": 666.6
+      },
+      "Family Housing Towers (Tropic Lightning Ave)": {
+        "meters": 698.3,
+        "seconds": 480.6
+      },
       "Talon Cafe DFAC": {
         "meters": 550.5,
         "seconds": 369.2
+      },
+      "Turner Fitness Center": {
+        "meters": 337.3,
+        "seconds": 231.7
       }
     },
     "2220": {
       "Barracks (6000s Block)": {
         "meters": 860.4,
         "seconds": 594.9
+      },
+      "Family Housing Towers (5100s Block)": {
+        "meters": 937.2,
+        "seconds": 662.5
+      },
+      "Family Housing Towers (Taro Ave)": {
+        "meters": 962.5,
+        "seconds": 683.6
+      },
+      "Family Housing Towers (Tropic Lightning Ave)": {
+        "meters": 303.5,
+        "seconds": 228.2
+      },
+      "Talon Cafe DFAC": {
+        "meters": 597.7,
+        "seconds": 434.6
       }
     },
     "2230": {
       "Barracks (6000s Block)": {
         "meters": 999.1,
         "seconds": 691.1
+      },
+      "Family Housing Towers (5100s Block)": {
+        "meters": 1070.5,
+        "seconds": 751.5
+      },
+      "Family Housing Towers (Taro Ave)": {
+        "meters": 1095.9,
+        "seconds": 772.5
+      },
+      "Family Housing Towers (Tropic Lightning Ave)": {
+        "meters": 435.0,
+        "seconds": 318.8
+      },
+      "Talon Cafe DFAC": {
+        "meters": 736.3,
+        "seconds": 530.8
       }
     },
     "2240": {
       "Barracks (6000s Block)": {
         "meters": 585.9,
         "seconds": 403.8
+      },
+      "Family Housing Towers (5100s Block)": {
+        "meters": 1364.2,
+        "seconds": 965.6
+      },
+      "Family Housing Towers (Taro Ave)": {
+        "meters": 1271.9,
+        "seconds": 897.8
+      },
+      "Family Mini Mall / Gas Station": {
+        "meters": 487.3,
+        "seconds": 351.4
+      },
+      "Officer Housing": {
+        "meters": 939.1,
+        "seconds": 669.4
       }
     },
     "2250": {
+      "Barracks (6000s Block)": {
+        "meters": 902.6,
+        "seconds": 619.5
+      },
       "Family Mini Mall / Gas Station": {
         "meters": 381.9,
         "seconds": 274.1
+      },
+      "Officer Housing": {
+        "meters": 771.5,
+        "seconds": 548.3
+      },
+      "Pacific Victors Chapel": {
+        "meters": 617.1,
+        "seconds": 434.8
+      },
+      "Red Cloud Circle": {
+        "meters": 666.5,
+        "seconds": 477.6
       }
     },
     "2260": {
+      "Barracks (6000s Block)": {
+        "meters": 995.7,
+        "seconds": 689.9
+      },
       "Family Mini Mall / Gas Station": {
         "meters": 359.0,
         "seconds": 260.6
+      },
+      "Officer Housing": {
+        "meters": 624.1,
+        "seconds": 446.3
+      },
+      "Pacific Victors Chapel": {
+        "meters": 691.6,
+        "seconds": 491.9
+      },
+      "Red Cloud Circle": {
+        "meters": 519.1,
+        "seconds": 375.6
       }
     },
     "2270": {
+      "Barracks (6000s Block)": {
+        "meters": 859.5,
+        "seconds": 614.3
+      },
       "Family Mini Mall / Gas Station": {
         "meters": 181.4,
         "seconds": 139.0
+      },
+      "Officer Housing": {
+        "meters": 550.0,
+        "seconds": 391.3
+      },
+      "Pacific Victors Chapel": {
+        "meters": 478.4,
+        "seconds": 344.2
+      },
+      "Red Cloud Circle": {
+        "meters": 445.0,
+        "seconds": 320.6
       }
     },
     "301": {
+      "KTO Museum": {
+        "meters": 64.0,
+        "seconds": 39.5
+      },
+      "Sentry Village Burger King": {
+        "meters": 178.3,
+        "seconds": 127.7
+      },
+      "Sentry Village Shoppette": {
+        "meters": 119.7,
+        "seconds": 82.0
+      },
       "USO Sentry Village": {
         "meters": 0,
         "seconds": 0
+      },
+      "USO Sentry Village (Opposite)": {
+        "meters": 129.7,
+        "seconds": 97.1
       }
     },
     "3020": {
+      "Barracks (700s Block)": {
+        "meters": 822.2,
+        "seconds": 583.5
+      },
       "Brian D. Allgood Hospital": {
         "meters": 512.6,
         "seconds": 364.9
+      },
+      "Bus Terminal": {
+        "meters": 756.3,
+        "seconds": 541.4
+      },
+      "Law Enforcement Center (DES)": {
+        "meters": 442.9,
+        "seconds": 317.6
+      },
+      "Morning Calm Center": {
+        "meters": 893.6,
+        "seconds": 632.6
       }
     },
     "370": {
+      "Barracks (700s Block)": {
+        "meters": 285.8,
+        "seconds": 213.5
+      },
+      "Bus Terminal": {
+        "meters": 476.6,
+        "seconds": 346.6
+      },
+      "Lodging": {
+        "meters": 401.6,
+        "seconds": 282.1
+      },
       "Morning Calm Center": {
         "meters": 113.6,
         "seconds": 82.0
+      },
+      "Sentry Village Gate": {
+        "meters": 438.7,
+        "seconds": 308.5
       }
     },
     "400": {
+      "KTO Museum": {
+        "meters": 129.7,
+        "seconds": 85.7
+      },
       "Sentry Village Burger King": {
         "meters": 15.4,
         "seconds": 10.8
+      },
+      "Sentry Village Mini Mall": {
+        "meters": 123.6,
+        "seconds": 83.5
+      },
+      "Sentry Village Shoppette": {
+        "meters": 130.1,
+        "seconds": 89.1
+      },
+      "USO Sentry Village": {
+        "meters": 196.4,
+        "seconds": 142.4
       }
     },
     "427": {
+      "KTO Museum": {
+        "meters": 348.2,
+        "seconds": 246.2
+      },
+      "MSG Jenkins Medical Clinic": {
+        "meters": 305.2,
+        "seconds": 226.9
+      },
+      "Sentry Village Burger King": {
+        "meters": 291.8,
+        "seconds": 212.1
+      },
       "Sentry Village Mini Mall": {
         "meters": 183.7,
         "seconds": 133.8
+      },
+      "Sentry Village Shoppette": {
+        "meters": 348.6,
+        "seconds": 249.5
       }
     },
     "501": {
+      "Freedom Chapel": {
+        "meters": 233.3,
+        "seconds": 169.9
+      },
       "MSG Jenkins Medical Clinic": {
         "meters": 267.2,
         "seconds": 200.6
+      },
+      "Sentry Village Mini Mall": {
+        "meters": 469.6,
+        "seconds": 341.1
+      },
+      "Sentry Village Shoppette": {
+        "meters": 431.4,
+        "seconds": 313.5
+      },
+      "USO Sentry Village (Opposite)": {
+        "meters": 316.4,
+        "seconds": 234.6
       }
     },
     "510": {
+      "Freedom Chapel": {
+        "meters": 491.2,
+        "seconds": 354.0
+      },
       "MSG Jenkins Medical Clinic": {
         "meters": 459.5,
         "seconds": 342.2
+      },
+      "Sentry Village Mini Mall": {
+        "meters": 419.3,
+        "seconds": 301.1
+      },
+      "Sentry Village Shoppette": {
+        "meters": 519.5,
+        "seconds": 375.0
+      },
+      "USO Sentry Village (Opposite)": {
+        "meters": 590.5,
+        "seconds": 439.2
       }
     },
     "5101": {
+      "Family Housing Towers (15th Street)": {
+        "meters": 336.5,
+        "seconds": 249.3
+      },
+      "Family Housing Towers (5050s Block)": {
+        "meters": 2755.6,
+        "seconds": 1942.8
+      },
       "Family Housing Towers (5100s Block)": {
         "meters": 23.6,
         "seconds": 16.7
+      },
+      "Family Housing Towers (Taro Ave)": {
+        "meters": 147.0,
+        "seconds": 103.7
+      },
+      "Family Housing Towers (Tropic Lightning Ave)": {
+        "meters": 741.7,
+        "seconds": 546.9
       }
     },
     "5102": {
+      "Family Housing Towers (15th Street)": {
+        "meters": 339.8,
+        "seconds": 249.4
+      },
+      "Family Housing Towers (5050s Block)": {
+        "meters": 2758.8,
+        "seconds": 1942.9
+      },
       "Family Housing Towers (5100s Block)": {
         "meters": 0.5,
         "seconds": 0.3
+      },
+      "Family Housing Towers (Taro Ave)": {
+        "meters": 171.2,
+        "seconds": 120.8
+      },
+      "Family Housing Towers (Tropic Lightning Ave)": {
+        "meters": 745.0,
+        "seconds": 547.0
       }
     },
     "5103": {
+      "Family Housing Towers (15th Street)": {
+        "meters": 317.8,
+        "seconds": 234.0
+      },
+      "Family Housing Towers (5050s Block)": {
+        "meters": 2736.9,
+        "seconds": 1927.5
+      },
       "Family Housing Towers (5100s Block)": {
         "meters": 22.4,
         "seconds": 15.7
+      },
+      "Family Housing Towers (Taro Ave)": {
+        "meters": 165.3,
+        "seconds": 118.5
+      },
+      "Family Housing Towers (Tropic Lightning Ave)": {
+        "meters": 723.1,
+        "seconds": 531.6
       }
     },
     "511": {
+      "Freedom Chapel": {
+        "meters": 411.8,
+        "seconds": 304.1
+      },
       "MSG Jenkins Medical Clinic": {
         "meters": 389.6,
         "seconds": 299.1
+      },
+      "Sentry Village Mini Mall": {
+        "meters": 390.8,
+        "seconds": 291.4
+      },
+      "Sentry Village Shoppette": {
+        "meters": 449.7,
+        "seconds": 332.0
+      },
+      "USO Sentry Village (Opposite)": {
+        "meters": 520.7,
+        "seconds": 396.1
       }
     },
     "512": {
+      "MSG Jenkins Medical Clinic": {
+        "meters": 462.5,
+        "seconds": 338.4
+      },
+      "Sentry Village Burger King": {
+        "meters": 449.1,
+        "seconds": 323.6
+      },
       "Sentry Village Mini Mall": {
         "meters": 341.0,
         "seconds": 245.3
+      },
+      "Sentry Village Shoppette": {
+        "meters": 505.9,
+        "seconds": 361.0
+      },
+      "USO Sentry Village (Opposite)": {
+        "meters": 593.5,
+        "seconds": 435.3
       }
     },
     "5171": {
+      "Family Housing Towers (15th Street)": {
+        "meters": 535.8,
+        "seconds": 408.1
+      },
+      "Family Housing Towers (5050s Block)": {
+        "meters": 2954.9,
+        "seconds": 2101.5
+      },
+      "Family Housing Towers (5100s Block)": {
+        "meters": 340.8,
+        "seconds": 257.6
+      },
       "Family Housing Towers (Taro Ave)": {
         "meters": 170.2,
         "seconds": 129.8
+      },
+      "Officer Housing": {
+        "meters": 529.8,
+        "seconds": 373.2
       }
     },
     "5172": {
+      "Family Housing Towers (15th Street)": {
+        "meters": 558.9,
+        "seconds": 424.4
+      },
+      "Family Housing Towers (5050s Block)": {
+        "meters": 2978.0,
+        "seconds": 2117.8
+      },
+      "Family Housing Towers (5100s Block)": {
+        "meters": 363.9,
+        "seconds": 273.9
+      },
       "Family Housing Towers (Taro Ave)": {
         "meters": 193.3,
         "seconds": 146.1
+      },
+      "Officer Housing": {
+        "meters": 552.9,
+        "seconds": 389.5
       }
     },
     "5173": {
+      "Family Housing Towers (15th Street)": {
+        "meters": 521.5,
+        "seconds": 395.8
+      },
+      "Family Housing Towers (5050s Block)": {
+        "meters": 2940.6,
+        "seconds": 2089.2
+      },
+      "Family Housing Towers (5100s Block)": {
+        "meters": 326.5,
+        "seconds": 245.3
+      },
       "Family Housing Towers (Taro Ave)": {
         "meters": 155.9,
         "seconds": 117.5
+      },
+      "Officer Housing": {
+        "meters": 554.3,
+        "seconds": 392.2
       }
     },
     "537": {
+      "KTO Museum": {
+        "meters": 387.5,
+        "seconds": 271.3
+      },
+      "MSG Jenkins Medical Clinic": {
+        "meters": 344.5,
+        "seconds": 252.0
+      },
+      "Sentry Village Burger King": {
+        "meters": 331.2,
+        "seconds": 237.2
+      },
       "Sentry Village Mini Mall": {
         "meters": 223.0,
         "seconds": 158.9
+      },
+      "Sentry Village Shoppette": {
+        "meters": 387.9,
+        "seconds": 274.6
       }
     },
     "5502": {
+      "Balboni Sports Field (5th St)": {
+        "meters": 2353.3,
+        "seconds": 1690.1
+      },
+      "Balboni Sports Field (Marne Ave)": {
+        "meters": 2159.5,
+        "seconds": 1545.9
+      },
       "Main Exchange (PX)": {
         "meters": 1476.6,
         "seconds": 1062.0
+      },
+      "Main Post Office": {
+        "meters": 1663.6,
+        "seconds": 1195.5
+      },
+      "River Bend Golf Course": {
+        "meters": 1515.3,
+        "seconds": 1101.6
       }
     },
     "5520": {
+      "Commissary": {
+        "meters": 1433.1,
+        "seconds": 1070.1
+      },
+      "Downtown Plaza": {
+        "meters": 1367.0,
+        "seconds": 1016.8
+      },
+      "Main Exchange (PX)": {
+        "meters": 946.2,
+        "seconds": 720.9
+      },
       "Main Post Office": {
         "meters": 1133.1,
         "seconds": 854.5
+      },
+      "Red Cloud Circle": {
+        "meters": 1621.8,
+        "seconds": 1154.3
       }
     },
     "555": {
+      "Freedom Chapel": {
+        "meters": 266.3,
+        "seconds": 190.4
+      },
       "MSG Jenkins Medical Clinic": {
         "meters": 300.2,
         "seconds": 221.1
+      },
+      "Sentry Village Mini Mall": {
+        "meters": 502.6,
+        "seconds": 361.6
+      },
+      "Sentry Village Shoppette": {
+        "meters": 464.4,
+        "seconds": 334.0
+      },
+      "USO Sentry Village (Opposite)": {
+        "meters": 349.4,
+        "seconds": 255.1
       }
     },
     "570": {
+      "KTO Museum": {
+        "meters": 295.2,
+        "seconds": 204.3
+      },
+      "MSG Jenkins Medical Clinic": {
+        "meters": 252.2,
+        "seconds": 184.9
+      },
+      "Sentry Village Burger King": {
+        "meters": 238.9,
+        "seconds": 170.2
+      },
       "Sentry Village Mini Mall": {
         "meters": 130.7,
         "seconds": 91.9
+      },
+      "Sentry Village Shoppette": {
+        "meters": 295.6,
+        "seconds": 207.6
       }
     },
     "5700": {
+      "Commissary": {
+        "meters": 1172.7,
+        "seconds": 825.1
+      },
+      "Downtown Plaza": {
+        "meters": 542.5,
+        "seconds": 378.0
+      },
+      "LTG Maude Hall (9th St)": {
+        "meters": 1006.5,
+        "seconds": 709.6
+      },
       "Main Exchange (PX)": {
         "meters": 537.1,
         "seconds": 380.4
+      },
+      "Main Post Office": {
+        "meters": 1053.0,
+        "seconds": 750.6
       }
     },
     "5725": {
       "Commissary": {
         "meters": 252.3,
         "seconds": 173.0
+      },
+      "Downtown Plaza": {
+        "meters": 606.4,
+        "seconds": 425.3
+      },
+      "LTG Maude Hall (9th St)": {
+        "meters": 418.6,
+        "seconds": 299.7
+      },
+      "Main Post Office": {
+        "meters": 406.9,
+        "seconds": 289.8
+      },
+      "Red Cloud Circle": {
+        "meters": 436.4,
+        "seconds": 314.0
       }
     },
     "5730": {
+      "Commissary": {
+        "meters": 366.9,
+        "seconds": 252.5
+      },
+      "Downtown Plaza": {
+        "meters": 990.3,
+        "seconds": 696.8
+      },
+      "Main Exchange (PX)": {
+        "meters": 577.8,
+        "seconds": 409.9
+      },
       "Main Post Office": {
         "meters": 515.7,
         "seconds": 360.7
+      },
+      "Red Cloud Circle": {
+        "meters": 544.9,
+        "seconds": 384.6
       }
     },
     "5901": {
+      "Barracks (6800s & 6900s Block)": {
+        "meters": 899.2,
+        "seconds": 627.7
+      },
+      "Barracks (6800s Block)": {
+        "meters": 899.2,
+        "seconds": 627.7
+      },
+      "Central Issue Facility": {
+        "meters": 267.2,
+        "seconds": 184.8
+      },
       "River Bend Golf Course": {
         "meters": 225.4,
         "seconds": 157.8
+      },
+      "SOCKOR HQ": {
+        "meters": 590.4,
+        "seconds": 441.0
       }
     },
     "5904": {
+      "Barracks (6800s & 6900s Block)": {
+        "meters": 955.2,
+        "seconds": 666.4
+      },
+      "Barracks (6800s Block)": {
+        "meters": 955.2,
+        "seconds": 666.4
+      },
+      "Central Issue Facility": {
+        "meters": 323.1,
+        "seconds": 223.4
+      },
       "River Bend Golf Course": {
         "meters": 0,
         "seconds": 0
+      },
+      "SOCKOR HQ": {
+        "meters": 646.3,
+        "seconds": 479.7
       }
     },
     "6100": {
+      "Barracks (6000s Block)": {
+        "meters": 856.3,
+        "seconds": 594.8
+      },
+      "Family Mini Mall / Gas Station": {
+        "meters": 767.4,
+        "seconds": 547.4
+      },
       "Pacific Victors Chapel": {
         "meters": 419.7,
         "seconds": 287.5
+      },
+      "Spartan DFAC": {
+        "meters": 661.6,
+        "seconds": 464.0
+      },
+      "TMP / Driver's Licensing": {
+        "meters": 393.9,
+        "seconds": 289.8
       }
     },
     "6110": {
+      "Family Mini Mall / Gas Station": {
+        "meters": 560.1,
+        "seconds": 416.0
+      },
+      "LTG Maude Hall (9th St)": {
+        "meters": 773.3,
+        "seconds": 539.2
+      },
       "Pacific Victors Chapel": {
         "meters": 212.4,
         "seconds": 156.1
+      },
+      "Spartan DFAC": {
+        "meters": 472.1,
+        "seconds": 342.1
+      },
+      "TMP / Driver's Licensing": {
+        "meters": 589.6,
+        "seconds": 441.0
       }
     },
     "6120": {
+      "Airfield Operations": {
+        "meters": 803.1,
+        "seconds": 587.9
+      },
+      "Barracks (6000s Block)": {
+        "meters": 625.8,
+        "seconds": 441.7
+      },
+      "Family Mini Mall / Gas Station": {
+        "meters": 746.0,
+        "seconds": 544.7
+      },
+      "Pacific Victors Chapel": {
+        "meters": 398.3,
+        "seconds": 284.8
+      },
       "TMP / Driver's Licensing": {
         "meters": 414.5,
         "seconds": 310.5
       }
     },
     "6140": {
+      "Airfield Operations": {
+        "meters": 727.4,
+        "seconds": 515.9
+      },
+      "Barracks (6000s Block)": {
+        "meters": 802.3,
+        "seconds": 547.7
+      },
+      "Pacific Victors Chapel": {
+        "meters": 853.3,
+        "seconds": 595.2
+      },
       "TMP / Driver's Licensing": {
         "meters": 188.2,
         "seconds": 136.6
+      },
+      "Talon Cafe DFAC": {
+        "meters": 1090.0,
+        "seconds": 756.3
       }
     },
     "6317": {
+      "Family Mini Mall / Gas Station": {
+        "meters": 647.4,
+        "seconds": 461.6
+      },
+      "LTG Maude Hall (9th St)": {
+        "meters": 668.0,
+        "seconds": 464.2
+      },
       "Pacific Victors Chapel": {
         "meters": 301.5,
         "seconds": 208.8
+      },
+      "Spartan DFAC": {
+        "meters": 432.9,
+        "seconds": 302.5
+      },
+      "TMP / Driver's Licensing": {
+        "meters": 740.8,
+        "seconds": 540.2
       }
     },
     "6321": {
+      "Downtown Plaza": {
+        "meters": 1033.9,
+        "seconds": 730.2
+      },
+      "Family Mini Mall / Gas Station": {
+        "meters": 948.2,
+        "seconds": 676.3
+      },
+      "LTG Maude Hall (9th St)": {
+        "meters": 574.7,
+        "seconds": 400.9
+      },
+      "Pacific Victors Chapel": {
+        "meters": 612.7,
+        "seconds": 434.6
+      },
       "Spartan DFAC": {
         "meters": 99.5,
         "seconds": 73.0
       }
     },
     "6350": {
+      "Family Mini Mall / Gas Station": {
+        "meters": 598.7,
+        "seconds": 431.6
+      },
+      "LTG Maude Hall (9th St)": {
+        "meters": 476.9,
+        "seconds": 324.2
+      },
       "Pacific Victors Chapel": {
         "meters": 292.6,
         "seconds": 206.5
+      },
+      "Red Cloud Circle": {
+        "meters": 956.1,
+        "seconds": 684.5
+      },
+      "Spartan DFAC": {
+        "meters": 728.0,
+        "seconds": 517.2
       }
     },
     "6360": {
+      "Family Mini Mall / Gas Station": {
+        "meters": 402.7,
+        "seconds": 291.6
+      },
+      "LTG Maude Hall (9th St)": {
+        "meters": 613.8,
+        "seconds": 428.3
+      },
       "Pacific Victors Chapel": {
         "meters": 235.3,
         "seconds": 163.7
+      },
+      "Red Cloud Circle": {
+        "meters": 760.2,
+        "seconds": 544.4
+      },
+      "Spartan DFAC": {
+        "meters": 681.6,
+        "seconds": 481.5
       }
     },
     "6370": {
+      "Family Mini Mall / Gas Station": {
+        "meters": 478.1,
+        "seconds": 344.1
+      },
+      "LTG Maude Hall (9th St)": {
+        "meters": 561.6,
+        "seconds": 381.3
+      },
       "Pacific Victors Chapel": {
         "meters": 172.1,
         "seconds": 119.1
+      },
+      "Red Cloud Circle": {
+        "meters": 835.6,
+        "seconds": 597.0
+      },
+      "Spartan DFAC": {
+        "meters": 607.5,
+        "seconds": 429.8
       }
     },
     "6380": {
+      "Commissary": {
+        "meters": 723.1,
+        "seconds": 497.8
+      },
+      "Family Mini Mall / Gas Station": {
+        "meters": 331.5,
+        "seconds": 237.6
+      },
+      "LTG Maude Hall (9th St)": {
+        "meters": 517.4,
+        "seconds": 353.6
+      },
       "Pacific Victors Chapel": {
         "meters": 393.3,
         "seconds": 272.9
+      },
+      "Red Cloud Circle": {
+        "meters": 689.0,
+        "seconds": 490.5
       }
     },
     "6400": {
+      "Commissary": {
+        "meters": 555.6,
+        "seconds": 386.6
+      },
+      "Downtown Plaza": {
+        "meters": 555.5,
+        "seconds": 392.9
+      },
       "LTG Maude Hall (9th St)": {
         "meters": 176.6,
         "seconds": 122.0
+      },
+      "Main Exchange (PX)": {
+        "meters": 777.9,
+        "seconds": 539.5
+      },
+      "Spartan DFAC": {
+        "meters": 756.4,
+        "seconds": 535.4
       }
     },
     "6500": {
+      "Downtown Plaza": {
+        "meters": 945.1,
+        "seconds": 665.3
+      },
+      "LTG Maude Hall (9th St)": {
+        "meters": 503.4,
+        "seconds": 349.3
+      },
+      "Pacific Victors Chapel": {
+        "meters": 911.4,
+        "seconds": 633.7
+      },
+      "Pittman DFAC": {
+        "meters": 618.2,
+        "seconds": 434.4
+      },
       "Spartan DFAC": {
         "meters": 444.6,
         "seconds": 315.8
       }
     },
     "6702": {
+      "Balboni Sports Field (5th St)": {
+        "meters": 582.9,
+        "seconds": 413.7
+      },
+      "Balboni Sports Field (Marne Ave)": {
+        "meters": 777.1,
+        "seconds": 539.2
+      },
+      "Downtown Plaza": {
+        "meters": 896.7,
+        "seconds": 625.8
+      },
       "Pittman DFAC": {
         "meters": 110.5,
         "seconds": 80.6
+      },
+      "Sitman Fitness Center": {
+        "meters": 498.0,
+        "seconds": 351.9
       }
     },
     "6800": {
+      "Balboni Sports Field (5th St)": {
+        "meters": 472.2,
+        "seconds": 323.0
+      },
+      "Barracks (6800s & 6900s Block)": {
+        "meters": 586.8,
+        "seconds": 398.6
+      },
+      "Barracks (6800s Block)": {
+        "meters": 586.8,
+        "seconds": 398.6
+      },
+      "Pittman DFAC": {
+        "meters": 347.5,
+        "seconds": 235.9
+      },
       "Sitman Fitness Center": {
         "meters": 152.3,
         "seconds": 97.0
       }
     },
     "6803": {
+      "Balboni Sports Field (5th St)": {
+        "meters": 402.8,
+        "seconds": 277.9
+      },
+      "Balboni Sports Field (Marne Ave)": {
+        "meters": 610.0,
+        "seconds": 417.6
+      },
+      "Barracks (6800s & 6900s Block)": {
+        "meters": 511.1,
+        "seconds": 356.9
+      },
+      "Pittman DFAC": {
+        "meters": 513.5,
+        "seconds": 359.8
+      },
       "Sitman Fitness Center": {
         "meters": 282.7,
         "seconds": 194.9
       }
     },
     "6806": {
+      "Balboni Sports Field (5th St)": {
+        "meters": 340.4,
+        "seconds": 237.8
+      },
+      "Balboni Sports Field (Marne Ave)": {
+        "meters": 547.7,
+        "seconds": 377.6
+      },
+      "Barracks (6800s & 6900s Block)": {
+        "meters": 388.1,
+        "seconds": 271.3
+      },
+      "Barracks (6800s Block)": {
+        "meters": 388.1,
+        "seconds": 271.3
+      },
       "Sitman Fitness Center": {
         "meters": 305.7,
         "seconds": 216.4
       }
     },
     "6807": {
+      "Balboni Sports Field (5th St)": {
+        "meters": 353.5,
+        "seconds": 244.3
+      },
+      "Balboni Sports Field (Marne Ave)": {
+        "meters": 560.8,
+        "seconds": 384.0
+      },
+      "Barracks (6800s & 6900s Block)": {
+        "meters": 367.1,
+        "seconds": 255.9
+      },
+      "Barracks (6800s Block)": {
+        "meters": 367.1,
+        "seconds": 255.9
+      },
       "Sitman Fitness Center": {
         "meters": 383.8,
         "seconds": 269.0
       }
     },
     "6809": {
+      "Balboni Sports Field (5th St)": {
+        "meters": 514.3,
+        "seconds": 357.6
+      },
+      "Balboni Sports Field (Marne Ave)": {
+        "meters": 721.5,
+        "seconds": 497.3
+      },
+      "Barracks (6800s & 6900s Block)": {
+        "meters": 239.4,
+        "seconds": 169.5
+      },
+      "Barracks (6800s Block)": {
+        "meters": 239.4,
+        "seconds": 169.5
+      },
       "Sitman Fitness Center": {
         "meters": 271.3,
         "seconds": 186.7
       }
     },
     "6815": {
+      "Balboni Sports Field (5th St)": {
+        "meters": 469.5,
+        "seconds": 329.7
+      },
+      "Barracks (6800s & 6900s Block)": {
+        "meters": 391.0,
+        "seconds": 277.0
+      },
+      "Barracks (6800s Block)": {
+        "meters": 391.0,
+        "seconds": 277.0
+      },
+      "Pittman DFAC": {
+        "meters": 534.1,
+        "seconds": 374.2
+      },
       "Sitman Fitness Center": {
         "meters": 237.6,
         "seconds": 166.5
@@ -451,48 +1619,176 @@
       "Freedom Chapel": {
         "meters": 111.1,
         "seconds": 77.1
+      },
+      "MSG Jenkins Medical Clinic": {
+        "meters": 183.4,
+        "seconds": 137.9
+      },
+      "Sentry Village Shoppette": {
+        "meters": 330.5,
+        "seconds": 238.7
+      },
+      "USO Sentry Village": {
+        "meters": 339.2,
+        "seconds": 245.2
+      },
+      "USO Sentry Village (Opposite)": {
+        "meters": 230.3,
+        "seconds": 174.5
       }
     },
     "6950": {
+      "Barracks (6800s & 6900s Block)": {
+        "meters": 784.5,
+        "seconds": 566.7
+      },
+      "Barracks (6800s Block)": {
+        "meters": 784.5,
+        "seconds": 566.7
+      },
       "Central Issue Facility": {
         "meters": 170.5,
         "seconds": 150.5
+      },
+      "River Bend Golf Course": {
+        "meters": 458.0,
+        "seconds": 353.9
+      },
+      "SOCKOR HQ": {
+        "meters": 188.3,
+        "seconds": 130.7
       }
     },
     "6953": {
+      "2ID Sustainment": {
+        "meters": 337.6,
+        "seconds": 264.1
+      },
+      "Barracks (6800s & 6900s Block)": {
+        "meters": 552.2,
+        "seconds": 403.1
+      },
+      "Barracks (6800s Block)": {
+        "meters": 552.2,
+        "seconds": 403.1
+      },
+      "Central Issue Facility": {
+        "meters": 402.9,
+        "seconds": 314.1
+      },
       "SOCKOR HQ": {
         "meters": 193.9,
         "seconds": 134.5
       }
     },
     "7010": {
+      "Airfield Operations": {
+        "meters": 649.1,
+        "seconds": 437.5
+      },
+      "Corps of Engineers": {
+        "meters": 1611.1,
+        "seconds": 1110.3
+      },
+      "Pacific Victors Chapel": {
+        "meters": 753.8,
+        "seconds": 504.7
+      },
+      "Spartan DFAC": {
+        "meters": 778.5,
+        "seconds": 515.8
+      },
       "TMP / Driver's Licensing": {
         "meters": 137.2,
         "seconds": 76.5
       }
     },
     "727": {
+      "Barracks (700s Block)": {
+        "meters": 352.2,
+        "seconds": 258.1
+      },
+      "Bus Terminal": {
+        "meters": 575.6,
+        "seconds": 413.2
+      },
+      "Lodging": {
+        "meters": 500.6,
+        "seconds": 348.8
+      },
       "Morning Calm Center": {
         "meters": 212.6,
         "seconds": 148.6
+      },
+      "Sentry Village Gate": {
+        "meters": 537.7,
+        "seconds": 375.1
       }
     },
     "859": {
+      "Barracks (700s Block)": {
+        "meters": 696.8,
+        "seconds": 493.0
+      },
+      "Brian D. Allgood Hospital": {
+        "meters": 639.9,
+        "seconds": 452.2
+      },
+      "Bus Terminal": {
+        "meters": 682.1,
+        "seconds": 480.3
+      },
       "Law Enforcement Center (DES)": {
         "meters": 255.6,
         "seconds": 184.9
+      },
+      "Morning Calm Center": {
+        "meters": 996.3,
+        "seconds": 695.1
       }
     },
     "880": {
       "Airfield Operations": {
         "meters": 294.3,
         "seconds": 202.7
+      },
+      "Barracks (6000s Block)": {
+        "meters": 1000.2,
+        "seconds": 683.7
+      },
+      "TMP / Driver's Licensing": {
+        "meters": 822.0,
+        "seconds": 579.5
+      },
+      "Talon Cafe DFAC": {
+        "meters": 545.2,
+        "seconds": 365.2
+      },
+      "Turner Fitness Center": {
+        "meters": 642.9,
+        "seconds": 450.6
       }
     },
     "889": {
+      "Barracks (700s Block)": {
+        "meters": 799.8,
+        "seconds": 568.4
+      },
+      "Brian D. Allgood Hospital": {
+        "meters": 742.9,
+        "seconds": 525.7
+      },
+      "Bus Terminal": {
+        "meters": 785.2,
+        "seconds": 555.7
+      },
       "Law Enforcement Center (DES)": {
         "meters": 325.6,
         "seconds": 237.4
+      },
+      "Pedestrian Gate": {
+        "meters": 2197.0,
+        "seconds": 1589.6
       }
     }
   },
