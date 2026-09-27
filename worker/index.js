@@ -1,10 +1,12 @@
 // Cloudflare Worker for humphreysbus.app.
 //
-// Two responsibilities:
+// Responsibilities:
 //   1. Serve the static PWA (assets binding, wired in wrangler.jsonc).
 //   2. Proxy Mapbox Directions API for runtime geolocation walk legs
 //      (Roadmap Phase 3). The Mapbox token stays server-side; the client
 //      never sees it.
+//   3. Proxy Mapbox Geocoding v6 for free-text origin search (Roadmap
+//      Phase 5 step 2 — "type any place on post" origin picker).
 //
 // GET /api/walk?flat=<>&flon=<>&tlat=<>&tlon=<>&lang=<en|ko>
 //   → 200 { seconds, meters, steps, source: "mapbox" }
@@ -14,12 +16,26 @@
 //   → 502 on Mapbox failure (client falls back to haversine)
 //   → 400 on malformed input
 //
-// Edge cache: keyed on the request URL (already coord-rounded by the client
-// to a ~30 m grid). 30-day TTL — sidewalks don't move; a coord refresh
-// upstream rotates the client's cache-key prefix and self-invalidates.
+// GET /api/search?q=<>&lang=<en|ko>
+//   → 200 { results: [{ id, name, full, lat, lon }], source: "mapbox-geocoding-v6" }
+//   → 502 on Mapbox failure  → 400 on malformed / off-post-bbox input
+//
+// Edge cache: keyed on the request URL (walk already coord-rounded by the
+// client to a ~30 m grid; search cached verbatim). 30-day TTL for walk
+// (sidewalks don't move); 1-day TTL for search (business names change).
+// A coord/hash refresh upstream rotates the client's cache-key prefix
+// and self-invalidates.
 
 const MAPBOX_DIRECTIONS = "https://api.mapbox.com/directions/v5/mapbox/walking";
-const EDGE_TTL_S = 60 * 60 * 24 * 30; // 30 days
+const MAPBOX_GEOCODE = "https://api.mapbox.com/search/geocode/v6/forward";
+const EDGE_TTL_S = 60 * 60 * 24 * 30; // 30 days (walk)
+const SEARCH_EDGE_TTL_S = 60 * 60 * 24; // 1 day (search)
+
+// Camp Humphreys bbox: shared by /api/walk on-post gate and /api/search
+// result-clamp. Derived from stop_coords.json extents + small pad for GPS
+// jitter at the gates. Off-post pairs/queries never round-trip Mapbox.
+const HUMPHREYS_BBOX = { minLat: 36.945, maxLat: 36.980, minLon: 126.985, maxLon: 127.045 };
+const HUMPHREYS_BBOX_STR = `${HUMPHREYS_BBOX.minLon},${HUMPHREYS_BBOX.minLat},${HUMPHREYS_BBOX.maxLon},${HUMPHREYS_BBOX.maxLat}`;
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -48,6 +64,11 @@ function badRequest(msg) {
 function parseCoord(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
+}
+
+function inHumphreysBbox(lat, lon) {
+  return lat >= HUMPHREYS_BBOX.minLat && lat <= HUMPHREYS_BBOX.maxLat
+    && lon >= HUMPHREYS_BBOX.minLon && lon <= HUMPHREYS_BBOX.maxLon;
 }
 
 const SUPPORTED_LANGS = new Set(["en", "ko"]);
@@ -182,12 +203,10 @@ async function handleWalk(request, env, ctx) {
   if (fLat == null || fLon == null || tLat == null || tLon == null) {
     return badRequest("flat, flon, tlat, tlon required");
   }
-  // Camp Humphreys bbox (derived from stop_coords.json + small pad for GPS
-  // jitter at gates). On-post-only directions is a product rule, not just a
-  // quota guard — off-post pairs get a 400 so the client falls back to the
-  // haversine mock rather than leaking a Korean-street turn-by-turn.
-  const inBox = (lat, lon) => lat >= 36.945 && lat <= 36.980 && lon >= 126.985 && lon <= 127.045;
-  if (!inBox(fLat, fLon) || !inBox(tLat, tLon)) {
+  // On-post-only directions is a product rule, not just a quota guard —
+  // off-post pairs get a 400 so the client falls back to the haversine
+  // mock rather than leaking a Korean-street turn-by-turn.
+  if (!inHumphreysBbox(fLat, fLon) || !inHumphreysBbox(tLat, tLon)) {
     return badRequest("coords outside on-post area");
   }
   if (!env.MAPBOX_TOKEN) return json({ error: "server misconfigured" }, 500);
@@ -214,6 +233,73 @@ async function handleWalk(request, env, ctx) {
   }
 }
 
+async function handleSearch(request, env, ctx) {
+  const url = new URL(request.url);
+  const q = (url.searchParams.get("q") || "").trim();
+  const lang = url.searchParams.get("lang") || "en";
+  // 2-char minimum matches the client-side gate; keeps single-letter typos
+  // out of Mapbox's quota. 100-char cap guards against pathological inputs
+  // (Mapbox itself rejects longer, but we fail earlier without a round trip).
+  if (q.length < 2) return badRequest("q must be at least 2 chars");
+  if (q.length > 100) return badRequest("q too long");
+  const langParam = SUPPORTED_LANGS.has(lang) ? lang : "en";
+  if (!env.MAPBOX_TOKEN) return json({ error: "server misconfigured" }, 500);
+
+  const cache = caches.default;
+  const cacheKey = new Request(url.toString(), { method: "GET" });
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+
+  // bbox hard-clamp keeps results on-post. Same rectangle handleWalk uses
+  // as its coord gate — a hit here is a coord that also passes /api/walk.
+  const mapboxUrl = `${MAPBOX_GEOCODE}`
+    + `?q=${encodeURIComponent(q)}`
+    + `&bbox=${HUMPHREYS_BBOX_STR}`
+    + `&language=${langParam}`
+    + `&limit=5`
+    + `&access_token=${env.MAPBOX_TOKEN}`;
+  const headers = env.PUBLIC_ORIGIN ? { Referer: `${env.PUBLIC_ORIGIN}/` } : {};
+  try {
+    const r = await fetch(mapboxUrl, {
+      headers,
+      cf: { cacheTtl: SEARCH_EDGE_TTL_S, cacheEverything: true },
+    });
+    if (!r.ok) throw new Error(`mapbox ${r.status}`);
+    const body = await r.json();
+    // Compact + defensive: drop features without a name or coords rather
+    // than passing partial rows to the UI. Second bbox check catches the
+    // rare case where Mapbox returns a proximity match slightly outside
+    // the requested bbox (documented soft-clamp behavior).
+    const results = (body.features || [])
+      .map(f => {
+        const p = f.properties || {};
+        const coords = f.geometry?.coordinates;
+        return {
+          id: f.id || p.mapbox_id || "",
+          name: p.name || p.name_preferred || "",
+          full: p.full_address || p.place_formatted || "",
+          lat: Array.isArray(coords) ? coords[1] : null,
+          lon: Array.isArray(coords) ? coords[0] : null,
+        };
+      })
+      .filter(row => row.name && row.lat != null && row.lon != null
+        && inHumphreysBbox(row.lat, row.lon));
+
+    const res = json(
+      { results, source: "mapbox-geocoding-v6" },
+      200,
+      { "Cache-Control": `public, max-age=${SEARCH_EDGE_TTL_S}, s-maxage=${SEARCH_EDGE_TTL_S}` },
+    );
+    ctx.waitUntil(cache.put(cacheKey, res.clone()));
+    return res;
+  } catch (e) {
+    // Log real error server-side for `wrangler tail`; client sees a canned
+    // message (same posture as handleWalk — no stack leak).
+    console.error("mapbox search failed:", e?.message || e);
+    return json({ error: "upstream search failed" }, 502);
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -223,6 +309,10 @@ export default {
     if (url.pathname === "/api/walk") {
       if (request.method !== "GET") return new Response("method not allowed", { status: 405 });
       return handleWalk(request, env, ctx);
+    }
+    if (url.pathname === "/api/search") {
+      if (request.method !== "GET") return new Response("method not allowed", { status: 405 });
+      return handleSearch(request, env, ctx);
     }
     // Non-API request: hand off to the static-assets binding (see wrangler.jsonc).
     return env.ASSETS.fetch(request);
