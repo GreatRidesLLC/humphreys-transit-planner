@@ -16,6 +16,7 @@ import {
   nearbyStopNames,
 } from "./lib/routing.js";
 import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
+import { usePlaceSearch } from "./lib/search-runtime.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
@@ -114,6 +115,7 @@ const STRINGS = {
     planTrip: "Plan a trip",
     from: "From", to: "To", atStop: "At stop",
     stopPh: l => `${l} — stop name or Bldg #`,
+    fromPh: "From — stop, Bldg # or place",
     saveFav: "★ Save", saveFavTitle: "Save From as favorite",
     saveFavHeading: "Save favorite",
     saveFavPrompt: "Name this favorite (e.g. Home, Work, Gym)",
@@ -123,6 +125,7 @@ const STRINGS = {
     nearestStop: "Nearest stop",
     nearestLoading: "…",
     usingLocation: "Using your current location for walk time",
+    usingPlace: name => `Walk time from ${name}`,
     locError: msg => `Could not get your location: ${msg}`,
     pickFromFirst: "Pick a From stop first, then save it as a favorite.",
     removeFavorite: "Remove favorite", removeRecent: "Remove recent",
@@ -188,6 +191,9 @@ const STRINGS = {
     shuttleGroup: (names, when) => [names, `: ${when}`],
     shuttleInfoTail: "Out-of-service routes are filtered automatically. Confirm with Transportation Office.",
     noMatch: "No matching stop or building",
+    placesHeading: "Places",
+    placesSearching: "Searching places…",
+    placeNearest: (stop, m) => `Nearest stop: ${stop} (~${m} m)`,
     whereAreYou: "Where are you?",
     asOf: time => `as of ${time}`,
     updatesEveryMinute: "Updates every minute",
@@ -249,6 +255,7 @@ const STRINGS = {
     planTrip: "경로 계획",
     from: "출발", to: "도착", atStop: "정류장",
     stopPh: l => `${l} — 정류장 또는 건물 번호`,
+    fromPh: "출발 — 정류장, 건물 번호 또는 장소",
     saveFav: "★ 저장", saveFavTitle: "출발지를 즐겨찾기에 저장",
     saveFavHeading: "즐겨찾기 저장",
     saveFavPrompt: "즐겨찾기 이름 (예: 집, 직장, 체육관)",
@@ -258,6 +265,7 @@ const STRINGS = {
     nearestStop: "가까운 정류장",
     nearestLoading: "…",
     usingLocation: "현재 위치를 사용하여 도보 시간 계산",
+    usingPlace: name => `${name}에서 도보 시간 계산`,
     locError: msg => `위치를 가져올 수 없습니다: ${msg}`,
     pickFromFirst: "먼저 출발 정류장을 선택한 후 즐겨찾기에 저장하세요.",
     removeFavorite: "즐겨찾기 삭제", removeRecent: "최근 기록 삭제",
@@ -323,6 +331,9 @@ const STRINGS = {
     shuttleGroup: (names, when) => [names, `: ${when}`],
     shuttleInfoTail: "운행 종료된 노선은 자동 제외됩니다. 교통과에 확인하세요.",
     noMatch: "일치하는 정류장 또는 건물 없음",
+    placesHeading: "장소",
+    placesSearching: "장소 검색 중…",
+    placeNearest: (stop, m) => `가장 가까운 정류장: ${stop} (약 ${m}m)`,
     whereAreYou: "어디에 계세요?",
     asOf: time => `${time} 기준`,
     updatesEveryMinute: "1분마다 갱신",
@@ -617,8 +628,11 @@ const SUMMARY_BTN =
 // [{ key, label, Icon, items: [{ id, content, onPick, onRemove, removeLabel }] }].
 // Typing anything switches back to the filtered stop search. Only the From
 // field passes them — a recent trip is a From-side concept.
-function StopInput({ label, value, onChange, dot = null, quickPicks = [] }) {
-  const { t } = useT();
+// `placeSearch` appends Mapbox place hits below the local matches (From only:
+// a place origin is a coord the walk leg starts from). A picked place calls
+// onChange(nearestStop, name, null, { lat, lon, kind: "place" }).
+function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeSearch = false, placeholder }) {
+  const { lang, t } = useT();
   const [q, setQ] = useState(value||"");
   const [open, setOpen] = useState(false);
   const [hi, setHi] = useState(0);
@@ -655,12 +669,19 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [] }) {
     }).slice(0,9);
   },[q]);
 
-  // Flat nav list: either the quick picks or the filtered stops, never both.
+  const { results: placeHits, loading: placesLoading } = usePlaceSearch(q, lang, placeSearch && open);
+  const places = useMemo(() => placeHits.flatMap(p => {
+    const hit = nearestStopTo(p);
+    return hit ? [{ ...p, stop: hit.stop, meters: Math.round(hit.meters) }] : [];
+  }), [placeHits]);
+
+  // Flat nav list: either the quick picks or the filtered stops (then places),
+  // never both.
   const quickItems = useMemo(
     () => q.trim() ? [] : quickPicks.flatMap(sec => sec.items),
     [q, quickPicks]);
   const showQuick = quickItems.length > 0;
-  const navItems = showQuick ? quickItems : filtered;
+  const navItems = showQuick ? quickItems : [...filtered, ...places];
 
   // Keep the highlighted row visible by nudging the list's own scrollTop.
   // scrollIntoView would also scroll the page behind the dropdown. Rows are
@@ -699,7 +720,12 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [] }) {
     };
   },[open]);
   const pick=item=>{ setQ(item.label); setOpen(false); onChange(item.stop,item.label,item.bldg||null); };
-  const runAt=i=>{ if (showQuick) { setOpen(false); quickItems[i]?.onPick(); } else { pick(filtered[i]); } };
+  const pickPlace=p=>{ setQ(p.name); setOpen(false); onChange(p.stop,p.name,null,{ lat:p.lat, lon:p.lon, kind:"place" }); };
+  const runAt=i=>{
+    if (showQuick) { setOpen(false); quickItems[i]?.onPick(); }
+    else if (i < filtered.length) pick(filtered[i]);
+    else if (places[i - filtered.length]) pickPlace(places[i - filtered.length]);
+  };
   const onKey=e=>{
     if (!open || !navItems.length) {
       if (e.key === "Escape") setOpen(false);
@@ -713,7 +739,7 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [] }) {
   return (
     <div ref={ref} className="relative">
       {dot}
-      <Input className={cn(INPUT_CLS, dot && "pl-7")} aria-label={label} placeholder={t.stopPh(label)} value={q}
+      <Input className={cn(INPUT_CLS, dot && "pl-7")} aria-label={label} placeholder={placeholder ?? t.stopPh(label)} value={q}
         autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="off" enterKeyHint="search"
         onChange={e=>{setQ(e.target.value);setHi(0);setOpen(true);if(!e.target.value)onChange("","",null);}}
         onFocus={()=>setOpen(true)} onKeyDown={onKey} />
@@ -745,16 +771,38 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [] }) {
                   ); })}
                 </div>
               )); })()
-            : filtered.length>0
-              ? filtered.map((x,i)=>(
+            : <>
+                {filtered.map((x,i)=>(
                   <div key={i} data-i={i} role="option" aria-selected={i===hi}
                     onMouseDown={()=>pick(x)} onMouseEnter={()=>setHi(i)}
                     className={cn("cursor-pointer border-b px-3.5 py-2.5 last:border-b-0", i===hi && "bg-muted")}>
                     <div className={cn("text-[13px] text-foreground", i===hi ? "font-semibold" : "font-medium")}>{x.label}</div>
                     <div className="mt-px text-[11.5px] text-muted-foreground">{x.sub}</div>
                   </div>
-                ))
-              : <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.noMatch}</div>}
+                ))}
+                {places.length>0 && (
+                  <div role="group" aria-label={t.placesHeading}>
+                    <div className="flex items-center gap-1.5 px-3.5 pt-2.5 pb-1 text-[11.5px] font-semibold text-muted-foreground">
+                      <MapPin className="size-3.5" aria-hidden="true"/>{t.placesHeading}
+                      <span className="ml-auto text-[11px] font-normal">© Mapbox</span>
+                    </div>
+                    {places.map((p,j)=>{ const i = filtered.length + j; return (
+                      <div key={p.id || `${p.lat},${p.lon}`} data-i={i} role="option" aria-selected={i===hi}
+                        onMouseDown={()=>pickPlace(p)} onMouseEnter={()=>setHi(i)}
+                        className={cn("cursor-pointer border-b px-3.5 py-2.5 last:border-b-0", i===hi && "bg-muted")}>
+                        <div className={cn("text-[13px] text-foreground", i===hi ? "font-semibold" : "font-medium")}>{p.name}</div>
+                        <div className="mt-px text-[11.5px] text-muted-foreground">{t.placeNearest(p.stop, p.meters)}</div>
+                      </div>
+                    ); })}
+                  </div>
+                )}
+                {placeSearch && placesLoading && places.length===0 && (
+                  <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.placesSearching}</div>
+                )}
+                {filtered.length===0 && places.length===0 && !(placeSearch && placesLoading) && (
+                  <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.noMatch}</div>
+                )}
+              </>}
         </div>,
         document.body
       )}
@@ -1591,7 +1639,7 @@ export default function App() {
     setSrch(true);
     setEditing(false);
     setRecent(prev => {
-      const entry = { fStop, tStop, fLbl, tLbl, fBldg, tBldg };
+      const entry = { fStop, tStop, fLbl, tLbl, fBldg, tBldg, fPlace: fCoords?.kind==="place" ? fCoords : null };
       const deduped = prev.filter(r => !(r.fStop===fStop && r.tStop===tStop));
       return [entry, ...deduped].slice(0, 5);
     });
@@ -1629,19 +1677,19 @@ export default function App() {
     if (!fStop) { setNotice(t.pickFromFirst); return; }
     // Prefill with the stop minus any parenthetical, so "Barracks (700s Block)"
     // opens as "Barracks" rather than something nobody would type.
-    setFavName(fStop.replace(/\s*\(.*\)\s*$/, "").trim() || fStop);
+    setFavName(fCoords?.kind==="place" ? fLbl : fStop.replace(/\s*\(.*\)\s*$/, "").trim() || fStop);
     setFavOpen(true);
   };
   const saveFavorite=()=>{
     const name = favName.trim();
     if (!name) return;
-    setFavorites(prev => [{name, stop:fStop, label:fLbl, bldg:fBldg||null}, ...prev.filter(f => !(f.stop===fStop && f.name===name))]);
+    setFavorites(prev => [{name, stop:fStop, label:fLbl, bldg:fBldg||null, place:fCoords?.kind==="place" ? fCoords : null}, ...prev.filter(f => !(f.stop===fStop && f.name===name))]);
     setFavOpen(false);
   };
   const removeFavorite=idx=>setFavorites(prev=>prev.filter((_,i)=>i!==idx));
   const removeRecent=idx=>setRecent(prev=>prev.filter((_,i)=>i!==idx));
-  const applyFavorite=f=>{setFS(f.stop);setFL(f.label);setFB(f.bldg||null);reset();};
-  const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setFB(r.fBldg||null);setTS(r.tStop);setTL(r.tLbl);setTB(r.tBldg||null);reset();};
+  const applyFavorite=f=>{setFS(f.stop);setFL(f.label);setFB(f.bldg||null);setFC(f.place||null);reset();};
+  const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setFB(r.fBldg||null);setFC(r.fPlace||null);setTS(r.tStop);setTL(r.tLbl);setTB(r.tBldg||null);reset();};
   const TABS=[["plan",t.tabPlan],["now",t.tabNow],["routes",t.tabRoutes],["offpost",t.tabOffpost]];
 
   // 2c suggestions. "Next service day" is the first upcoming date on which any
@@ -1688,7 +1736,7 @@ export default function App() {
     { key:"recent", label:t.recent, Icon:History,
       items: recent.map((r,i)=>({
         id:`r${i}`,
-        content:<>{r.fStop} <span className="text-muted-foreground">→</span> {r.tStop}</>,
+        content:<>{r.fPlace ? r.fLbl : r.fStop} <span className="text-muted-foreground">→</span> {r.tStop}</>,
         onPick:()=>{ applyRecent(r); focusWhen(); },
         onRemove:()=>removeRecent(i), removeLabel:t.removeRecent,
       })) },
@@ -1806,11 +1854,11 @@ export default function App() {
             </CardHeader>
 
             <CardContent className="gap-2">
-              <StopInput label={t.from} value={fLbl} quickPicks={quickPicks}
-                dot={<span title={fCoords?t.usingLocation:undefined}
+              <StopInput label={t.from} value={fLbl} quickPicks={quickPicks} placeSearch placeholder={t.fromPh}
+                dot={<span title={fCoords ? (fCoords.kind==="place" ? t.usingPlace(fLbl) : t.usingLocation) : undefined}
                   className={cn("absolute top-1/2 left-3 z-10 size-2 -translate-y-1/2 rounded-full bg-origin-dot",
                     fCoords && "ring-3 ring-origin-dot/25")}/>}
-                onChange={(s,l,b)=>{setFS(s);setFL(l);setFB(b);setFC(null);reset();}}/>
+                onChange={(s,l,b,c)=>{setFS(s);setFL(l);setFB(b);setFC(c||null);reset();}}/>
 
               <div className="flex justify-center">
                 <Button variant="ghost" size="icon" onClick={swap} aria-label={t.swapStops} title={t.swapStops}
