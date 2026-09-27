@@ -1677,6 +1677,13 @@ export default function App() {
         } catch { /* keep the haversine walkOnly */ }
       }
     }
+    // Without a Mapbox walk the advice rests on a straight line, which can
+    // cut through a fence or across the airfield. Never let that guess
+    // outrank a bus: it survives only when no bus serves the trip, where the
+    // card also carries the SorryNote.
+    if (trips.walkOnly && trips.walkOnly.source !== "mapbox" && trips.trips.length) {
+      trips.walkOnly = null;
+    }
     setRes(trips);
     setSrch(true);
     setEditing(false);
@@ -2059,7 +2066,6 @@ export default function App() {
                     <AdvisoryCard icon={Footprints} title={t.walkFasterTitle}
                       body={t.walkFasterBody(results.walkOnly.minutes, results.walkOnly.meters)}
                       steps={results.walkOnly.steps}
-                      sorry={results.walkOnly.steps?.length ? null : t.sorryNoDirections}
                       emphasis/>
                   )}
                   <FastestTrip trip={results.trips[0]}/>
