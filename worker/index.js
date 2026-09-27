@@ -5,8 +5,10 @@
 //   2. Proxy Mapbox Directions API for runtime geolocation walk legs
 //      (Roadmap Phase 3). The Mapbox token stays server-side; the client
 //      never sees it.
-//   3. Proxy Mapbox Geocoding v6 for free-text origin search (Roadmap
-//      Phase 5 step 2 — "type any place on post" origin picker).
+//   3. Proxy Mapbox Search Box forward search for free-text origin search
+//      (Roadmap Phase 5 step 2 — "type any place on post" origin picker).
+//      Search Box, not Geocoding v6: v6 indexes addresses and streets only,
+//      so on-post POIs (Commissary, Starbucks, the hospital) never matched.
 //
 // GET /api/walk?flat=<>&flon=<>&tlat=<>&tlon=<>&lang=<en|ko>
 //   → 200 { seconds, meters, steps, source: "mapbox" }
@@ -17,7 +19,7 @@
 //   → 400 on malformed input
 //
 // GET /api/search?q=<>&lang=<en|ko>
-//   → 200 { results: [{ id, name, full, lat, lon }], source: "mapbox-geocoding-v6" }
+//   → 200 { results: [{ id, name, full, lat, lon }], source: "mapbox-searchbox-v1" }
 //   → 502 on Mapbox failure  → 400 on malformed / off-post-bbox input
 //
 // Edge cache: keyed on the request URL (walk already coord-rounded by the
@@ -27,7 +29,7 @@
 // and self-invalidates.
 
 const MAPBOX_DIRECTIONS = "https://api.mapbox.com/directions/v5/mapbox/walking";
-const MAPBOX_GEOCODE = "https://api.mapbox.com/search/geocode/v6/forward";
+const MAPBOX_SEARCH = "https://api.mapbox.com/search/searchbox/v1/forward";
 const EDGE_TTL_S = 60 * 60 * 24 * 30; // 30 days (walk)
 const SEARCH_EDGE_TTL_S = 60 * 60 * 24; // 1 day (search)
 
@@ -245,14 +247,18 @@ async function handleSearch(request, env, ctx) {
   const langParam = SUPPORTED_LANGS.has(lang) ? lang : "en";
   if (!env.MAPBOX_TOKEN) return json({ error: "server misconfigured" }, 500);
 
+  // Provider tag in the cache key: the Geocoding v6 build cached empty POI
+  // results for a day, so a URL-only key would keep serving them.
   const cache = caches.default;
-  const cacheKey = new Request(url.toString(), { method: "GET" });
+  const keyUrl = new URL(url);
+  keyUrl.searchParams.set("_src", "searchbox-v1");
+  const cacheKey = new Request(keyUrl.toString(), { method: "GET" });
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
 
   // bbox hard-clamp keeps results on-post. Same rectangle handleWalk uses
   // as its coord gate — a hit here is a coord that also passes /api/walk.
-  const mapboxUrl = `${MAPBOX_GEOCODE}`
+  const mapboxUrl = `${MAPBOX_SEARCH}`
     + `?q=${encodeURIComponent(q)}`
     + `&bbox=${HUMPHREYS_BBOX_STR}`
     + `&language=${langParam}`
@@ -286,7 +292,7 @@ async function handleSearch(request, env, ctx) {
         && inHumphreysBbox(row.lat, row.lon));
 
     const res = json(
-      { results, source: "mapbox-geocoding-v6" },
+      { results, source: "mapbox-searchbox-v1" },
       200,
       { "Cache-Control": `public, max-age=${SEARCH_EDGE_TTL_S}, s-maxage=${SEARCH_EDGE_TTL_S}` },
     );
