@@ -38,6 +38,10 @@ const SEARCH_EDGE_TTL_S = 60 * 60 * 24; // 1 day (search)
 // jitter at the gates. Off-post pairs/queries never round-trip Mapbox.
 const HUMPHREYS_BBOX = { minLat: 36.945, maxLat: 36.980, minLon: 126.985, maxLon: 127.045 };
 const HUMPHREYS_BBOX_STR = `${HUMPHREYS_BBOX.minLon},${HUMPHREYS_BBOX.minLat},${HUMPHREYS_BBOX.maxLon},${HUMPHREYS_BBOX.maxLat}`;
+// Search Box biases toward the caller's IP when proximity is omitted. The
+// caller is a Cloudflare edge node, often outside Korea, and that bias drops
+// real on-post hits (the hospital vanished), so pin it to the bbox centre.
+const HUMPHREYS_CENTER_STR = `${(HUMPHREYS_BBOX.minLon + HUMPHREYS_BBOX.maxLon) / 2},${(HUMPHREYS_BBOX.minLat + HUMPHREYS_BBOX.maxLat) / 2}`;
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -251,7 +255,7 @@ async function handleSearch(request, env, ctx) {
   // results for a day, so a URL-only key would keep serving them.
   const cache = caches.default;
   const keyUrl = new URL(url);
-  keyUrl.searchParams.set("_src", "searchbox-v1");
+  keyUrl.searchParams.set("_src", "searchbox-v1-prox");
   const cacheKey = new Request(keyUrl.toString(), { method: "GET" });
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
@@ -261,6 +265,7 @@ async function handleSearch(request, env, ctx) {
   const mapboxUrl = `${MAPBOX_SEARCH}`
     + `?q=${encodeURIComponent(q)}`
     + `&bbox=${HUMPHREYS_BBOX_STR}`
+    + `&proximity=${HUMPHREYS_CENTER_STR}`
     + `&language=${langParam}`
     + `&limit=5`
     + `&access_token=${env.MAPBOX_TOKEN}`;
