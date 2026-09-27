@@ -91,7 +91,7 @@ describe("fetchUserWalk", () => {
     });
     const first = await fetchUserWalk(user, stop, { fetch: fetchMock });
     // steps defaults to [] when Mapbox response omits them.
-    expect(first).toEqual({ seconds, meters, steps: [], source: "mapbox" });
+    expect(first).toEqual({ seconds, meters, steps: [], source: "mapbox", detour: false });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const url = fetchMock.mock.calls[0][0];
     expect(url).toMatch(/^\/api\/walk\?/);
@@ -136,14 +136,15 @@ describe("fetchUserWalk", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("rejects Mapbox routes >2× haversine (sanity check)", async () => {
+  it("keeps Mapbox routes >2× haversine and tags them as a detour", async () => {
     const s = STOP_COORDS[stop];
     const straight = haversineMeters(user.lat, user.lon, s.lat, s.lon);
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ seconds: 9999, meters: Math.round(straight * 3), source: "mapbox" }),
     });
-    expect(await fetchUserWalk(user, stop, { fetch: fetchMock })).toBeNull();
+    const hit = await fetchUserWalk(user, stop, { fetch: fetchMock });
+    expect(hit).toMatchObject({ seconds: 9999, source: "mapbox", detour: true });
   });
 
   it("returns null on network failure and does not cache", async () => {
@@ -213,7 +214,7 @@ describe("fetchBuildingWalk", () => {
       ok: true, json: async () => ({ seconds: 240, meters: 320, steps, source: "mapbox" }),
     });
     const first = await fetchBuildingWalk(bldgNum, stop, { fetch: fetchMock, lang: "ko" });
-    expect(first).toEqual({ seconds: 240, meters: 320, steps, source: "mapbox" });
+    expect(first).toEqual({ seconds: 240, meters: 320, steps, source: "mapbox", detour: false });
     const url = fetchMock.mock.calls[0][0];
     expect(url).toContain("lang=ko");
     // The bldg's real coord should be in the URL, not a user cell.

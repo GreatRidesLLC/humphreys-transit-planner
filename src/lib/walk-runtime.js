@@ -28,9 +28,13 @@ const VERSION = WALK_MATRIX_JSON?._meta?.source_hash || "unversioned";
 // fine-grained step list so users don't see stale "turn left 22m" fluff.
 const STEPS_SCHEMA_V = 3;
 const CACHE_PREFIX = `htp.walk.${VERSION}.v${STEPS_SCHEMA_V}`;
-// >2× haversine means Mapbox routed around something that probably isn't
-// there (a mismapped fence, a phantom footway). Distrust and fall through.
-const SANITY_RATIO = 2.0;
+// >2× haversine usually means the walk goes around a real barrier (the
+// airfield fence between Corps of Engineers and Airfield Operations is
+// 904 m straight, 2193 m on foot). Mapbox is still the best data we have,
+// so the route is kept and only tagged `detour: true`; it used to be
+// discarded here, which left the user with a straight-line guess and no
+// directions (decided 2026-09-27).
+const DETOUR_RATIO = 2.0;
 // Very short user→stop pairs are dominated by GPS jitter; the Worker call
 // isn't worth it, and haversine is already inside the noise band.
 const MIN_METERS_FOR_MAPBOX = 60;
@@ -101,7 +105,7 @@ function sanitizeSteps(raw) {
 }
 
 // Returns {seconds, meters, steps, source: "mapbox"} on success, or null on any
-// failure (network, sanity reject, invalid response). Callers must be
+// failure (network, non-2xx, invalid response). Callers must be
 // prepared for null and fall back to haversine.
 export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   const stop = STOP_COORDS[stopName];
@@ -139,15 +143,13 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   }
   if (!body || typeof body.seconds !== "number" || typeof body.meters !== "number") return null;
 
-  // Sanity: Mapbox meters must be within SANITY_RATIO of haversine, else
-  // its route probably threaded a nonexistent path.
-  if (body.meters > straight * SANITY_RATIO) return null;
 
   const value = {
     seconds: body.seconds,
     meters: body.meters,
     steps: sanitizeSteps(body.steps),
     source: "mapbox",
+    detour: body.meters > straight * DETOUR_RATIO,
   };
   lsSet(key, JSON.stringify(value));
   return value;
@@ -204,13 +206,13 @@ export async function fetchBuildingWalk(bldgNum, stopName, opts = {}) {
     return null;
   }
   if (!body || typeof body.seconds !== "number" || typeof body.meters !== "number") return null;
-  if (body.meters > straight * SANITY_RATIO) return null;
 
   const value = {
     seconds: body.seconds,
     meters: body.meters,
     steps: sanitizeSteps(body.steps),
     source: "mapbox",
+    detour: body.meters > straight * DETOUR_RATIO,
   };
   lsSet(key, JSON.stringify(value));
   return value;
@@ -266,17 +268,17 @@ export async function fetchDirectWalk(originCoords, destCoords, opts = {}) {
     return null;
   }
   if (!body || typeof body.seconds !== "number" || typeof body.meters !== "number") return null;
-  if (body.meters > straight * SANITY_RATIO) return null;
 
   const value = {
     seconds: body.seconds,
     meters: body.meters,
     steps: sanitizeSteps(body.steps),
     source: "mapbox",
+    detour: body.meters > straight * DETOUR_RATIO,
   };
   lsSet(key, JSON.stringify(value));
   return value;
 }
 
 // Exposed for testing.
-export const _internal = { CACHE_PREFIX, LAT_CELL, LON_CELL, SANITY_RATIO, MIN_METERS_FOR_MAPBOX };
+export const _internal = { CACHE_PREFIX, LAT_CELL, LON_CELL, DETOUR_RATIO, MIN_METERS_FOR_MAPBOX };

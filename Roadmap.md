@@ -324,6 +324,11 @@ Revive map tab from `archive/map-tab` to render Mapbox walking polylines. Reopen
 - **Regenerate cadence**: matrix rebuild when `stop_coords.json` changes (new stops, refined hand-pins) or when Camp Humphreys OSM footway data materially improves upstream. Detect via content hash; log the trigger in the commit message.
 - **License compliance**: `© Mapbox © OpenStreetMap` attribution line ships under every `<WalkSteps>` disclosure (v1.5.0), so Directions-only usage is covered. Search results carry `© Mapbox` on the Places section header (v1.6.0). No footer-wide attribution added yet — Mapbox ToS is satisfied by the per-instance credit next to the rendered directions.
 
+- **Mapbox licensing check (queued 2026-09-28)**: read the Mapbox Product Terms (PDF, legal/product-terms) before storing any more Mapbox output. Two questions:
+  1. Is what already ships allowed? That covers Directions durations bundled in `walk_matrix.json`, Search Box and Directions results cached in `localStorage` (1-day / indefinite), and the Worker's 1-day / 30-day edge caches.
+  2. Would bundling Directions *steps* for offline directions, or saving Search Box POIs into `BUILDINGS`, be allowed?
+  Geocoding explicitly splits temporary (no storage) from permanent (paid) results, and the Directions and Search Box rules were not found in the public docs. Gates the "offline directions" options: bundled Mapbox steps vs an in-app OSM footway router.
+
 #### Related memory
 See [[mapbox-walking-data]] for the origin of the suggestion and the base constraints; [[distribution-options]] + `docs/adr/0001-static-first-no-backend.md` for why the Worker proxy is the backend of choice.
 
