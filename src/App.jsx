@@ -24,6 +24,7 @@ import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
 import { BrandMark } from "@/components/brand-mark.jsx";
 import { DailyEncouragement } from "@/components/daily-encouragement.jsx";
 import COMMUNITY_LINKS from "./data/community_links.json";
+import PLACES_OSM from "./data/places_osm.json";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -117,6 +118,7 @@ const STRINGS = {
     from: "From", to: "To", atStop: "At stop",
     stopPh: l => `${l} — stop name or Bldg #`,
     fromPh: "From — stop, Bldg # or place",
+    toPh: "To — stop, Bldg # or place",
     saveFav: "★ Save", saveFavTitle: "Save From as favorite",
     saveFavHeading: "Save favorite",
     saveFavPrompt: "Name this favorite (e.g. Home, Work, Gym)",
@@ -262,6 +264,7 @@ const STRINGS = {
     from: "출발", to: "도착", atStop: "정류장",
     stopPh: l => `${l} — 정류장 또는 건물 번호`,
     fromPh: "출발 — 정류장, 건물 번호 또는 장소",
+    toPh: "도착 — 정류장, 건물 번호 또는 장소",
     saveFav: "★ 저장", saveFavTitle: "출발지를 즐겨찾기에 저장",
     saveFavHeading: "즐겨찾기 저장",
     saveFavPrompt: "즐겨찾기 이름 (예: 집, 직장, 체육관)",
@@ -498,6 +501,24 @@ const OSM_BUILDING_SEARCH = Object.entries(BUILDING_COORDS)
   })
   .filter(Boolean);
 
+// Named OSM places with no building number (schools, CDC, parks, fields,
+// food-court outlets) from scripts/fetch_osm_places.py. They carry their own
+// coords, so a pick walks from/to the place itself, like a Mapbox place.
+const OSM_PLACE_SEARCH = (PLACES_OSM.places || [])
+  .filter(p => p.lat != null)
+  .map(p => {
+    const hit = nearestStopTo(p);
+    if (!hit || hit.meters > OSM_NEAREST_CAP_M) return null;
+    return {
+      label: p.name,
+      alt: p.name_ko || "",
+      stop: hit.stop,
+      sub: `Nearest stop: ${hit.stop} (~${Math.round(hit.meters)} m)`,
+      place: { lat: p.lat, lon: p.lon },
+    };
+  })
+  .filter(Boolean);
+
 const SEARCH_INDEX = [
   ...ALL_STOPS.map(s => ({ label:s, stop:s, sub:"Bus stop" })),
   ...Object.entries(STOP_ALIASES).flatMap(([canonical, aliases]) =>
@@ -507,6 +528,7 @@ const SEARCH_INDEX = [
     label:`Bldg ${num} – ${b.name}`, stop:b.stop, sub:`Nearest stop: ${b.stop}`, isBuilding:true, bldg:num
   })),
   ...OSM_BUILDING_SEARCH,
+  ...OSM_PLACE_SEARCH,
 ];
 
 // ─── Schedule presentation helpers ────────────────────────────────────────────
@@ -648,9 +670,10 @@ const SUMMARY_BTN =
 // [{ key, label, Icon, items: [{ id, content, onPick, onRemove, removeLabel }] }].
 // Typing anything switches back to the filtered stop search. Only the From
 // field passes them — a recent trip is a From-side concept.
-// `placeSearch` appends Mapbox place hits below the local matches (From only:
-// a place origin is a coord the walk leg starts from). A picked place calls
-// onChange(nearestStop, name, null, { lat, lon, kind: "place" }).
+// `placeSearch` appends Mapbox place hits below the local matches. A picked
+// place (Mapbox or an OSM place from the local index) calls
+// onChange(nearestStop, name, null, { lat, lon, kind: "place" }); the walk
+// leg starts or ends at the place itself.
 function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeSearch = false, placeholder }) {
   const { lang, t } = useT();
   const [q, setQ] = useState(value||"");
@@ -684,6 +707,7 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
     return SEARCH_INDEX.filter(x => {
       const lbl=x.label.toLowerCase(), stp=x.stop.toLowerCase();
       if(lbl.includes(lq)||stp.includes(lq)) return true;
+      if(x.alt && x.alt.toLowerCase().includes(lq)) return true;
       if(numOnly && x.isBuilding && lbl.includes(numOnly)) return true;
       return false;
     }).slice(0,9);
@@ -739,7 +763,10 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
       window.removeEventListener("resize", measure);
     };
   },[open]);
-  const pick=item=>{ setQ(item.label); setOpen(false); onChange(item.stop,item.label,item.bldg||null); };
+  const pick=item=>{
+    setQ(item.label); setOpen(false);
+    onChange(item.stop,item.label,item.bldg||null,item.place ? { ...item.place, kind:"place" } : null);
+  };
   const pickPlace=p=>{ setQ(p.name); setOpen(false); onChange(p.stop,p.name,null,{ lat:p.lat, lon:p.lon, kind:"place" }); };
   const runAt=i=>{
     if (showQuick) { setOpen(false); quickItems[i]?.onPick(); }
@@ -1528,6 +1555,8 @@ export default function App() {
   // User lat/lon when the "Nearest stop" button has fetched geolocation.
   // Overrides building coords for the origin walk leg.
   const [fCoords,setFC]=useState(null);
+  // Destination coords when To is a place (OSM or Mapbox), not a stop/bldg.
+  const [tCoords,setTC]=useState(null);
   const [locBusy,setLocBusy]=useState(false);
   const [results,setRes]=useState(null), [searched,setSrch]=useState(false);
   // Results collapse the form into a summary card; "Edit" brings it back with
@@ -1637,11 +1666,18 @@ export default function App() {
     // Map because steps are direction-dependent: a nearby stop that appears
     // as both an origin candidate and a dest candidate needs *different*
     // maneuver text on each leg.
-    if (tBldg) {
+    // `reverse`: the leg runs alight stop → destination, so steps are
+    // requested in that direction (they used to come back destination → stop).
+    if (tCoords) {
+      const nearby = nearbyStopNames(tCoords, 10, WALK_PREFETCH_K);
+      const targetStops = [tStop, ...nearby.filter(s => s !== tStop)].slice(0, WALK_PREFETCH_K);
+      try { destWalkOverrides = await prefetchUserWalks(tCoords, targetStops, { lang, reverse: true }); }
+      catch { destWalkOverrides = null; }
+    } else if (tBldg) {
       const b = BUILDING_COORDS[tBldg];
       const nearby = b && b.lat != null ? nearbyStopNames({ lat: b.lat, lon: b.lon }, 10, WALK_PREFETCH_K) : [];
       const targetStops = [tStop, ...nearby.filter(s => s !== tStop)].slice(0, WALK_PREFETCH_K);
-      try { destWalkOverrides = await prefetchBuildingWalks(tBldg, targetStops, { lang }); }
+      try { destWalkOverrides = await prefetchBuildingWalks(tBldg, targetStops, { lang, reverse: true }); }
       catch { destWalkOverrides = null; }
     } else {
       // Stop-only destination: same reasoning as the origin branch. Nearby
@@ -1650,11 +1686,11 @@ export default function App() {
       const s = STOP_COORDS[tStop];
       if (s && s.lat != null) {
         const nearby = nearbyStopNames({ lat: s.lat, lon: s.lon }, 10, WALK_PREFETCH_K + 1).filter(x => x !== tStop).slice(0, WALK_PREFETCH_K);
-        try { destWalkOverrides = await prefetchUserWalks({ lat: s.lat, lon: s.lon }, nearby, { lang }); }
+        try { destWalkOverrides = await prefetchUserWalks({ lat: s.lat, lon: s.lon }, nearby, { lang, reverse: true }); }
         catch { destWalkOverrides = null; }
       }
     }
-    const trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, null, walkOverrides, destWalkOverrides);
+    const trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, tCoords, walkOverrides, destWalkOverrides);
     // Fetch turn-by-turn for the direct pair when the planner recommends
     // walking, or when no shuttle path exists at all. In the second case
     // Mapbox is the only help left, so it is offered even past the planner's
@@ -1667,7 +1703,8 @@ export default function App() {
       const originCoords = fCoords
         || (fBldg ? BUILDING_COORDS[fBldg] : null)
         || STOP_COORDS[fStop];
-      const destCoords = (tBldg ? BUILDING_COORDS[tBldg] : null)
+      const destCoords = tCoords
+        || (tBldg ? BUILDING_COORDS[tBldg] : null)
         || STOP_COORDS[tStop];
       if (originCoords?.lat != null && destCoords?.lat != null
           && haversineMeters(originCoords.lat, originCoords.lon, destCoords.lat, destCoords.lon) <= DIRECT_WALK_MAX_M) {
@@ -1698,7 +1735,7 @@ export default function App() {
     setSrch(true);
     setEditing(false);
     setRecent(prev => {
-      const entry = { fStop, tStop, fLbl, tLbl, fBldg, tBldg, fPlace: fCoords?.kind==="place" ? fCoords : null };
+      const entry = { fStop, tStop, fLbl, tLbl, fBldg, tBldg, fPlace: fCoords?.kind==="place" ? fCoords : null, tPlace: tCoords };
       const deduped = prev.filter(r => !(r.fStop===fStop && r.tStop===tStop));
       return [entry, ...deduped].slice(0, 5);
     });
@@ -1707,9 +1744,10 @@ export default function App() {
   const swap=()=>{
     setFS(tStop);setTS(fStop);setFL(tLbl);setTL(fLbl);
     setFB(tBldg);setTB(fBldg);
-    // User coords describe "From" position; after a swap they no longer apply
-    // to either side, so clear.
-    setFC(null);
+    // Place coords travel with their label. A geolocation fix describes where
+    // the user is standing, so it doesn't become a destination.
+    setFC(tCoords);
+    setTC(fCoords?.kind==="place" ? fCoords : null);
     reset();
   };
 
@@ -1748,7 +1786,7 @@ export default function App() {
   const removeFavorite=idx=>setFavorites(prev=>prev.filter((_,i)=>i!==idx));
   const removeRecent=idx=>setRecent(prev=>prev.filter((_,i)=>i!==idx));
   const applyFavorite=f=>{setFS(f.stop);setFL(f.label);setFB(f.bldg||null);setFC(f.place||null);reset();};
-  const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setFB(r.fBldg||null);setFC(r.fPlace||null);setTS(r.tStop);setTL(r.tLbl);setTB(r.tBldg||null);reset();};
+  const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setFB(r.fBldg||null);setFC(r.fPlace||null);setTS(r.tStop);setTL(r.tLbl);setTB(r.tBldg||null);setTC(r.tPlace||null);reset();};
   const TABS=[["plan",t.tabPlan],["now",t.tabNow],["routes",t.tabRoutes],["offpost",t.tabOffpost]];
 
   // 2c suggestions. "Next service day" is the first upcoming date on which any
@@ -1795,7 +1833,7 @@ export default function App() {
     { key:"recent", label:t.recent, Icon:History,
       items: recent.map((r,i)=>({
         id:`r${i}`,
-        content:<>{r.fPlace ? r.fLbl : r.fStop} <span className="text-muted-foreground">→</span> {r.tStop}</>,
+        content:<>{r.fPlace ? r.fLbl : r.fStop} <span className="text-muted-foreground">→</span> {r.tPlace ? r.tLbl : r.tStop}</>,
         onPick:()=>{ applyRecent(r); focusWhen(); },
         onRemove:()=>removeRecent(i), removeLabel:t.removeRecent,
       })) },
@@ -1926,9 +1964,9 @@ export default function App() {
                 </Button>
               </div>
 
-              <StopInput label={t.to} value={tLbl}
+              <StopInput label={t.to} value={tLbl} placeSearch placeholder={t.toPh}
                 dot={<span aria-hidden="true" className="absolute top-1/2 left-3 z-10 size-2 -translate-y-1/2 rounded-[2px] bg-foreground"/>}
-                onChange={(s,l,b)=>{setTS(s);setTL(l);setTB(b);reset();}}/>
+                onChange={(s,l,b,c)=>{setTS(s);setTL(l);setTB(b);setTC(c||null);reset();}}/>
 
               <div ref={whenRef} className="mt-1.5"
                 onPointerEnter={loadWhenPicker} onFocus={loadWhenPicker} onTouchStart={loadWhenPicker}>

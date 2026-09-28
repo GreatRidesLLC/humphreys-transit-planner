@@ -1,0 +1,220 @@
+{
+  "_meta": {
+    "source": "OpenStreetMap via Overpass API",
+    "polygon_osm_way": 245548245,
+    "fetched_at": "2026-09-27T15:45:04.890146+00:00",
+    "license": "ODbL 1.0 — © OpenStreetMap contributors",
+    "elements_total": 111,
+    "places": 26
+  },
+  "places": [
+    {
+      "name": "Anthony's Pizza",
+      "name_ko": null,
+      "kind": "amenity=fast_food",
+      "lat": 36.9477946,
+      "lon": 127.0254108,
+      "osm_id": "node/9404362245"
+    },
+    {
+      "name": "Arts and Crafts Center",
+      "name_ko": null,
+      "kind": "building=yes",
+      "lat": 36.9658962,
+      "lon": 127.0012789,
+      "osm_id": "way/586660635"
+    },
+    {
+      "name": "Balboni Field",
+      "name_ko": "발보니 필드",
+      "kind": "leisure=sports_centre",
+      "lat": 36.9699936,
+      "lon": 126.9975396,
+      "osm_id": "way/1019688916"
+    },
+    {
+      "name": "Barker Field",
+      "name_ko": null,
+      "kind": "leisure=pitch",
+      "lat": 36.9670044,
+      "lon": 127.0287092,
+      "osm_id": "way/962145202"
+    },
+    {
+      "name": "Beacon Hill Park",
+      "name_ko": "비콘 힐 공원",
+      "kind": "leisure=park",
+      "lat": 36.9548031,
+      "lon": 127.0461516,
+      "osm_id": "way/874080245"
+    },
+    {
+      "name": "Burger King",
+      "name_ko": null,
+      "kind": "amenity=fast_food",
+      "lat": 36.9655251,
+      "lon": 127.0086292,
+      "osm_id": "node/8281056500"
+    },
+    {
+      "name": "Canal Park",
+      "name_ko": "카날 공원",
+      "kind": "leisure=park",
+      "lat": 36.9616709,
+      "lon": 127.0109645,
+      "osm_id": "relation/17880277"
+    },
+    {
+      "name": "Child Development Center",
+      "name_ko": null,
+      "kind": "building=yes",
+      "lat": 36.9504528,
+      "lon": 127.0192766,
+      "osm_id": "way/587296051"
+    },
+    {
+      "name": "Community Garden Plot",
+      "name_ko": null,
+      "kind": "leisure=garden",
+      "lat": 36.9478296,
+      "lon": 127.0171275,
+      "osm_id": "way/988867864"
+    },
+    {
+      "name": "Downtown Lanes Bowling Center",
+      "name_ko": null,
+      "kind": "leisure=bowling_alley",
+      "lat": 36.965808,
+      "lon": 127.0023672,
+      "osm_id": "way/586660638"
+    },
+    {
+      "name": "Downtown Recreation Center",
+      "name_ko": "다운타운 레크리에이션 센터",
+      "kind": "building=yes",
+      "lat": 36.965025,
+      "lon": 127.0017462,
+      "osm_id": "way/586660636"
+    },
+    {
+      "name": "Driver's Testing",
+      "name_ko": "운전면허 시험장",
+      "kind": "amenity=driving_school",
+      "lat": 36.969192,
+      "lon": 127.0159004,
+      "osm_id": "node/8304905282"
+    },
+    {
+      "name": "Fire Station #3",
+      "name_ko": null,
+      "kind": "amenity=fire_station",
+      "lat": 36.9617146,
+      "lon": 127.0234557,
+      "osm_id": "way/587264398"
+    },
+    {
+      "name": "Humphreys Central Elementary School",
+      "name_ko": "험프리스 센트럴 초등학교",
+      "kind": "amenity=school",
+      "lat": 36.9597081,
+      "lon": 127.0129403,
+      "osm_id": "way/1304087785"
+    },
+    {
+      "name": "Humphreys High School",
+      "name_ko": "험프리스 고등학교",
+      "kind": "amenity=school",
+      "lat": 36.9607621,
+      "lon": 127.0100481,
+      "osm_id": "way/586709770"
+    },
+    {
+      "name": "Humphreys Middle School",
+      "name_ko": null,
+      "kind": "amenity=school",
+      "lat": 36.9620508,
+      "lon": 127.0015012,
+      "osm_id": "relation/20315284"
+    },
+    {
+      "name": "Humphreys Middle School Football Field",
+      "name_ko": null,
+      "kind": "leisure=pitch",
+      "lat": 36.9619441,
+      "lon": 127.0039269,
+      "osm_id": "way/586692068"
+    },
+    {
+      "name": "Humphreys Middle School Gym/Cafetorium/Specials",
+      "name_ko": null,
+      "kind": "building=yes",
+      "lat": 36.9618165,
+      "lon": 127.0024665,
+      "osm_id": "way/586709772"
+    },
+    {
+      "name": "Humphreys Theater",
+      "name_ko": null,
+      "kind": "amenity=cinema",
+      "lat": 36.9647769,
+      "lon": 127.0011184,
+      "osm_id": "way/586660634"
+    },
+    {
+      "name": "Popeyes",
+      "name_ko": null,
+      "kind": "amenity=fast_food",
+      "lat": 36.9654722,
+      "lon": 127.0087969,
+      "osm_id": "node/8281056499"
+    },
+    {
+      "name": "Popeyes",
+      "name_ko": null,
+      "kind": "amenity=fast_food",
+      "lat": 36.9477656,
+      "lon": 127.0251253,
+      "osm_id": "node/9404362248"
+    },
+    {
+      "name": "ROKA PX",
+      "name_ko": "연합사 국군 PX",
+      "kind": "shop=yes",
+      "lat": 36.9696942,
+      "lon": 127.0259401,
+      "osm_id": "node/12066561450"
+    },
+    {
+      "name": "Starbucks",
+      "name_ko": "스타벅스",
+      "kind": "amenity=cafe",
+      "lat": 36.9477573,
+      "lon": 127.025039,
+      "osm_id": "node/9404362250"
+    },
+    {
+      "name": "Subway",
+      "name_ko": null,
+      "kind": "amenity=fast_food",
+      "lat": 36.9477877,
+      "lon": 127.0253139,
+      "osm_id": "node/9404362246"
+    },
+    {
+      "name": "Taco Bell",
+      "name_ko": null,
+      "kind": "amenity=fast_food",
+      "lat": 36.9477766,
+      "lon": 127.025217,
+      "osm_id": "node/9404362247"
+    },
+    {
+      "name": "Taxi Stop",
+      "name_ko": "택시 정류장",
+      "kind": "amenity=taxi",
+      "lat": 36.9591432,
+      "lon": 127.0418714,
+      "osm_id": "node/12298985048"
+    }
+  ]
+}

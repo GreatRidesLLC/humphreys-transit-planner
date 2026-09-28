@@ -259,3 +259,37 @@ describe("fetchBuildingWalk", () => {
     expect(result.size).toBe(1);
   });
 });
+
+describe("reverse walks (alight stop → destination)", () => {
+  const user = { lat: 36.9606, lon: 127.0158 };
+  const stop = "Bus Terminal";
+  const ok = () => vi.fn().mockResolvedValue({
+    ok: true, json: async () => ({ seconds: 300, meters: 400, steps: [], source: "mapbox" }),
+  });
+
+  it("requests stop → point and keeps a separate cache entry per direction", async () => {
+    const fetchMock = ok();
+    await fetchUserWalk(user, stop, { fetch: fetchMock, reverse: true });
+    const s = STOP_COORDS[stop];
+    const url = new URL(fetchMock.mock.calls[0][0], "https://x");
+    expect(Number(url.searchParams.get("flat"))).toBeCloseTo(s.lat, 5);
+    expect(Number(url.searchParams.get("tlat"))).toBeCloseTo(roundCell(user.lat, user.lon).lat, 5);
+    await fetchUserWalk(user, stop, { fetch: fetchMock });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await fetchUserWalk(user, stop, { fetch: fetchMock, reverse: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("reverses building walks too", async () => {
+    const bldg = Object.keys(BUILDING_COORDS).find(k => {
+      const b = BUILDING_COORDS[k], s = STOP_COORDS[stop];
+      return b?.lat != null && isOnPost(b.lat, b.lon)
+        && haversineMeters(b.lat, b.lon, s.lat, s.lon) > _internal.MIN_METERS_FOR_MAPBOX;
+    });
+    const fetchMock = ok();
+    await fetchBuildingWalk(bldg, stop, { fetch: fetchMock, reverse: true });
+    const url = new URL(fetchMock.mock.calls[0][0], "https://x");
+    expect(Number(url.searchParams.get("flat"))).toBeCloseTo(STOP_COORDS[stop].lat, 5);
+    expect(Number(url.searchParams.get("tlat"))).toBeCloseTo(BUILDING_COORDS[bldg].lat, 5);
+  });
+});
