@@ -146,8 +146,10 @@ const STRINGS = {
     leaveNow: "Leave now", departAt: "Depart at", arriveBy: "Arrive by",
     today: "Today", tomorrow: "Tmrw", dow: DOW,
     findRoutes: "Find Routes →",
-    bldgsMappedTitle: n => `${n} building numbers mapped`,
-    bldgsMappedDesc: " (e.g. 6400 → Maude Hall, 5700 → PX). Full directory pending.",
+    bldgsMappedTitle: (n, p) => `${n} buildings and ${p} places searchable`,
+    bldgsMappedDesc: " by number or name (e.g. 6400 → Maude Hall, Central Elementary). Other spots on post appear under Places as you type.",
+    bldgsMissing: "Missing one?",
+    bldgsTellUs: "Tell us",
     noTrips: "No Trips Available",
     noTripsOOS: names => ["Possible routes are outside service hours at this time (", names, "). Try a different time."],
     noTripsNoPath: "No shared or 1-transfer path exists. Try selecting the Bus Terminal as a hub, or a nearby major stop.",
@@ -297,8 +299,10 @@ const STRINGS = {
     leaveNow: "지금 출발", departAt: "출발 시간", arriveBy: "도착 시간",
     today: "오늘", tomorrow: "내일", dow: DOW_KO,
     findRoutes: "노선 찾기 →",
-    bldgsMappedTitle: n => `건물 번호 ${n}개 매핑됨`,
-    bldgsMappedDesc: " (예: 6400 → Maude Hall, 5700 → PX). 전체 목록 준비 중.",
+    bldgsMappedTitle: (n, p) => `건물 ${n}곳·장소 ${p}곳 검색 가능`,
+    bldgsMappedDesc: " 번호나 이름으로 찾으세요 (예: 6400 → Maude Hall, Central Elementary). 그 밖의 기지 내 장소는 입력하면 '장소'에 나타납니다.",
+    bldgsMissing: "빠진 곳이 있나요?",
+    bldgsTellUs: "알려주세요",
     noTrips: "이용 가능한 노선 없음",
     noTripsOOS: names => ["현재 시간에 운행하지 않는 노선이 있습니다 (", names, "). 다른 시간을 시도해 보세요."],
     noTripsNoPath: "공유 정류장 또는 1회 환승 경로가 없습니다. 버스 터미널이나 가까운 주요 정류장을 시도해 보세요.",
@@ -2103,7 +2107,11 @@ export default function App() {
 
           {showForm && (
             <div className={cn(NOTE_CLS,"mt-3.5")}>
-              <span className="font-semibold text-foreground">{t.bldgsMappedTitle(Object.keys(BUILDINGS).length + OSM_BUILDING_SEARCH.length)}</span>{t.bldgsMappedDesc}
+              <span className="font-semibold text-foreground">
+                {t.bldgsMappedTitle(Object.keys(BUILDINGS).length + OSM_BUILDING_SEARCH.length, OSM_PLACE_SEARCH.length)}
+              </span>
+              {t.bldgsMappedDesc}{" "}{t.bldgsMissing}{" "}
+              <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">{t.bldgsTellUs}</a>
             </div>
           )}
 
