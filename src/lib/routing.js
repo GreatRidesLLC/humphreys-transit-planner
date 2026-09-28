@@ -35,6 +35,19 @@ function metersToWalkMin(meters) {
   return Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
 }
 
+// A straight line has no path, so it undershoots the real walk (fences, the
+// airfield). A walk leg with no Mapbox data is padded by this factor, and
+// the UI apologises for the missing directions on that leg.
+export const EST_WALK_FACTOR = 1.5;
+
+// Padded estimate for a leg we have no path data for. `rawDur` keeps the
+// unpadded minutes for callers that compare against a straight-line cap.
+function estimatedWalk(meters) {
+  const rawDur = metersToWalkMin(meters);
+  const dur = Math.max(WALK_FLOOR_MIN, Math.ceil((meters / WALK_SPEED_M_PER_MIN) * EST_WALK_FACTOR));
+  return { dur, rawDur, steps: null, source: "heuristic" };
+}
+
 function secondsToWalkMin(seconds) {
   return Math.max(WALK_FLOOR_MIN, Math.ceil(seconds / 60));
 }
@@ -48,11 +61,12 @@ export function walkMinutes(bldgNum, stopName, userCoords, walkOverrides) {
   return walkLegInfo(bldgNum, stopName, userCoords, walkOverrides).dur;
 }
 
-// Enriched walk leg: minutes plus turn-by-turn steps + provenance when a
-// Mapbox override supplied them. Origin walk legs from a user geolocation
-// (Phase 3) get `source:"mapbox"` and `steps:[...]`; every other path
-// (haversine fallback, build-time matrix, floor) reports `source:"heuristic"`
-// with `steps:null`.
+// Enriched walk leg: minutes plus turn-by-turn steps + provenance.
+//   "mapbox"    runtime override (steps when fetched) or build-time matrix
+//               hit (real duration, steps null)
+//   "heuristic" straight-line estimate, padded by EST_WALK_FACTOR, no steps
+//   "stop"      the trip starts/ends at this stop itself: no walk to
+//               describe, just the WALK_FLOOR_MIN buffer
 export function walkLegInfo(bldgNum, stopName, userCoords, walkOverrides) {
   const s = STOP_COORDS[stopName];
   // Runtime override wins over every static source — this is the freshly
@@ -66,10 +80,9 @@ export function walkLegInfo(bldgNum, stopName, userCoords, walkOverrides) {
     };
   }
   if (s && userCoords && userCoords.lat != null) {
-    const meters = haversineMeters(userCoords.lat, userCoords.lon, s.lat, s.lon);
-    return { dur: metersToWalkMin(meters), steps: null, source: "heuristic" };
+    return estimatedWalk(haversineMeters(userCoords.lat, userCoords.lon, s.lat, s.lon));
   }
-  if (!bldgNum) return { dur: WALK_FLOOR_MIN, steps: null, source: "heuristic" };
+  if (!bldgNum) return { dur: WALK_FLOOR_MIN, steps: null, source: "stop" };
   // Precomputed Mapbox pair from gen_walk_matrix.py — real footpath duration
   // even though no steps were stored (bundle-size vs. utility trade). Mark
   // `mapbox` so the UI can drop the `~` prefix; steps stay null.
@@ -79,10 +92,12 @@ export function walkLegInfo(bldgNum, stopName, userCoords, walkOverrides) {
   }
   const b = BUILDING_COORDS[bldgNum];
   if (!b || !s || b.lat == null || s.lat == null) {
-    return { dur: WALK_FLOOR_MIN, steps: null, source: "heuristic" };
+    return {
+      dur: Math.ceil(WALK_FLOOR_MIN * EST_WALK_FACTOR), rawDur: WALK_FLOOR_MIN,
+      steps: null, source: "heuristic",
+    };
   }
-  const meters = haversineMeters(b.lat, b.lon, s.lat, s.lon);
-  return { dur: metersToWalkMin(meters), steps: null, source: "heuristic" };
+  return estimatedWalk(haversineMeters(b.lat, b.lon, s.lat, s.lon));
 }
 
 // Names of stops within `capMin` walking minutes of `coords`, nearest first,
@@ -152,12 +167,12 @@ function candidateStops(primary, bldg, coords, walkOverrides) {
   for (const [name, s] of Object.entries(STOP_COORDS)) {
     if (name === primary || s.lat == null) continue;
     let info;
-    if (usingUserCoords) {
-      info = walkLegInfo(null, name, coords, walkOverrides);
+    if (usingUserCoords || bldg) {
+      // override → build-time matrix (bldg) → padded estimate
+      info = walkLegInfo(bldg, name, coords, walkOverrides);
     } else {
-      // Non-user origin (bldg or stop): honour a prefetched Mapbox override
-      // for this nearby stop when the caller supplied one. Falls through to
-      // haversine on miss so the existing behaviour is preserved.
+      // Stop-only origin: honour a prefetched Mapbox override for this
+      // nearby stop, else a padded straight-line estimate from the stop.
       const override = lookupOverride(walkOverrides, name);
       if (override && typeof override.seconds === "number") {
         info = {
@@ -166,12 +181,12 @@ function candidateStops(primary, bldg, coords, walkOverrides) {
           source: "mapbox",
         };
       } else {
-        const meters = haversineMeters(oc.lat, oc.lon, s.lat, s.lon);
-        const min = Math.max(WALK_FLOOR_MIN, Math.ceil(meters / WALK_SPEED_M_PER_MIN));
-        info = { dur: min, steps: null, source: "heuristic" };
+        info = estimatedWalk(haversineMeters(oc.lat, oc.lon, s.lat, s.lon));
       }
     }
-    if (info.dur <= NEARBY_STOP_WALK_CAP_MIN) {
+    // Cap on the unpadded minutes, so padding doesn't shrink the set of
+    // stops the router is willing to consider.
+    if ((info.rawDur ?? info.dur) <= NEARBY_STOP_WALK_CAP_MIN) {
       out.push({ stop: name, walkMin: info.dur, steps: info.steps, source: info.source });
     }
   }

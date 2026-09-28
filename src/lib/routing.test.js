@@ -9,7 +9,7 @@ import {
   STOP_COORDS, nearestStopTo,
   BUILDING_COORDS, WALK_MATRIX,
   stopDistance,
-  nearbyStopNames,
+  nearbyStopNames, EST_WALK_FACTOR,
 } from "./routing.js";
 
 // Reference dates: 2026-06-29 is a Monday, 2026-07-03 Friday, 2026-07-04 Saturday.
@@ -574,14 +574,14 @@ describe("walkMinutes — WALK_MATRIX Mapbox path", () => {
     const s = STOP_COORDS["Bus Terminal"];
     const expected = Math.max(
       3,
-      Math.ceil(haversineMeters(b.lat, b.lon, s.lat, s.lon) / 83)
+      Math.ceil((haversineMeters(b.lat, b.lon, s.lat, s.lon) / 83) * EST_WALK_FACTOR)
     );
     expect(min).toBe(expected);
     expect(min).toBeGreaterThan(3);
   });
 
-  it("floors at 3 min for unknown building numbers", () => {
-    expect(walkMinutes("999999", "Bus Terminal", null)).toBe(3);
+  it("pads the 3-min floor for unknown building numbers", () => {
+    expect(walkMinutes("999999", "Bus Terminal", null)).toBe(Math.ceil(3 * EST_WALK_FACTOR));
   });
 
   it("ignores the matrix when user coords are supplied (Phase 3 path)", () => {
@@ -592,7 +592,7 @@ describe("walkMinutes — WALK_MATRIX Mapbox path", () => {
     const s = STOP_COORDS[stop];
     const expected = Math.max(
       3,
-      Math.ceil(haversineMeters(user.lat, user.lon, s.lat, s.lon) / 83)
+      Math.ceil((haversineMeters(user.lat, user.lon, s.lat, s.lon) / 83) * EST_WALK_FACTOR)
     );
     expect(walkMinutes("6400", stop, user)).toBe(expected);
   });
@@ -618,7 +618,7 @@ describe("walkMinutes — Phase 3 override path", () => {
     const user = { lat: 36.9606, lon: 127.0158 };
     const stop = "Bus Terminal";
     const s = STOP_COORDS[stop];
-    const expected = Math.max(3, Math.ceil(haversineMeters(user.lat, user.lon, s.lat, s.lon) / 83));
+    const expected = Math.max(3, Math.ceil((haversineMeters(user.lat, user.lon, s.lat, s.lon) / 83) * EST_WALK_FACTOR));
     // Empty Map — must not affect the haversine result.
     expect(walkMinutes(null, stop, user, new Map())).toBe(expected);
   });
@@ -691,7 +691,7 @@ describe("findTrips — origin walk leg carries steps", () => {
     expect(originLeg.steps).toEqual(steps);
   });
 
-  it("leaves the destination walk leg as heuristic with no steps", () => {
+  it("marks a stop-only destination walk leg as \"stop\" with no steps", () => {
     const from = "Bus Terminal";
     const to = "Main Exchange (PX)";
     const user = { lat: 36.9606, lon: 127.0158 };
@@ -700,7 +700,7 @@ describe("findTrips — origin walk leg carries steps", () => {
     const legs = r.trips[0].legs;
     const destLeg = legs[legs.length - 1];
     expect(destLeg.k).toBe("walk");
-    expect(destLeg.source).toBe("heuristic");
+    expect(destLeg.source).toBe("stop");
     expect(destLeg.steps).toBeNull();
   });
 });
@@ -752,5 +752,22 @@ describe("nearbyStopNames limit", () => {
     const all = nearbyStopNames(coords, 10);
     expect(all.length).toBeGreaterThan(5);
     expect(nearbyStopNames(coords, 10, 5)).toEqual(all.slice(0, 5));
+  });
+});
+
+describe("estimated walk legs", () => {
+  it("pads a straight-line walk by EST_WALK_FACTOR and reports heuristic", () => {
+    const user = { lat: 36.9606, lon: 127.0158 };
+    const s = STOP_COORDS["Bus Terminal"];
+    const raw = haversineMeters(user.lat, user.lon, s.lat, s.lon) / 83;
+    const info = walkLegInfo(null, "Bus Terminal", user);
+    expect(info.source).toBe("heuristic");
+    expect(info.dur).toBe(Math.max(3, Math.ceil(raw * EST_WALK_FACTOR)));
+    expect(info.rawDur).toBe(Math.max(3, Math.ceil(raw)));
+  });
+
+  it("leaves a stop-only origin as an unpadded 3-min buffer", () => {
+    const info = walkLegInfo(null, "Bus Terminal", null);
+    expect(info).toMatchObject({ dur: 3, source: "stop", steps: null });
   });
 });
