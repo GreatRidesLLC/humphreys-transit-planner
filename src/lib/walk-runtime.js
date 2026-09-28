@@ -28,7 +28,8 @@ const VERSION = WALK_MATRIX_JSON?._meta?.source_hash || "unversioned";
 // fine-grained step list so users don't see stale "turn left 22m" fluff.
 // v4: depart step rewritten around street names (no compass) + per-step
 // `location` / `toward` for client-side landmarks.
-const STEPS_SCHEMA_V = 4;
+// v5: `via` (main street) + `alternatives` (other Mapbox routes).
+const STEPS_SCHEMA_V = 5;
 const CACHE_PREFIX = `htp.walk.${VERSION}.v${STEPS_SCHEMA_V}`;
 // >2× haversine usually means the walk goes around a real barrier (the
 // airfield fence between Corps of Engineers and Airfield Operations is
@@ -110,6 +111,28 @@ function sanitizeSteps(raw) {
   return out;
 }
 
+function toValue(body, straight) {
+  const alternatives = Array.isArray(body.alternatives)
+    ? body.alternatives
+      .filter(a => a && typeof a.seconds === "number" && typeof a.meters === "number")
+      .map(a => ({
+        seconds: a.seconds,
+        meters: a.meters,
+        steps: sanitizeSteps(a.steps),
+        via: typeof a.via === "string" ? a.via : null,
+      }))
+    : [];
+  return {
+    seconds: body.seconds,
+    meters: body.meters,
+    steps: sanitizeSteps(body.steps),
+    source: "mapbox",
+    detour: body.meters > straight * DETOUR_RATIO,
+    via: typeof body.via === "string" ? body.via : null,
+    alternatives,
+  };
+}
+
 // Returns {seconds, meters, steps, source: "mapbox"} on success, or null on any
 // failure (network, non-2xx, invalid response). Callers must be
 // prepared for null and fall back to haversine.
@@ -150,13 +173,7 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   if (!body || typeof body.seconds !== "number" || typeof body.meters !== "number") return null;
 
 
-  const value = {
-    seconds: body.seconds,
-    meters: body.meters,
-    steps: sanitizeSteps(body.steps),
-    source: "mapbox",
-    detour: body.meters > straight * DETOUR_RATIO,
-  };
+  const value = toValue(body, straight);
   lsSet(key, JSON.stringify(value));
   return value;
 }
@@ -213,13 +230,7 @@ export async function fetchBuildingWalk(bldgNum, stopName, opts = {}) {
   }
   if (!body || typeof body.seconds !== "number" || typeof body.meters !== "number") return null;
 
-  const value = {
-    seconds: body.seconds,
-    meters: body.meters,
-    steps: sanitizeSteps(body.steps),
-    source: "mapbox",
-    detour: body.meters > straight * DETOUR_RATIO,
-  };
+  const value = toValue(body, straight);
   lsSet(key, JSON.stringify(value));
   return value;
 }
@@ -275,13 +286,7 @@ export async function fetchDirectWalk(originCoords, destCoords, opts = {}) {
   }
   if (!body || typeof body.seconds !== "number" || typeof body.meters !== "number") return null;
 
-  const value = {
-    seconds: body.seconds,
-    meters: body.meters,
-    steps: sanitizeSteps(body.steps),
-    source: "mapbox",
-    detour: body.meters > straight * DETOUR_RATIO,
-  };
+  const value = toValue(body, straight);
   lsSet(key, JSON.stringify(value));
   return value;
 }

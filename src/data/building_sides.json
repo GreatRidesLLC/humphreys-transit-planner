@@ -1,0 +1,527 @@
+{
+  "_meta": {
+    "source": "OpenStreetMap main API map call (bbox tiles)",
+    "generated_at": "2026-09-28T10:49:32.735361+00:00",
+    "license": "ODbL 1.0 — © OpenStreetMap contributors",
+    "min_area_m2": 3000,
+    "max_street_gap_m": 90,
+    "places": 25
+  },
+  "places": {
+    "bldg:12400": {
+      "name": "Eighth United States Army",
+      "sides": [
+        {
+          "street": "Iron Knights Street",
+          "street_ko": null,
+          "lat": 36.9676457,
+          "lon": 127.0314952
+        },
+        {
+          "street": "Walker Drive",
+          "street_ko": null,
+          "lat": 36.9667809,
+          "lon": 127.0297313
+        }
+      ]
+    },
+    "bldg:12410": {
+      "name": "United States Forces Korea",
+      "sides": [
+        {
+          "street": "Iron Knights Street",
+          "street_ko": null,
+          "lat": 36.9684009,
+          "lon": 127.0304297
+        },
+        {
+          "street": "Walker Drive",
+          "street_ko": null,
+          "lat": 36.9671093,
+          "lon": 127.0300998
+        }
+      ]
+    },
+    "bldg:12412": {
+      "name": "United Nations Command",
+      "sides": [
+        {
+          "street": "Iron Knights Street",
+          "street_ko": null,
+          "lat": 36.9681839,
+          "lon": 127.0307359
+        },
+        {
+          "street": "Martin Street",
+          "street_ko": null,
+          "lat": 36.969282,
+          "lon": 127.0298864
+        },
+        {
+          "street": "Walker Drive",
+          "street_ko": null,
+          "lat": 36.9675192,
+          "lon": 127.0305597
+        }
+      ]
+    },
+    "bldg:125": {
+      "name": "Morning Calm Conference Center",
+      "sides": [
+        {
+          "street": "Kyle Road",
+          "street_ko": null,
+          "lat": 36.9479444,
+          "lon": 127.0283225
+        },
+        {
+          "street": "Washington Avenue",
+          "street_ko": null,
+          "lat": 36.9486132,
+          "lon": 127.0292949
+        }
+      ]
+    },
+    "bldg:12600": {
+      "name": "US Army Corps of Engineers Far East District",
+      "sides": [
+        {
+          "street": "62nd Engineer Drive",
+          "street_ko": null,
+          "lat": 36.9741095,
+          "lon": 127.0225676
+        },
+        {
+          "street": "Manchu Path",
+          "street_ko": null,
+          "lat": 36.9747683,
+          "lon": 127.0230521
+        },
+        {
+          "street": "Naeri-gil",
+          "street_ko": "내리길",
+          "lat": 36.9747482,
+          "lon": 127.0238165
+        }
+      ]
+    },
+    "bldg:12601": {
+      "name": "Consolidated Headquarters",
+      "sides": [
+        {
+          "street": "Manchu Path",
+          "street_ko": null,
+          "lat": 36.973317,
+          "lon": 127.0249648
+        },
+        {
+          "street": "Naeri-gil",
+          "street_ko": "내리길",
+          "lat": 36.9733752,
+          "lon": 127.0251682
+        },
+        {
+          "street": "Smith Street",
+          "street_ko": null,
+          "lat": 36.9727218,
+          "lon": 127.0246327
+        }
+      ]
+    },
+    "bldg:1750": {
+      "name": "AFN Televideo Center",
+      "sides": [
+        {
+          "street": "Freedom Road",
+          "street_ko": null,
+          "lat": 36.9520816,
+          "lon": 127.0366058
+        },
+        {
+          "street": "Key Street",
+          "street_ko": null,
+          "lat": 36.9527228,
+          "lon": 127.0378162
+        }
+      ]
+    },
+    "bldg:1949": {
+      "name": "Collier Community Fitness Center (Super Gym)",
+      "sides": [
+        {
+          "street": "Key Street",
+          "street_ko": null,
+          "lat": 36.9517485,
+          "lon": 127.0231523
+        },
+        {
+          "street": "Tropic Lightning Avenue",
+          "street_ko": null,
+          "lat": 36.9528518,
+          "lon": 127.0220581
+        }
+      ]
+    },
+    "bldg:2063": {
+      "name": "Turner Fitness Center",
+      "sides": [
+        {
+          "street": "Bobcat Street",
+          "street_ko": null,
+          "lat": 36.9613004,
+          "lon": 127.0229628
+        },
+        {
+          "street": "Indianhead Avenue",
+          "street_ko": null,
+          "lat": 36.9609387,
+          "lon": 127.0243495
+        },
+        {
+          "street": "Talon Street",
+          "street_ko": null,
+          "lat": 36.9603924,
+          "lon": 127.0243804
+        }
+      ]
+    },
+    "bldg:3030": {
+      "name": "Brian D. Allgood Army Community Hospital",
+      "sides": [
+        {
+          "street": "Gimlet Avenue",
+          "street_ko": null,
+          "lat": 36.9523978,
+          "lon": 127.0286045
+        },
+        {
+          "street": "Indianhead Avenue",
+          "street_ko": null,
+          "lat": 36.9531809,
+          "lon": 127.0265368
+        },
+        {
+          "street": "Key Street",
+          "street_ko": null,
+          "lat": 36.9525497,
+          "lon": 127.0301244
+        },
+        {
+          "street": "Taylor Street",
+          "street_ko": null,
+          "lat": 36.9525666,
+          "lon": 127.0303967
+        }
+      ]
+    },
+    "bldg:400": {
+      "name": "Sentry Mini Mall",
+      "sides": [
+        {
+          "street": "Dr. Mary Walker Road",
+          "street_ko": null,
+          "lat": 36.947324,
+          "lon": 127.0239539
+        },
+        {
+          "street": "MacArthur Road",
+          "street_ko": null,
+          "lat": 36.9480898,
+          "lon": 127.0250498
+        },
+        {
+          "street": "Porter Avenue",
+          "street_ko": null,
+          "lat": 36.9478017,
+          "lon": 127.0242633
+        },
+        {
+          "street": "Washington Avenue",
+          "street_ko": null,
+          "lat": 36.9480191,
+          "lon": 127.0255084
+        }
+      ]
+    },
+    "bldg:5520": {
+      "name": "Humphreys West Elementary School",
+      "sides": [
+        {
+          "street": "Forward March Street",
+          "street_ko": null,
+          "lat": 36.9616964,
+          "lon": 126.9948097
+        },
+        {
+          "street": "Taro Avenue",
+          "street_ko": null,
+          "lat": 36.960745,
+          "lon": 126.9954267
+        }
+      ]
+    },
+    "bldg:5700": {
+      "name": "Humphreys Main Exchange",
+      "sides": [
+        {
+          "street": "7th Street",
+          "street_ko": "7번가",
+          "lat": 36.9660096,
+          "lon": 126.9983238
+        },
+        {
+          "street": "MacArthur Circle",
+          "street_ko": null,
+          "lat": 36.9660717,
+          "lon": 126.9981173
+        }
+      ]
+    },
+    "bldg:6100": {
+      "name": "Korea Battle Simulation Center (KBSC)",
+      "sides": [
+        {
+          "street": "Bayonet Avenue",
+          "street_ko": null,
+          "lat": 36.966677,
+          "lon": 127.0119264
+        },
+        {
+          "street": "Indianhead Avenue",
+          "street_ko": null,
+          "lat": 36.9687672,
+          "lon": 127.0129746
+        }
+      ]
+    },
+    "bldg:6110": {
+      "name": "Vandal Training Complex",
+      "sides": [
+        {
+          "street": "11th Street",
+          "street_ko": "11번가",
+          "lat": 36.9689093,
+          "lon": 127.0114348
+        },
+        {
+          "street": "12th Street",
+          "street_ko": "12번가",
+          "lat": 36.9663321,
+          "lon": 127.0129543
+        },
+        {
+          "street": "Bayonet Avenue",
+          "street_ko": null,
+          "lat": 36.9670473,
+          "lon": 127.0107976
+        },
+        {
+          "street": "Indianhead Avenue",
+          "street_ko": null,
+          "lat": 36.9689294,
+          "lon": 127.0124818
+        }
+      ]
+    },
+    "bldg:6120": {
+      "name": "Eighth Army Wightman NCO Academy",
+      "sides": [
+        {
+          "street": "12th Street",
+          "street_ko": "12번가",
+          "lat": 36.9663321,
+          "lon": 127.0129543
+        },
+        {
+          "street": "Bayonet Avenue",
+          "street_ko": null,
+          "lat": 36.9662896,
+          "lon": 127.0130816
+        }
+      ]
+    },
+    "bldg:6317": {
+      "name": "Burke Child Youth Services SKIES Center",
+      "sides": [
+        {
+          "street": "11th Street",
+          "street_ko": "11번가",
+          "lat": 36.9674831,
+          "lon": 127.0107024
+        },
+        {
+          "street": "Bayonet Avenue",
+          "street_ko": null,
+          "lat": 36.9671374,
+          "lon": 127.0105257
+        }
+      ]
+    },
+    "osm:relation/17880277": {
+      "name": "Canal Park",
+      "sides": [
+        {
+          "street": "11th Street",
+          "street_ko": "11번가",
+          "lat": 36.9636369,
+          "lon": 127.0086836
+        },
+        {
+          "street": "12th Street",
+          "street_ko": "12번가",
+          "lat": 36.9637803,
+          "lon": 127.0116424
+        },
+        {
+          "street": "15th Street",
+          "street_ko": "15번가",
+          "lat": 36.9590552,
+          "lon": 127.0183146
+        },
+        {
+          "street": "Marne Avenue",
+          "street_ko": null,
+          "lat": 36.9626424,
+          "lon": 127.0150876
+        }
+      ]
+    },
+    "osm:relation/20315284": {
+      "name": "Humphreys Middle School",
+      "sides": [
+        {
+          "street": "9th Street",
+          "street_ko": "9번가",
+          "lat": 36.9630123,
+          "lon": 127.0028687
+        },
+        {
+          "street": "Taro Avenue",
+          "street_ko": null,
+          "lat": 36.9607337,
+          "lon": 127.0008611
+        },
+        {
+          "street": "Tropic Lightning Avenue",
+          "street_ko": null,
+          "lat": 36.9630043,
+          "lon": 127.0021427
+        }
+      ]
+    },
+    "osm:way/1019688916": {
+      "name": "Balboni Field",
+      "sides": [
+        {
+          "street": "5th Street",
+          "street_ko": "5번가",
+          "lat": 36.9700134,
+          "lon": 126.9945632
+        },
+        {
+          "street": "7th Street",
+          "street_ko": "7번가",
+          "lat": 36.9683747,
+          "lon": 126.9995093
+        },
+        {
+          "street": "Marne Avenue",
+          "street_ko": null,
+          "lat": 36.9691896,
+          "lon": 126.995695
+        }
+      ]
+    },
+    "osm:way/1304087785": {
+      "name": "Humphreys Central Elementary School",
+      "sides": [
+        {
+          "street": "Lewis Millet Way",
+          "street_ko": null,
+          "lat": 36.9586801,
+          "lon": 127.0135083
+        },
+        {
+          "street": "Tropic Lightning Avenue",
+          "street_ko": null,
+          "lat": 36.9607297,
+          "lon": 127.0130854
+        }
+      ]
+    },
+    "osm:way/586692068": {
+      "name": "Humphreys Middle School Football Field",
+      "sides": [
+        {
+          "street": "Taro Avenue",
+          "street_ko": null,
+          "lat": 36.9607285,
+          "lon": 127.0038765
+        },
+        {
+          "street": "Tropic Lightning Avenue",
+          "street_ko": null,
+          "lat": 36.9630124,
+          "lon": 127.0039733
+        }
+      ]
+    },
+    "osm:way/586709770": {
+      "name": "Humphreys High School",
+      "sides": [
+        {
+          "street": "Lewis Millet Way",
+          "street_ko": null,
+          "lat": 36.9602005,
+          "lon": 127.009783
+        },
+        {
+          "street": "Tropic Lightning Avenue",
+          "street_ko": null,
+          "lat": 36.9622142,
+          "lon": 127.0093049
+        }
+      ]
+    },
+    "osm:way/586709772": {
+      "name": "Humphreys Middle School Gym/Cafetorium/Specials",
+      "sides": [
+        {
+          "street": "9th Street",
+          "street_ko": "9번가",
+          "lat": 36.9630123,
+          "lon": 127.0028687
+        },
+        {
+          "street": "Taro Avenue",
+          "street_ko": null,
+          "lat": 36.9607316,
+          "lon": 127.0028884
+        },
+        {
+          "street": "Tropic Lightning Avenue",
+          "street_ko": null,
+          "lat": 36.963012,
+          "lon": 127.0028038
+        }
+      ]
+    },
+    "osm:way/962145202": {
+      "name": "Barker Field",
+      "sides": [
+        {
+          "street": "Pacific Victors Avenue",
+          "street_ko": null,
+          "lat": 36.966043,
+          "lon": 127.0287938
+        },
+        {
+          "street": "Walker Drive",
+          "street_ko": null,
+          "lat": 36.966859,
+          "lon": 127.0298189
+        }
+      ]
+    }
+  }
+}

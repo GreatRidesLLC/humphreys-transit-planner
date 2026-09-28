@@ -311,7 +311,12 @@ Asymptotic zero runtime cost. Only automate once KV proves *which* cells are hot
    - Mapbox place search now runs in **To** as well as From. Place destinations carry `tCoords`.
    - Destination walks are now fetched in the right direction (alight stop → destination). They were previously requested destination → stop, so steps read backwards.
 5. **Landmark directions** (PR pending, 2026-09-28). User feedback: "Walk west" doesn't help someone who doesn't know which way west is. The Worker rewrites the first step around street names ("Walk along Pacific Victors Ave toward Indianhead Ave") and sends each step's location. `src/lib/landmarks.js` then names a nearby stop, building or OSM place: "toward Commissary", "Turn left onto 11th St (by Commissary)". `STEPS_SCHEMA_V` 3 → 4 means each walk pair is re-fetched from Mapbox once. Later options if still not enough: a compass arrow that rotates with the phone, or a small route map (reopens the map-tab decision).
-6. *Not started:* Isochrone "stops reachable in N min"; a `BUILDINGS` directory sweep via Search Box POIs (deprioritized because of patchy coverage inside the DoD footprint and rename churn).
+6. **Street sides + route choices** (PR pending, 2026-09-28). User report: a big campus (Central Elementary) always started its walk from its centre, so every route left the same way.
+   - OSM has almost no entrances on post: 5 nodes on 3 buildings.
+   - Instead, `scripts/gen_building_sides.py` derives one start point per named street bordering each big place (25 places, 2–4 sides each). Riders pick "Lewis Millet Way side / Tropic Lightning Ave side" up front. The default is the side nearest the bus stop, and only the chosen side is fetched.
+   - Mapbox `alternatives=true` adds up to 2 other routes per request at no extra cost, shown as "Via X · N min".
+   - Next, driven by feedback: a hand-entered entrances table for places people report, and/or mapping entrances in OSM itself.
+7. *Not started:* Isochrone "stops reachable in N min"; a `BUILDINGS` directory sweep via Search Box POIs (deprioritized because of patchy coverage inside the DoD footprint and rename churn).
 
 Free tiers, checked 2026-09-27: Directions 100k req/mo, Search Box `/forward` 50k req/mo (billed per request, not per session).
 
