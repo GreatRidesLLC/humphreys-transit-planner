@@ -18,6 +18,7 @@ import {
 } from "./lib/routing.js";
 import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
 import { usePlaceSearch } from "./lib/search-runtime.js";
+import { withLandmarks } from "./lib/landmarks.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
@@ -934,7 +935,7 @@ function timelineRows(trip, t) {
       const sorry = steps || l.source === "stop" ? null
         : l.source === "heuristic" ? t.walkLegSorryEst : t.walkLegSorry;
       rows.push(l.dest
-        ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt), steps, sorry }
+        ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt), steps, sorry, dest:l.dest }
         : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true, steps, sorry });
       continue;
     }
@@ -957,8 +958,9 @@ function timelineRows(trip, t) {
   return rows;
 }
 
-function WalkSteps({ steps }) {
-  const { t } = useT();
+function WalkSteps({ steps: raw, dest = null }) {
+  const { lang, t } = useT();
+  const steps = useMemo(() => withLandmarks(raw, { lang, dest }), [raw, lang, dest]);
   return (
     <details className="mt-1 group">
       <summary className="cursor-pointer text-[11.5px] leading-4 text-link underline underline-offset-2 marker:hidden [&::-webkit-details-marker]:hidden">
@@ -1014,7 +1016,7 @@ function TimelineRow({ row, prev, next }) {
         {walk ? (
           <div className="min-w-0 flex-1 text-xs leading-4 text-muted-foreground">
             {row.label}
-            {row.steps && <WalkSteps steps={row.steps}/>}
+            {row.steps && <WalkSteps steps={row.steps} dest={row.dest}/>}
             {row.sorry && <SorryNote text={row.sorry} className="pt-1 text-[11.5px] leading-4"/>}
           </div>
         ) : row.big ? (

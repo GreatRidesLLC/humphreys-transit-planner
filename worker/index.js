@@ -196,10 +196,16 @@ function summarizeSteps(rawSteps) {
     const roadChange = road && road !== lastRoad;
     const isLast = i === rawSteps.length - 1;
     const keep = isLast || isKeyManeuver(type, modifier) || roadChange;
+    const loc = maneuver.location;
     const chunk = {
       instruction,
       distance: Math.round(step.distance ?? 0),
       duration: Math.round(step.duration ?? 0),
+      type,
+      road,
+      // [lon, lat] where this maneuver happens. The client uses it to name
+      // a nearby landmark from its own stop / building / place data.
+      location: Array.isArray(loc) && loc.length === 2 ? loc : null,
     };
     if (keep) {
       kept.push(chunk);
@@ -220,6 +226,40 @@ function summarizeSteps(rawSteps) {
   return kept;
 }
 
+// Mapbox opens every walk with a compass bearing ("Walk west on …"), which
+// is useless to someone who doesn't know which way west is. Rewrite that
+// first step around street names: the road you start on and the next road
+// you turn onto. With no next road, `toward` asks the client to name a
+// landmark (or the leg's destination) as the heading instead.
+const DEPART_TEXT = {
+  en: {
+    roadNext: (road, next) => `Walk along ${road} toward ${next}`,
+    road: road => `Walk along ${road}`,
+    none: "Start walking",
+  },
+  ko: {
+    roadNext: (road, next) => `${road}을(를) 따라 ${next} 방향으로 걸으세요`,
+    road: road => `${road}을(를) 따라 걸으세요`,
+    none: "걷기 시작하세요",
+  },
+};
+
+function rewriteDepart(kept, lang) {
+  const first = kept[0];
+  if (!first || first.type !== "depart") return kept;
+  const txt = DEPART_TEXT[lang] || DEPART_TEXT.en;
+  // Strip each bilingual road name on its own: the template holds two of
+  // them, which stripBilingualPairs can't split reliably in one pass.
+  const road = first.road ? stripBilingualPairs(first.road, lang) : null;
+  const nextRaw = kept.slice(1).find(s => s.road && s.road !== first.road)?.road;
+  const next = nextRaw ? stripBilingualPairs(nextRaw, lang) : null;
+  let instruction, toward = false;
+  if (road && next) instruction = txt.roadNext(road, next);
+  else if (road) { instruction = txt.road(road); toward = true; }
+  else { instruction = txt.none; toward = true; }
+  return [{ ...first, instruction, toward }, ...kept.slice(1)];
+}
+
 function extractSteps(route, lang) {
   const raw = [];
   for (const leg of route.legs || []) {
@@ -228,8 +268,18 @@ function extractSteps(route, lang) {
       raw.push(step);
     }
   }
-  const kept = summarizeSteps(raw);
-  return kept.map(s => ({ ...s, instruction: stripBilingualPairs(s.instruction, lang) }));
+  const kept = rewriteDepart(summarizeSteps(raw), lang);
+  return kept.map(s => {
+    const out = {
+      // The rewritten depart text is already single-language.
+      instruction: s === kept[0] && s.type === "depart" ? s.instruction : stripBilingualPairs(s.instruction, lang),
+      distance: s.distance,
+      duration: s.duration,
+      location: s.location,
+    };
+    if (s.toward) out.toward = true;
+    return out;
+  });
 }
 
 async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin, lang) {

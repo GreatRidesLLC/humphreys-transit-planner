@@ -22,6 +22,9 @@ beforeEach(() => {
   globalThis.localStorage = makeLocalStorage();
 });
 
+// sanitizeSteps fills the v4 fields for steps that don't carry them.
+const norm = steps => steps.map(s => ({ location: null, toward: false, ...s }));
+
 describe("roundCell", () => {
   it("snaps two nearby coords to the same cell", () => {
     const a = roundCell(36.96000, 127.03000);
@@ -114,10 +117,10 @@ describe("fetchUserWalk", () => {
       ok: true, json: async () => ({ seconds: 300, meters: 400, steps, source: "mapbox" }),
     });
     const hit = await fetchUserWalk(user, stop, { fetch: fetchMock });
-    expect(hit.steps).toEqual(steps);
+    expect(hit.steps).toEqual(norm(steps));
     // Cached entry round-trips through JSON with steps intact.
     const cached = await fetchUserWalk(user, stop, { fetch: fetchMock });
-    expect(cached.steps).toEqual(steps);
+    expect(cached.steps).toEqual(norm(steps));
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -214,7 +217,7 @@ describe("fetchBuildingWalk", () => {
       ok: true, json: async () => ({ seconds: 240, meters: 320, steps, source: "mapbox" }),
     });
     const first = await fetchBuildingWalk(bldgNum, stop, { fetch: fetchMock, lang: "ko" });
-    expect(first).toEqual({ seconds: 240, meters: 320, steps, source: "mapbox", detour: false });
+    expect(first).toEqual({ seconds: 240, meters: 320, steps: norm(steps), source: "mapbox", detour: false });
     const url = fetchMock.mock.calls[0][0];
     expect(url).toContain("lang=ko");
     // The bldg's real coord should be in the URL, not a user cell.
@@ -233,7 +236,7 @@ describe("fetchBuildingWalk", () => {
     const origin = { lat: 36.9606, lon: 127.0158 };
     const dest = { lat: 36.9633, lon: 127.0227 };
     const first = await fetchDirectWalk(origin, dest, { fetch: fetchMock, lang: "ko" });
-    expect(first.steps).toEqual(steps);
+    expect(first.steps).toEqual(norm(steps));
     expect(first.source).toBe("mapbox");
     // Cached: second call hits localStorage.
     await fetchDirectWalk(origin, dest, { fetch: fetchMock, lang: "ko" });

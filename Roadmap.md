@@ -310,7 +310,8 @@ Asymptotic zero runtime cost. Only automate once KV proves *which* cells are hot
    - `scripts/fetch_osm_places.py` → `src/data/places_osm.json` adds 26 named OSM places that have no building number. Humphreys Central Elementary School was the reported gap.
    - Mapbox place search now runs in **To** as well as From. Place destinations carry `tCoords`.
    - Destination walks are now fetched in the right direction (alight stop → destination). They were previously requested destination → stop, so steps read backwards.
-5. *Not started:* Isochrone "stops reachable in N min"; a `BUILDINGS` directory sweep via Search Box POIs (deprioritized because of patchy coverage inside the DoD footprint and rename churn).
+5. **Landmark directions** (PR pending, 2026-09-28). User feedback: "Walk west" doesn't help someone who doesn't know which way west is. The Worker rewrites the first step around street names ("Walk along Pacific Victors Ave toward Indianhead Ave") and sends each step's location. `src/lib/landmarks.js` then names a nearby stop, building or OSM place: "toward Commissary", "Turn left onto 11th St (by Commissary)". `STEPS_SCHEMA_V` 3 → 4 means each walk pair is re-fetched from Mapbox once. Later options if still not enough: a compass arrow that rotates with the phone, or a small route map (reopens the map-tab decision).
+6. *Not started:* Isochrone "stops reachable in N min"; a `BUILDINGS` directory sweep via Search Box POIs (deprioritized because of patchy coverage inside the DoD footprint and rename churn).
 
 Free tiers, checked 2026-09-27: Directions 100k req/mo, Search Box `/forward` 50k req/mo (billed per request, not per session).
 
