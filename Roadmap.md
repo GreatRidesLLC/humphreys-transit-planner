@@ -306,7 +306,21 @@ Asymptotic zero runtime cost. Only automate once KV proves *which* cells are hot
    - 2.5 km max walk pair.
    - Runtime walk prefetch capped at the 5 nearest stops per trip end (`WALK_PREFETCH_K`), average 9.0 → 4.7 Directions calls.
    - Mapbox billing limits set in the dashboard.
-4. *Not started:* Isochrone "stops reachable in N min"; a `BUILDINGS` directory sweep via Search Box POIs (deprioritized because of patchy coverage inside the DoD footprint and rename churn).
+4. **Places everywhere** ✅ shipped v1.7.0 (PR #124).
+   - `scripts/fetch_osm_places.py` → `src/data/places_osm.json` adds 26 named OSM places that have no building number. Humphreys Central Elementary School was the reported gap.
+   - Mapbox place search now runs in **To** as well as From. Place destinations carry `tCoords`.
+   - Destination walks are now fetched in the right direction (alight stop → destination). They were previously requested destination → stop, so steps read backwards.
+5. **Landmark directions** ✅ shipped v1.7.0 (PR #130). User feedback: "Walk west" doesn't help someone who doesn't know which way west is. The Worker rewrites the first step around street names ("Walk along Pacific Victors Ave toward Indianhead Ave") and sends each step's location. `src/lib/landmarks.js` then names a nearby stop, building or OSM place: "toward Commissary", "Turn left onto 11th St (by Commissary)". `STEPS_SCHEMA_V` went 3 → 4 here and → 5 in #131. Both ship together, so each walk pair is re-fetched from Mapbox once. Later options if still not enough: a compass arrow that rotates with the phone, or a small route map (reopens the map-tab decision).
+6. **Street sides + route choices** ✅ shipped v1.7.0 (PR #131). User report: a big campus (Central Elementary) always started its walk from its centre, so every route left the same way.
+   - OSM has almost no entrances on post: 5 nodes on 3 buildings.
+   - Instead, `scripts/gen_building_sides.py` derives one start point per named street bordering each big place (25 places, 2–4 sides each). Riders pick "Lewis Millet Way side / Tropic Lightning Ave side" up front. The default is the side nearest the bus stop, and only the chosen side is fetched.
+   - Mapbox `alternatives=true` adds up to 2 other routes per request at no extra cost, shown as "Via X · N min".
+   - Next, driven by feedback: a hand-entered entrances table for places people report, and/or mapping entrances in OSM itself.
+7. **Walking-directions rules** ✅ shipped v1.7.0 (PR #123).
+   - A walking option must have directions.
+   - Doubtful Mapbox routes (>2× straight line, e.g. around the airfield fence) are kept, not discarded.
+   - Bus trips whose walk leg has no directions still show; the leg is padded 1.5× and carries an apology plus the feedback link.
+8. *Not started:* Isochrone "stops reachable in N min"; a `BUILDINGS` directory sweep via Search Box POIs (deprioritized because of patchy coverage inside the DoD footprint and rename churn).
 
 Free tiers, checked 2026-09-27: Directions 100k req/mo, Search Box `/forward` 50k req/mo (billed per request, not per session).
 
@@ -319,6 +333,11 @@ Revive map tab from `archive/map-tab` to render Mapbox walking polylines. Reopen
 - **Token scoping**: build-time token used locally for Phase 2 via a gitignored `.env.mapbox` (KEY=VALUE, sourced with `set -a && . ./.env.mapbox && set +a`). Phase 3 runtime token → Cloudflare Worker secret via `wrangler secret put MAPBOX_TOKEN`. Two separate tokens with URL restrictions per Mapbox best practice. CI-side build-token still to wire when a coord refresh drives a matrix regeneration in CI (currently regenerated locally on demand).
 - **Regenerate cadence**: matrix rebuild when `stop_coords.json` changes (new stops, refined hand-pins) or when Camp Humphreys OSM footway data materially improves upstream. Detect via content hash; log the trigger in the commit message.
 - **License compliance**: `© Mapbox © OpenStreetMap` attribution line ships under every `<WalkSteps>` disclosure (v1.5.0), so Directions-only usage is covered. Search results carry `© Mapbox` on the Places section header (v1.6.0). No footer-wide attribution added yet — Mapbox ToS is satisfied by the per-instance credit next to the rendered directions.
+
+- **Mapbox licensing check (queued 2026-09-28)**: read the Mapbox Product Terms (PDF, legal/product-terms) before storing any more Mapbox output. Two questions:
+  1. Is what already ships allowed? That covers Directions durations bundled in `walk_matrix.json`, Search Box and Directions results cached in `localStorage` (1-day / indefinite), and the Worker's 1-day / 30-day edge caches.
+  2. Would bundling Directions *steps* for offline directions, or saving Search Box POIs into `BUILDINGS`, be allowed?
+  Geocoding explicitly splits temporary (no storage) from permanent (paid) results, and the Directions and Search Box rules were not found in the public docs. Gates the "offline directions" options: bundled Mapbox steps vs an in-app OSM footway router.
 
 #### Related memory
 See [[mapbox-walking-data]] for the origin of the suggestion and the base constraints; [[distribution-options]] + `docs/adr/0001-static-first-no-backend.md` for why the Worker proxy is the backend of choice.

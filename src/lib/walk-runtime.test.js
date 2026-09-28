@@ -22,6 +22,9 @@ beforeEach(() => {
   globalThis.localStorage = makeLocalStorage();
 });
 
+// sanitizeSteps fills the v4 fields for steps that don't carry them.
+const norm = steps => steps.map(s => ({ location: null, toward: false, ...s }));
+
 describe("roundCell", () => {
   it("snaps two nearby coords to the same cell", () => {
     const a = roundCell(36.96000, 127.03000);
@@ -91,7 +94,7 @@ describe("fetchUserWalk", () => {
     });
     const first = await fetchUserWalk(user, stop, { fetch: fetchMock });
     // steps defaults to [] when Mapbox response omits them.
-    expect(first).toEqual({ seconds, meters, steps: [], source: "mapbox" });
+    expect(first).toEqual({ seconds, meters, steps: [], source: "mapbox", detour: false, via: null, alternatives: [] });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const url = fetchMock.mock.calls[0][0];
     expect(url).toMatch(/^\/api\/walk\?/);
@@ -114,10 +117,10 @@ describe("fetchUserWalk", () => {
       ok: true, json: async () => ({ seconds: 300, meters: 400, steps, source: "mapbox" }),
     });
     const hit = await fetchUserWalk(user, stop, { fetch: fetchMock });
-    expect(hit.steps).toEqual(steps);
+    expect(hit.steps).toEqual(norm(steps));
     // Cached entry round-trips through JSON with steps intact.
     const cached = await fetchUserWalk(user, stop, { fetch: fetchMock });
-    expect(cached.steps).toEqual(steps);
+    expect(cached.steps).toEqual(norm(steps));
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -136,14 +139,15 @@ describe("fetchUserWalk", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("rejects Mapbox routes >2× haversine (sanity check)", async () => {
+  it("keeps Mapbox routes >2× haversine and tags them as a detour", async () => {
     const s = STOP_COORDS[stop];
     const straight = haversineMeters(user.lat, user.lon, s.lat, s.lon);
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ seconds: 9999, meters: Math.round(straight * 3), source: "mapbox" }),
     });
-    expect(await fetchUserWalk(user, stop, { fetch: fetchMock })).toBeNull();
+    const hit = await fetchUserWalk(user, stop, { fetch: fetchMock });
+    expect(hit).toMatchObject({ seconds: 9999, source: "mapbox", detour: true });
   });
 
   it("returns null on network failure and does not cache", async () => {
@@ -213,7 +217,7 @@ describe("fetchBuildingWalk", () => {
       ok: true, json: async () => ({ seconds: 240, meters: 320, steps, source: "mapbox" }),
     });
     const first = await fetchBuildingWalk(bldgNum, stop, { fetch: fetchMock, lang: "ko" });
-    expect(first).toEqual({ seconds: 240, meters: 320, steps, source: "mapbox" });
+    expect(first).toEqual({ seconds: 240, meters: 320, steps: norm(steps), source: "mapbox", detour: false, via: null, alternatives: [] });
     const url = fetchMock.mock.calls[0][0];
     expect(url).toContain("lang=ko");
     // The bldg's real coord should be in the URL, not a user cell.
@@ -232,7 +236,7 @@ describe("fetchBuildingWalk", () => {
     const origin = { lat: 36.9606, lon: 127.0158 };
     const dest = { lat: 36.9633, lon: 127.0227 };
     const first = await fetchDirectWalk(origin, dest, { fetch: fetchMock, lang: "ko" });
-    expect(first.steps).toEqual(steps);
+    expect(first.steps).toEqual(norm(steps));
     expect(first.source).toBe("mapbox");
     // Cached: second call hits localStorage.
     await fetchDirectWalk(origin, dest, { fetch: fetchMock, lang: "ko" });
@@ -256,5 +260,59 @@ describe("fetchBuildingWalk", () => {
     const result = await prefetchBuildingWalks(bldgNum, [stop, "Main Exchange (PX)"], { fetch: fetchMock });
     expect(result).toBeInstanceOf(Map);
     expect(result.size).toBe(1);
+  });
+});
+
+describe("reverse walks (alight stop → destination)", () => {
+  const user = { lat: 36.9606, lon: 127.0158 };
+  const stop = "Bus Terminal";
+  const ok = () => vi.fn().mockResolvedValue({
+    ok: true, json: async () => ({ seconds: 300, meters: 400, steps: [], source: "mapbox" }),
+  });
+
+  it("requests stop → point and keeps a separate cache entry per direction", async () => {
+    const fetchMock = ok();
+    await fetchUserWalk(user, stop, { fetch: fetchMock, reverse: true });
+    const s = STOP_COORDS[stop];
+    const url = new URL(fetchMock.mock.calls[0][0], "https://x");
+    expect(Number(url.searchParams.get("flat"))).toBeCloseTo(s.lat, 5);
+    expect(Number(url.searchParams.get("tlat"))).toBeCloseTo(roundCell(user.lat, user.lon).lat, 5);
+    await fetchUserWalk(user, stop, { fetch: fetchMock });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await fetchUserWalk(user, stop, { fetch: fetchMock, reverse: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("reverses building walks too", async () => {
+    const bldg = Object.keys(BUILDING_COORDS).find(k => {
+      const b = BUILDING_COORDS[k], s = STOP_COORDS[stop];
+      return b?.lat != null && isOnPost(b.lat, b.lon)
+        && haversineMeters(b.lat, b.lon, s.lat, s.lon) > _internal.MIN_METERS_FOR_MAPBOX;
+    });
+    const fetchMock = ok();
+    await fetchBuildingWalk(bldg, stop, { fetch: fetchMock, reverse: true });
+    const url = new URL(fetchMock.mock.calls[0][0], "https://x");
+    expect(Number(url.searchParams.get("flat"))).toBeCloseTo(STOP_COORDS[stop].lat, 5);
+    expect(Number(url.searchParams.get("tlat"))).toBeCloseTo(BUILDING_COORDS[bldg].lat, 5);
+  });
+});
+
+describe("alternatives", () => {
+  it("keeps valid alternative routes with their main street", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        seconds: 300, meters: 400, steps: [], via: "11th Street", source: "mapbox",
+        alternatives: [
+          { seconds: 360, meters: 450, via: "Marne Avenue", steps: [{ instruction: "Walk along Marne Avenue", distance: 450, duration: 360 }] },
+          { bogus: true },
+        ],
+      }),
+    });
+    const hit = await fetchUserWalk({ lat: 36.9606, lon: 127.0158 }, "Bus Terminal", { fetch: fetchMock });
+    expect(hit.via).toBe("11th Street");
+    expect(hit.alternatives).toHaveLength(1);
+    expect(hit.alternatives[0]).toMatchObject({ seconds: 360, via: "Marne Avenue" });
+    expect(hit.alternatives[0].steps[0].instruction).toBe("Walk along Marne Avenue");
   });
 });

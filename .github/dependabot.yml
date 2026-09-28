@@ -1,7 +1,11 @@
 version: 2
 updates:
+  # Updates land on dev like any feature branch and ship with the next
+  # dev → main release. Without target-branch Dependabot opens PRs against
+  # the default branch (main), which forks main from dev.
   - package-ecosystem: npm
     directory: /
+    target-branch: dev
     schedule:
       interval: weekly
       day: monday
@@ -20,6 +24,7 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    target-branch: dev
     schedule:
       interval: weekly
       day: monday

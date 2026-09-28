@@ -26,11 +26,18 @@ const VERSION = WALK_MATRIX_JSON?._meta?.source_hash || "unversioned";
 // Bump when the step-summarizing logic in the worker changes — partitions
 // both localStorage and the CDN edge cache from any previously stored
 // fine-grained step list so users don't see stale "turn left 22m" fluff.
-const STEPS_SCHEMA_V = 3;
+// v4: depart step rewritten around street names (no compass) + per-step
+// `location` / `toward` for client-side landmarks.
+// v5: `via` (main street) + `alternatives` (other Mapbox routes).
+const STEPS_SCHEMA_V = 5;
 const CACHE_PREFIX = `htp.walk.${VERSION}.v${STEPS_SCHEMA_V}`;
-// >2× haversine means Mapbox routed around something that probably isn't
-// there (a mismapped fence, a phantom footway). Distrust and fall through.
-const SANITY_RATIO = 2.0;
+// >2× haversine usually means the walk goes around a real barrier (the
+// airfield fence between Corps of Engineers and Airfield Operations is
+// 904 m straight, 2193 m on foot). Mapbox is still the best data we have,
+// so the route is kept and only tagged `detour: true`; it used to be
+// discarded here, which left the user with a straight-line guess and no
+// directions (decided 2026-09-27).
+const DETOUR_RATIO = 2.0;
 // Very short user→stop pairs are dominated by GPS jitter; the Worker call
 // isn't worth it, and haversine is already inside the noise band.
 const MIN_METERS_FOR_MAPBOX = 60;
@@ -61,14 +68,21 @@ function normalizeLang(lang) {
   return SUPPORTED_LANGS.has(lang) ? lang : "en";
 }
 
-function cacheKey(userCell, stopName, lang) {
-  return `${CACHE_PREFIX}:${lang}:${userCell.lat.toFixed(5)},${userCell.lon.toFixed(5)}::${stopName}`;
+// `reverse` walks stop → point instead of point → stop: the leg from the
+// alight stop to a destination. Steps are direction-dependent, so the two
+// directions never share a cache entry.
+function cacheKey(userCell, stopName, lang, reverse = false) {
+  return `${CACHE_PREFIX}:${lang}:${reverse ? "r:" : ""}${userCell.lat.toFixed(5)},${userCell.lon.toFixed(5)}::${stopName}`;
 }
 
 // Building origins are static — cache by bldg number rather than a coord cell.
 // Same source-hash prefix, so a matrix regen invalidates these too.
-function bldgCacheKey(bldgNum, stopName, lang) {
-  return `${CACHE_PREFIX}:${lang}:bldg:${bldgNum}::${stopName}`;
+function bldgCacheKey(bldgNum, stopName, lang, reverse = false) {
+  return `${CACHE_PREFIX}:${lang}:${reverse ? "r:" : ""}bldg:${bldgNum}::${stopName}`;
+}
+
+function walkUrl(from, to, lang) {
+  return `/api/walk?flat=${from.lat}&flon=${from.lon}&tlat=${to.lat}&tlon=${to.lon}&lang=${lang}&v=${STEPS_SCHEMA_V}`;
 }
 
 function lsGet(key) {
@@ -84,17 +98,43 @@ function sanitizeSteps(raw) {
   const out = [];
   for (const s of raw) {
     if (!s || typeof s.instruction !== "string") continue;
+    const loc = Array.isArray(s.location) && s.location.length === 2
+      && s.location.every(Number.isFinite) ? s.location : null;
     out.push({
       instruction: s.instruction,
       distance: Number.isFinite(s.distance) ? s.distance : 0,
       duration: Number.isFinite(s.duration) ? s.duration : 0,
+      location: loc,
+      toward: s.toward === true,
     });
   }
   return out;
 }
 
+function toValue(body, straight) {
+  const alternatives = Array.isArray(body.alternatives)
+    ? body.alternatives
+      .filter(a => a && typeof a.seconds === "number" && typeof a.meters === "number")
+      .map(a => ({
+        seconds: a.seconds,
+        meters: a.meters,
+        steps: sanitizeSteps(a.steps),
+        via: typeof a.via === "string" ? a.via : null,
+      }))
+    : [];
+  return {
+    seconds: body.seconds,
+    meters: body.meters,
+    steps: sanitizeSteps(body.steps),
+    source: "mapbox",
+    detour: body.meters > straight * DETOUR_RATIO,
+    via: typeof body.via === "string" ? body.via : null,
+    alternatives,
+  };
+}
+
 // Returns {seconds, meters, steps, source: "mapbox"} on success, or null on any
-// failure (network, sanity reject, invalid response). Callers must be
+// failure (network, non-2xx, invalid response). Callers must be
 // prepared for null and fall back to haversine.
 export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   const stop = STOP_COORDS[stopName];
@@ -109,7 +149,7 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
 
   const lang = normalizeLang(opts.lang);
   const cell = roundCell(userCoords.lat, userCoords.lon);
-  const key = cacheKey(cell, stopName, lang);
+  const key = cacheKey(cell, stopName, lang, opts.reverse);
   const cached = lsGet(key);
   if (cached) {
     try {
@@ -121,7 +161,7 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   const fetchImpl = opts.fetch || globalThis.fetch;
   if (!fetchImpl) return null;
 
-  const url = `/api/walk?flat=${cell.lat}&flon=${cell.lon}&tlat=${stop.lat}&tlon=${stop.lon}&lang=${lang}&v=${STEPS_SCHEMA_V}`;
+  const url = opts.reverse ? walkUrl(stop, cell, lang) : walkUrl(cell, stop, lang);
   let body;
   try {
     const r = await fetchImpl(url);
@@ -132,16 +172,8 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   }
   if (!body || typeof body.seconds !== "number" || typeof body.meters !== "number") return null;
 
-  // Sanity: Mapbox meters must be within SANITY_RATIO of haversine, else
-  // its route probably threaded a nonexistent path.
-  if (body.meters > straight * SANITY_RATIO) return null;
 
-  const value = {
-    seconds: body.seconds,
-    meters: body.meters,
-    steps: sanitizeSteps(body.steps),
-    source: "mapbox",
-  };
+  const value = toValue(body, straight);
   lsSet(key, JSON.stringify(value));
   return value;
 }
@@ -175,7 +207,7 @@ export async function fetchBuildingWalk(bldgNum, stopName, opts = {}) {
   if (straight < MIN_METERS_FOR_MAPBOX) return null;
 
   const lang = normalizeLang(opts.lang);
-  const key = bldgCacheKey(bldgNum, stopName, lang);
+  const key = bldgCacheKey(bldgNum, stopName, lang, opts.reverse);
   const cached = lsGet(key);
   if (cached) {
     try {
@@ -187,7 +219,7 @@ export async function fetchBuildingWalk(bldgNum, stopName, opts = {}) {
   const fetchImpl = opts.fetch || globalThis.fetch;
   if (!fetchImpl) return null;
 
-  const url = `/api/walk?flat=${b.lat}&flon=${b.lon}&tlat=${stop.lat}&tlon=${stop.lon}&lang=${lang}&v=${STEPS_SCHEMA_V}`;
+  const url = opts.reverse ? walkUrl(stop, b, lang) : walkUrl(b, stop, lang);
   let body;
   try {
     const r = await fetchImpl(url);
@@ -197,14 +229,8 @@ export async function fetchBuildingWalk(bldgNum, stopName, opts = {}) {
     return null;
   }
   if (!body || typeof body.seconds !== "number" || typeof body.meters !== "number") return null;
-  if (body.meters > straight * SANITY_RATIO) return null;
 
-  const value = {
-    seconds: body.seconds,
-    meters: body.meters,
-    steps: sanitizeSteps(body.steps),
-    source: "mapbox",
-  };
+  const value = toValue(body, straight);
   lsSet(key, JSON.stringify(value));
   return value;
 }
@@ -259,17 +285,11 @@ export async function fetchDirectWalk(originCoords, destCoords, opts = {}) {
     return null;
   }
   if (!body || typeof body.seconds !== "number" || typeof body.meters !== "number") return null;
-  if (body.meters > straight * SANITY_RATIO) return null;
 
-  const value = {
-    seconds: body.seconds,
-    meters: body.meters,
-    steps: sanitizeSteps(body.steps),
-    source: "mapbox",
-  };
+  const value = toValue(body, straight);
   lsSet(key, JSON.stringify(value));
   return value;
 }
 
 // Exposed for testing.
-export const _internal = { CACHE_PREFIX, LAT_CELL, LON_CELL, SANITY_RATIO, MIN_METERS_FOR_MAPBOX };
+export const _internal = { CACHE_PREFIX, LAT_CELL, LON_CELL, DETOUR_RATIO, MIN_METERS_FOR_MAPBOX };
