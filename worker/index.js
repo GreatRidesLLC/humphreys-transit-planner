@@ -11,7 +11,10 @@
 //      so on-post POIs (Commissary, Starbucks, the hospital) never matched.
 //
 // GET /api/walk?flat=<>&flon=<>&tlat=<>&tlon=<>&lang=<en|ko>
-//   → 200 { seconds, meters, steps, source: "mapbox" }
+//   → 200 { seconds, meters, steps, via, alternatives, source: "mapbox" }
+//     - via: the named road the route spends the most distance on
+//     - alternatives: [{ seconds, meters, steps, via }], other Mapbox routes
+//       (same request) whose main road differs from the primary's
 //     - steps: [{ instruction, distance, duration }] — Mapbox pedestrian
 //       maneuvers in the requested language (en default). Empty array if
 //       Mapbox returned no legs (defensive; not observed in practice).
@@ -285,19 +288,42 @@ function extractSteps(route, lang) {
 async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin, lang) {
   const langParam = SUPPORTED_LANGS.has(lang) ? lang : "en";
   const url = `${MAPBOX_DIRECTIONS}/${fLon},${fLat};${tLon},${tLat}`
-    + `?geometries=geojson&overview=false&steps=true&language=${langParam}&access_token=${token}`;
+    // alternatives=true: up to 2 extra routes in the same (single-billed)
+    // request, offered as choices in the directions.
+    + `?geometries=geojson&overview=false&steps=true&alternatives=true&language=${langParam}&access_token=${token}`;
   // Mapbox URL-restriction on public tokens matches the Referer header.
   const headers = publicOrigin ? { Referer: `${publicOrigin}/` } : {};
   const r = await fetch(url, { headers, cf: { cacheTtl: EDGE_TTL_S, cacheEverything: true } });
   if (!r.ok) throw new Error(`mapbox ${r.status}`);
   const body = await r.json();
-  const route = body.routes?.[0];
+  const [route, ...others] = body.routes || [];
   if (!route) throw new Error("no route");
-  return {
-    seconds: Math.round(route.duration),
-    meters: Math.round(route.distance),
-    steps: extractSteps(route, langParam),
-  };
+  const shape = rt => ({
+    seconds: Math.round(rt.duration),
+    meters: Math.round(rt.distance),
+    steps: extractSteps(rt, langParam),
+    via: mainRoad(rt, langParam),
+  });
+  const primary = shape(route);
+  // Drop alternatives that name the same main street as the primary: they
+  // read as duplicates to a rider choosing by street name.
+  const alternatives = others.map(shape).filter(a => a.via && a.via !== primary.via);
+  return { ...primary, alternatives };
+}
+
+// The named road a route spends the most distance on ("Via 11th Street").
+function mainRoad(route, lang) {
+  const byRoad = new Map();
+  for (const leg of route.legs || []) {
+    for (const step of leg.steps || []) {
+      if (isGenericWay(step.name)) continue;
+      const road = stripBilingualPairs(step.name.trim(), lang);
+      byRoad.set(road, (byRoad.get(road) || 0) + (step.distance || 0));
+    }
+  }
+  let best = null, bestM = 0;
+  for (const [road, m] of byRoad) if (m > bestM) { best = road; bestM = m; }
+  return best;
 }
 
 async function handleWalk(request, env, ctx) {
@@ -340,10 +366,10 @@ async function handleWalk(request, env, ctx) {
   if (!(await underUpstreamLimit(request, env))) return tooMany();
 
   try {
-    const { seconds, meters, steps } = await fetchMapboxWalk(
+    const walk = await fetchMapboxWalk(
       fLat, fLon, tLat, tLon, env.MAPBOX_TOKEN, env.PUBLIC_ORIGIN, lang,
     );
-    const res = json({ seconds, meters, steps, source: "mapbox" });
+    const res = json({ ...walk, source: "mapbox" });
     ctx.waitUntil(cache.put(cacheKey, res.clone()));
     return res;
   } catch (e) {

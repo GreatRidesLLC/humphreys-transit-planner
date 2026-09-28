@@ -94,7 +94,7 @@ describe("fetchUserWalk", () => {
     });
     const first = await fetchUserWalk(user, stop, { fetch: fetchMock });
     // steps defaults to [] when Mapbox response omits them.
-    expect(first).toEqual({ seconds, meters, steps: [], source: "mapbox", detour: false });
+    expect(first).toEqual({ seconds, meters, steps: [], source: "mapbox", detour: false, via: null, alternatives: [] });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const url = fetchMock.mock.calls[0][0];
     expect(url).toMatch(/^\/api\/walk\?/);
@@ -217,7 +217,7 @@ describe("fetchBuildingWalk", () => {
       ok: true, json: async () => ({ seconds: 240, meters: 320, steps, source: "mapbox" }),
     });
     const first = await fetchBuildingWalk(bldgNum, stop, { fetch: fetchMock, lang: "ko" });
-    expect(first).toEqual({ seconds: 240, meters: 320, steps: norm(steps), source: "mapbox", detour: false });
+    expect(first).toEqual({ seconds: 240, meters: 320, steps: norm(steps), source: "mapbox", detour: false, via: null, alternatives: [] });
     const url = fetchMock.mock.calls[0][0];
     expect(url).toContain("lang=ko");
     // The bldg's real coord should be in the URL, not a user cell.
@@ -294,5 +294,25 @@ describe("reverse walks (alight stop → destination)", () => {
     const url = new URL(fetchMock.mock.calls[0][0], "https://x");
     expect(Number(url.searchParams.get("flat"))).toBeCloseTo(STOP_COORDS[stop].lat, 5);
     expect(Number(url.searchParams.get("tlat"))).toBeCloseTo(BUILDING_COORDS[bldg].lat, 5);
+  });
+});
+
+describe("alternatives", () => {
+  it("keeps valid alternative routes with their main street", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        seconds: 300, meters: 400, steps: [], via: "11th Street", source: "mapbox",
+        alternatives: [
+          { seconds: 360, meters: 450, via: "Marne Avenue", steps: [{ instruction: "Walk along Marne Avenue", distance: 450, duration: 360 }] },
+          { bogus: true },
+        ],
+      }),
+    });
+    const hit = await fetchUserWalk({ lat: 36.9606, lon: 127.0158 }, "Bus Terminal", { fetch: fetchMock });
+    expect(hit.via).toBe("11th Street");
+    expect(hit.alternatives).toHaveLength(1);
+    expect(hit.alternatives[0]).toMatchObject({ seconds: 360, via: "Marne Avenue" });
+    expect(hit.alternatives[0].steps[0].instruction).toBe("Walk along Marne Avenue");
   });
 });

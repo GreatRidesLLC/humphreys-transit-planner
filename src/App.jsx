@@ -19,6 +19,7 @@ import {
 import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
 import { usePlaceSearch } from "./lib/search-runtime.js";
 import { withLandmarks } from "./lib/landmarks.js";
+import { sideKeyFor, sidesFor, resolvedSide, sidePoint } from "./lib/sides.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
@@ -120,6 +121,11 @@ const STRINGS = {
     stopPh: l => `${l} — stop name or Bldg #`,
     fromPh: "From — stop, Bldg # or place",
     toPh: "To — stop, Bldg # or place",
+    startFrom: "Start from",
+    arriveAt: "Arrive at",
+    sideOf: street => `${street} side`,
+    routeChoices: "Walking routes",
+    viaRoute: (road, m) => `Via ${road} · ${m} min`,
     saveFav: "★ Save", saveFavTitle: "Save From as favorite",
     saveFavHeading: "Save favorite",
     saveFavPrompt: "Name this favorite (e.g. Home, Work, Gym)",
@@ -266,6 +272,11 @@ const STRINGS = {
     stopPh: l => `${l} — 정류장 또는 건물 번호`,
     fromPh: "출발 — 정류장, 건물 번호 또는 장소",
     toPh: "도착 — 정류장, 건물 번호 또는 장소",
+    startFrom: "출발 위치",
+    arriveAt: "도착 위치",
+    sideOf: street => `${street} 쪽`,
+    routeChoices: "도보 경로",
+    viaRoute: (road, m) => `${road} 경유 · ${m}분`,
     saveFav: "★ 저장", saveFavTitle: "출발지를 즐겨찾기에 저장",
     saveFavHeading: "즐겨찾기 저장",
     saveFavPrompt: "즐겨찾기 이름 (예: 집, 직장, 체육관)",
@@ -516,6 +527,7 @@ const OSM_PLACE_SEARCH = (PLACES_OSM.places || [])
       stop: hit.stop,
       sub: `Nearest stop: ${hit.stop} (~${Math.round(hit.meters)} m)`,
       place: { lat: p.lat, lon: p.lon },
+      osmId: p.osm_id,
     };
   })
   .filter(Boolean);
@@ -666,6 +678,26 @@ const SUMMARY_BTN =
   "h-11 shrink-0 rounded-md border-border bg-card px-4 text-[13px] font-semibold text-foreground " +
   "shadow-[shadow:var(--card-shadow)] dark:bg-card";
 
+// Street-side choice for a big place (src/lib/sides.js). Shown up front so
+// the rider picks the side they're actually on instead of us guessing.
+function SideChips({ sides, label, selected, onPick }) {
+  const { lang, t } = useT();
+  if (!sides || sides.length < 2) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 pl-1" role="radiogroup" aria-label={label}>
+      <span className="text-[11.5px] text-muted-foreground">{label}</span>
+      {sides.map((side, i) => (
+        <button key={side.street} type="button" role="radio" aria-checked={i === selected}
+          onClick={() => onPick(i)}
+          className={cn(HIT44, "rounded-md border px-2 py-1 text-[11.5px] leading-4 text-muted-foreground",
+            i === selected && "bg-seg-active font-semibold text-foreground shadow-[shadow:var(--seg-active-shadow)]")}>
+          {t.sideOf((lang === "ko" && side.street_ko) || side.street)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ─── Searchable Input ─────────────────────────────────────────────────────────
 // `quickPicks` are the shortcuts shown when the field is focused but empty:
 // [{ key, label, Icon, items: [{ id, content, onPick, onRemove, removeLabel }] }].
@@ -766,7 +798,7 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
   },[open]);
   const pick=item=>{
     setQ(item.label); setOpen(false);
-    onChange(item.stop,item.label,item.bldg||null,item.place ? { ...item.place, kind:"place" } : null);
+    onChange(item.stop,item.label,item.bldg||null,item.place ? { ...item.place, kind:"place" } : null,sideKeyFor(item));
   };
   const pickPlace=p=>{ setQ(p.name); setOpen(false); onChange(p.stop,p.name,null,{ lat:p.lat, lon:p.lon, kind:"place" }); };
   const runAt=i=>{
@@ -935,8 +967,10 @@ function timelineRows(trip, t) {
       const sorry = steps || l.source === "stop" ? null
         : l.source === "heuristic" ? t.walkLegSorryEst : t.walkLegSorry;
       rows.push(l.dest
-        ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt), steps, sorry, dest:l.dest }
-        : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true, steps, sorry });
+        ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt), steps, sorry, dest:l.dest,
+            via:l.via, alts:l.alts, dur:l.dur }
+        : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true, steps, sorry,
+            via:l.via, alts:l.alts, dur:l.dur });
       continue;
     }
     const i = buses.indexOf(l);
@@ -958,15 +992,35 @@ function timelineRows(trip, t) {
   return rows;
 }
 
-function WalkSteps({ steps: raw, dest = null }) {
+// `via` / `dur` describe the fastest route (the one the trip is timed on);
+// `alts` are Mapbox's other routes, offered as choices. Picking one only
+// changes the directions shown; the trip keeps the fastest route's timing.
+function WalkSteps({ steps: raw, dest = null, via = null, dur = null, alts = null }) {
   const { lang, t } = useT();
-  const steps = useMemo(() => withLandmarks(raw, { lang, dest }), [raw, lang, dest]);
+  const [pick, setPick] = useState(0);
+  const routes = useMemo(() => [
+    { via, min: dur, steps: raw },
+    ...(alts || []).map(a => ({ via: a.via, min: Math.max(1, Math.ceil(a.seconds / 60)), steps: a.steps })),
+  ], [raw, via, dur, alts]);
+  const current = routes[pick] || routes[0];
+  const steps = useMemo(() => withLandmarks(current.steps, { lang, dest }), [current, lang, dest]);
   return (
     <details className="mt-1 group">
       <summary className="cursor-pointer text-[11.5px] leading-4 text-link underline underline-offset-2 marker:hidden [&::-webkit-details-marker]:hidden">
         <span className="group-open:hidden">{t.showSteps}</span>
         <span className="hidden group-open:inline">{t.hideSteps}</span>
       </summary>
+      {routes.length > 1 && routes.every(r => r.via) && (
+        <div className="mt-1.5 flex flex-wrap gap-1.5" role="radiogroup" aria-label={t.routeChoices}>
+          {routes.map((r, i) => (
+            <button key={r.via} type="button" role="radio" aria-checked={i === pick} onClick={() => setPick(i)}
+              className={cn(HIT44, "rounded-md border px-2 py-1 text-[11.5px] leading-4 text-muted-foreground",
+                i === pick && "bg-seg-active font-semibold text-foreground shadow-[shadow:var(--seg-active-shadow)]")}>
+              {r.min != null ? t.viaRoute(r.via, r.min) : r.via}
+            </button>
+          ))}
+        </div>
+      )}
       <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-[11.5px] leading-[15px] text-muted-foreground">
         {steps.map((s, i) => (
           <li key={i}>
@@ -1016,7 +1070,7 @@ function TimelineRow({ row, prev, next }) {
         {walk ? (
           <div className="min-w-0 flex-1 text-xs leading-4 text-muted-foreground">
             {row.label}
-            {row.steps && <WalkSteps steps={row.steps} dest={row.dest}/>}
+            {row.steps && <WalkSteps steps={row.steps} dest={row.dest} via={row.via} dur={row.dur} alts={row.alts}/>}
             {row.sorry && <SorryNote text={row.sorry} className="pt-1 text-[11.5px] leading-4"/>}
           </div>
         ) : row.big ? (
@@ -1157,7 +1211,7 @@ function SorryNote({ text, className }) {
 }
 
 // ─── Advisory cards (walk / same-stop) ────────────────────────────────────────
-function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null }) {
+function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null, walk = null }) {
   return (
     <Card className={cn(
       "shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]",
@@ -1181,7 +1235,9 @@ function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null 
           emphasis ? "text-[14px] text-advisory-text" : "text-[13px] text-muted-foreground",
         )}>{body}</div>
         {steps && steps.length > 0 && (
-          <div className="mt-3 w-full text-left"><WalkSteps steps={steps}/></div>
+          <div className="mt-3 w-full text-left">
+            <WalkSteps steps={steps} via={walk?.via} dur={walk?.minutes} alts={walk?.alternatives}/>
+          </div>
         )}
       </CardContent>
     </Card>
@@ -1559,6 +1615,10 @@ export default function App() {
   const [fCoords,setFC]=useState(null);
   // Destination coords when To is a place (OSM or Mapbox), not a stop/bldg.
   const [tCoords,setTC]=useState(null);
+  // Big places: key into building_sides.json + the rider's chosen side
+  // (null = auto, the side nearest the trip's bus stop).
+  const [fSideKey,setFSK]=useState(null), [fSide,setFSide]=useState(null);
+  const [tSideKey,setTSK]=useState(null), [tSide,setTSide]=useState(null);
   const [locBusy,setLocBusy]=useState(false);
   const [results,setRes]=useState(null), [searched,setSrch]=useState(false);
   // Results collapse the form into a summary card; "Edit" brings it back with
@@ -1626,7 +1686,12 @@ export default function App() {
     }
   }, [searched, results, setPlanCount]);
 
-  const search = async () => {
+  const search = async (opts = {}) => {
+    // A big place's walk starts/ends on the chosen street side (until one is
+    // chosen, the side nearest its bus stop), not at its centre. Only that
+    // one side is fetched.
+    const oPt = sidePoint(fSideKey, opts.fSide ?? fSide, fStop) || fCoords;
+    const dPt = sidePoint(tSideKey, opts.tSide ?? tSide, tStop) || tCoords;
     const ref = tMode === "now" ? new Date() : parseHMD(tTime, tDate);
     const mode = tMode === "arrive" ? "arrive" : "depart";
     // Phase 3: when the "Nearest stop" geolocation is in play, prefetch the
@@ -1640,10 +1705,10 @@ export default function App() {
     // within a 10-min haversine; a bldg origin covers the same 10-min ring
     // computed off the building centroid so the fallback pair search can
     // surface Mapbox steps too.
-    if (fCoords) {
-      const nearby = nearbyStopNames(fCoords, 10, WALK_PREFETCH_K);
+    if (oPt) {
+      const nearby = nearbyStopNames(oPt, 10, WALK_PREFETCH_K);
       const targetStops = [fStop, ...nearby.filter(s => s !== fStop)].slice(0, WALK_PREFETCH_K);
-      try { walkOverrides = await prefetchUserWalks(fCoords, targetStops, { lang }); }
+      try { walkOverrides = await prefetchUserWalks(oPt, targetStops, { lang }); }
       catch { walkOverrides = null; }
     } else if (fBldg) {
       const b = BUILDING_COORDS[fBldg];
@@ -1670,10 +1735,10 @@ export default function App() {
     // maneuver text on each leg.
     // `reverse`: the leg runs alight stop → destination, so steps are
     // requested in that direction (they used to come back destination → stop).
-    if (tCoords) {
-      const nearby = nearbyStopNames(tCoords, 10, WALK_PREFETCH_K);
+    if (dPt) {
+      const nearby = nearbyStopNames(dPt, 10, WALK_PREFETCH_K);
       const targetStops = [tStop, ...nearby.filter(s => s !== tStop)].slice(0, WALK_PREFETCH_K);
-      try { destWalkOverrides = await prefetchUserWalks(tCoords, targetStops, { lang, reverse: true }); }
+      try { destWalkOverrides = await prefetchUserWalks(dPt, targetStops, { lang, reverse: true }); }
       catch { destWalkOverrides = null; }
     } else if (tBldg) {
       const b = BUILDING_COORDS[tBldg];
@@ -1692,7 +1757,7 @@ export default function App() {
         catch { destWalkOverrides = null; }
       }
     }
-    const trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, fCoords, tCoords, walkOverrides, destWalkOverrides);
+    const trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, oPt, dPt, walkOverrides, destWalkOverrides);
     // Fetch turn-by-turn for the direct pair when the planner recommends
     // walking, or when no shuttle path exists at all. In the second case
     // Mapbox is the only help left, so it is offered even past the planner's
@@ -1702,10 +1767,10 @@ export default function App() {
       // Mirror routing.js resolveCoords: user geo → building centroid →
       // stop coord. Stop-only pairs (no building on either side) still get
       // real turn-by-turn as long as the stops themselves have coords.
-      const originCoords = fCoords
+      const originCoords = oPt
         || (fBldg ? BUILDING_COORDS[fBldg] : null)
         || STOP_COORDS[fStop];
-      const destCoords = tCoords
+      const destCoords = dPt
         || (tBldg ? BUILDING_COORDS[tBldg] : null)
         || STOP_COORDS[tStop];
       if (originCoords?.lat != null && destCoords?.lat != null
@@ -1720,6 +1785,7 @@ export default function App() {
             const best = trips.trips[0];
             trips.walkOnly = best && best.total <= minutes ? null : {
               minutes, meters: hit.meters, seconds: hit.seconds, steps: hit.steps, source: "mapbox",
+              via: hit.via, alternatives: hit.alternatives,
             };
           }
         } catch { /* keep the haversine walkOnly */ }
@@ -1737,7 +1803,8 @@ export default function App() {
     setSrch(true);
     setEditing(false);
     setRecent(prev => {
-      const entry = { fStop, tStop, fLbl, tLbl, fBldg, tBldg, fPlace: fCoords?.kind==="place" ? fCoords : null, tPlace: tCoords };
+      const entry = { fStop, tStop, fLbl, tLbl, fBldg, tBldg, fPlace: fCoords?.kind==="place" ? fCoords : null, tPlace: tCoords,
+        fSideKey, fSide: opts.fSide ?? fSide, tSideKey, tSide: opts.tSide ?? tSide };
       const deduped = prev.filter(r => !(r.fStop===fStop && r.tStop===tStop));
       return [entry, ...deduped].slice(0, 5);
     });
@@ -1750,6 +1817,7 @@ export default function App() {
     // the user is standing, so it doesn't become a destination.
     setFC(tCoords);
     setTC(fCoords?.kind==="place" ? fCoords : null);
+    setFSK(tSideKey);setTSK(fSideKey);setFSide(tSide);setTSide(fSide);
     reset();
   };
 
@@ -1761,6 +1829,7 @@ export default function App() {
       const hit = nearestStopTo(coords);
       if (!hit) throw new Error("No stops have coordinates yet.");
       setFC(coords);
+      setFSK(null);setFSide(null);
       setFS(hit.stop);
       setFL(hit.stop);
       setFB(null);
@@ -1782,13 +1851,16 @@ export default function App() {
   const saveFavorite=()=>{
     const name = favName.trim();
     if (!name) return;
-    setFavorites(prev => [{name, stop:fStop, label:fLbl, bldg:fBldg||null, place:fCoords?.kind==="place" ? fCoords : null}, ...prev.filter(f => !(f.stop===fStop && f.name===name))]);
+    setFavorites(prev => [{name, stop:fStop, label:fLbl, bldg:fBldg||null, place:fCoords?.kind==="place" ? fCoords : null,
+      sideKey:fSideKey, side:fSide}, ...prev.filter(f => !(f.stop===fStop && f.name===name))]);
     setFavOpen(false);
   };
   const removeFavorite=idx=>setFavorites(prev=>prev.filter((_,i)=>i!==idx));
   const removeRecent=idx=>setRecent(prev=>prev.filter((_,i)=>i!==idx));
-  const applyFavorite=f=>{setFS(f.stop);setFL(f.label);setFB(f.bldg||null);setFC(f.place||null);reset();};
-  const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setFB(r.fBldg||null);setFC(r.fPlace||null);setTS(r.tStop);setTL(r.tLbl);setTB(r.tBldg||null);setTC(r.tPlace||null);reset();};
+  const applyFavorite=f=>{setFS(f.stop);setFL(f.label);setFB(f.bldg||null);setFC(f.place||null);
+    setFSK(f.sideKey||null);setFSide(f.side??null);reset();};
+  const applyRecent=r=>{setFS(r.fStop);setFL(r.fLbl);setFB(r.fBldg||null);setFC(r.fPlace||null);setTS(r.tStop);setTL(r.tLbl);setTB(r.tBldg||null);setTC(r.tPlace||null);
+    setFSK(r.fSideKey||null);setFSide(r.fSide??null);setTSK(r.tSideKey||null);setTSide(r.tSide??null);reset();};
   const TABS=[["plan",t.tabPlan],["now",t.tabNow],["routes",t.tabRoutes],["offpost",t.tabOffpost]];
 
   // 2c suggestions. "Next service day" is the first upcoming date on which any
@@ -1957,7 +2029,10 @@ export default function App() {
                 dot={<span title={fCoords ? (fCoords.kind==="place" ? t.usingPlace(fLbl) : t.usingLocation) : undefined}
                   className={cn("absolute top-1/2 left-3 z-10 size-2 -translate-y-1/2 rounded-full bg-origin-dot",
                     fCoords && "ring-3 ring-origin-dot/25")}/>}
-                onChange={(s,l,b,c)=>{setFS(s);setFL(l);setFB(b);setFC(c||null);reset();}}/>
+                onChange={(s,l,b,c,k)=>{setFS(s);setFL(l);setFB(b);setFC(c||null);setFSK(k||null);setFSide(null);reset();}}/>
+              <SideChips sides={sidesFor(fSideKey)} label={t.startFrom}
+                selected={resolvedSide(fSideKey, fSide, fStop)}
+                onPick={i=>{ setFSide(i); if (searched) search({ fSide:i }); else reset(); }}/>
 
               <div className="flex justify-center">
                 <Button variant="ghost" size="icon" onClick={swap} aria-label={t.swapStops} title={t.swapStops}
@@ -1968,7 +2043,10 @@ export default function App() {
 
               <StopInput label={t.to} value={tLbl} placeSearch placeholder={t.toPh}
                 dot={<span aria-hidden="true" className="absolute top-1/2 left-3 z-10 size-2 -translate-y-1/2 rounded-[2px] bg-foreground"/>}
-                onChange={(s,l,b,c)=>{setTS(s);setTL(l);setTB(b);setTC(c||null);reset();}}/>
+                onChange={(s,l,b,c,k)=>{setTS(s);setTL(l);setTB(b);setTC(c||null);setTSK(k||null);setTSide(null);reset();}}/>
+              <SideChips sides={sidesFor(tSideKey)} label={t.arriveAt}
+                selected={resolvedSide(tSideKey, tSide, tStop)}
+                onPick={i=>{ setTSide(i); if (searched) search({ tSide:i }); else reset(); }}/>
 
               <div ref={whenRef} className="mt-1.5"
                 onPointerEnter={loadWhenPicker} onFocus={loadWhenPicker} onTouchStart={loadWhenPicker}>
@@ -2054,7 +2132,7 @@ export default function App() {
                   const { minutes, meters, steps } = results.walkOnly;
                   return <AdvisoryCard icon={Footprints} title={t.walkInsteadTitle}
                     body={t.walkInsteadBody(minutes, meters)}
-                    steps={steps}/>;
+                    steps={steps} walk={results.walkOnly}/>;
                 }
                 const overnight = results.overnight || [];
                 const overnightDirect = overnight.filter(o => o.type === "direct");
@@ -2115,7 +2193,7 @@ export default function App() {
                   {results.walkOnly && (
                     <AdvisoryCard icon={Footprints} title={t.walkFasterTitle}
                       body={t.walkFasterBody(results.walkOnly.minutes, results.walkOnly.meters)}
-                      steps={results.walkOnly.steps}
+                      steps={results.walkOnly.steps} walk={results.walkOnly}
                       emphasis/>
                   )}
                   <FastestTrip trip={results.trips[0]}/>
