@@ -26,7 +26,9 @@ const VERSION = WALK_MATRIX_JSON?._meta?.source_hash || "unversioned";
 // Bump when the step-summarizing logic in the worker changes — partitions
 // both localStorage and the CDN edge cache from any previously stored
 // fine-grained step list so users don't see stale "turn left 22m" fluff.
-const STEPS_SCHEMA_V = 3;
+// v4: depart step rewritten around street names (no compass) + per-step
+// `location` / `toward` for client-side landmarks.
+const STEPS_SCHEMA_V = 4;
 const CACHE_PREFIX = `htp.walk.${VERSION}.v${STEPS_SCHEMA_V}`;
 // >2× haversine usually means the walk goes around a real barrier (the
 // airfield fence between Corps of Engineers and Airfield Operations is
@@ -95,10 +97,14 @@ function sanitizeSteps(raw) {
   const out = [];
   for (const s of raw) {
     if (!s || typeof s.instruction !== "string") continue;
+    const loc = Array.isArray(s.location) && s.location.length === 2
+      && s.location.every(Number.isFinite) ? s.location : null;
     out.push({
       instruction: s.instruction,
       distance: Number.isFinite(s.distance) ? s.distance : 0,
       duration: Number.isFinite(s.duration) ? s.duration : 0,
+      location: loc,
+      toward: s.toward === true,
     });
   }
   return out;
