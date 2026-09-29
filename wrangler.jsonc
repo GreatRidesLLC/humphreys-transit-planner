@@ -18,6 +18,11 @@
   // and a place search a few more, so 40/min leaves headroom for shared
   // barracks / carrier NAT while stopping a script. namespace_id is an
   // arbitrary account-unique integer.
+  // Anonymous usage events + Mapbox call outcomes (worker/index.js
+  // recordEvent). Free plan: 100k data points/day.
+  "analytics_engine_datasets": [
+    { "binding": "EVENTS", "dataset": "htp_events" }
+  ],
   "ratelimits": [
     { "name": "API_LIMITER", "namespace_id": "1001", "simple": { "limit": 40, "period": 60 } }
   ]

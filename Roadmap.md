@@ -341,7 +341,10 @@ See [[mapbox-walking-data]] for the origin of the suggestion and the base constr
 ### Korean string QA (KATUSA / KSC)
 First-draft translations flagged in shipped Korean MVP. Route + stop names stay English by design; long descriptive paragraphs on Off-Post remain English (out of MVP scope). Actively solicit a native reviewer via the launched feedback channel. Label Korean toggle as beta in v1 if reviewer not yet secured.
 
-### Privacy-respecting telemetry
+### Privacy-respecting telemetry — building (2026-09-29)
+Chosen: our own Worker + Workers Analytics Engine (no third party, CSP unchanged, free up to 100k events/day) over Plausible or Umami. It also counts Mapbox calls per outcome, so billed usage can be read without Mapbox's gated Statistics API. Developer devices are excluded via a one-time link. Details are in `docs/legal-posture.md` → Usage analytics.
+
+Original note:
 Currently zero signal on actual usage — priorities are guesses. Self-hosted Plausible or Umami → track route searches, stop usage, language split, tab activity. No PII, no third-party trackers (CSP already locks down `connect-src` and `script-src`). Required CSP update when added. High-value once real users show up.
 
 ### GPS / BusWhere outreach
