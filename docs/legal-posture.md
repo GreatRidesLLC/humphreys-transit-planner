@@ -14,6 +14,16 @@ Three commitments made to Nagan, all shipped 2026-06-19 in `src/App.jsx`:
 2. **First-launch notice** (`FirstRunNotice`) — one-time modal (dismissal persisted in `localStorage` key `humphreys.noticeSeen`) stating the tool is unofficial / community-built and that MAPA is the official U.S. Army app. Strings: `STRINGS.{en,ko}.noticeTitle` / `noticeBody` / `noticeAck`. The store buttons were removed from the dialog on 2026-08-23 (misclick risk on a modal the user has not read yet); both the EN and KO bodies now end by naming MAPA and pointing at the footer — "…use MAPA (My Army Post App) — linked at the bottom of every page." / "…링크는 각 페이지 하단에 있습니다." The notice is not dismissible by Esc or overlay click; only the acknowledge button closes it.
 3. **Schedule-source credit** — credits USAG Humphreys as the publicly posted source of route schedules. Originally a standalone `scheduleCredit` footer line; folded into `STRINGS.{en,ko}.disclaimer` on 2026-09-01 to remove repetition with the same footer's non-affiliation sentence. Kept **descriptive** ("Route schedules transcribed from publicly posted USAG Humphreys PDFs"), not an affiliation/partnership claim — non-affiliation stance below is unchanged.
 
+## Usage analytics (2026-09-29)
+
+Anonymous usage counts go to our own Cloudflare account (Workers Analytics Engine, dataset `htp_events`) through the Worker's `POST /api/e`. There is no third-party tracker and no cookies. The CSP is unchanged (`connect-src 'self'`).
+
+- **Recorded:** the event name ("open", "tab", "plan", "place_pick", "side_pick", "route_pick", "feedback", "sorry"), UI language, Cloudflare's country code, and up to three short labels: a result kind, how each trip end was picked, and the **public bus stop names** of a planned trip. Mapbox upstream calls are logged as outcome counts (hit / billed / limited / error).
+- **Never recorded:** IP addresses, device or user IDs, coordinates, building numbers, Mapbox place names, or free-text search queries.
+- **Developer traffic** is tagged "dev" via an unlisted one-time link (`?dev=<mark>`, stored in `localStorage`, `?dev=off` clears it). Any `*.workers.dev` preview host is tagged "preview". Both are left out of user numbers.
+- **Disclosure:** a footer line on every page (`STRINGS.{en,ko}.privacyNote`). It is app-level, like the non-affiliation footer, not a per-feature notice.
+- **Reading:** `scripts/usage_report.py`, using a read-only "Account Analytics: Read" token kept outside the repo.
+
 ## Audience risk summary
 
 - **App name uses "Humphreys"** — a common surname plus a place name. Place names alone are weak trademark claims, but the audience (military, civilian DoD employees, KATUSAs, KSC, family members) reads "Humphreys" as shorthand for the U.S. Army installation. An "official" reading is likely unless actively disclaimed.

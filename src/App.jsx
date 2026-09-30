@@ -20,6 +20,7 @@ import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib
 import { usePlaceSearch } from "./lib/search-runtime.js";
 import { withLandmarks } from "./lib/landmarks.js";
 import { sideKeyFor, sidesFor, resolvedSide, sidePoint } from "./lib/sides.js";
+import { applyDevMark, track } from "./lib/telemetry.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
@@ -242,6 +243,7 @@ const STRINGS = {
     mapaAppStore: "App Store",
     mapaPlayStore: "Google Play",
     feedbackLink: "Report an issue or suggest a fix",
+    privacyNote: "We count anonymous usage (trips planned, features used) to improve the app. No cookies, no accounts, no personal data.",
     sorryNoDirections: "Sorry, we don't have walking directions for this trip yet.",
     sorryNoTrip: "Sorry, we don't have the data to help with this trip yet.",
     sorryTellUs: "Tell us about it so we can log it and find a fix",
@@ -395,6 +397,7 @@ const STRINGS = {
     mapaAppStore: "App Store",
     mapaPlayStore: "Google Play",
     feedbackLink: "오류 신고 또는 수정 제안",
+    privacyNote: "앱 개선을 위해 익명 이용 통계(여정 검색, 기능 사용)를 집계합니다. 쿠키, 계정, 개인정보는 사용하지 않습니다.",
     sorryNoDirections: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다.",
     sorryNoTrip: "죄송합니다. 이 여정을 안내할 데이터가 아직 없습니다.",
     sorryTellUs: "알려주시면 기록하고 해결 방법을 찾겠습니다",
@@ -802,9 +805,9 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
   },[open]);
   const pick=item=>{
     setQ(item.label); setOpen(false);
-    onChange(item.stop,item.label,item.bldg||null,item.place ? { ...item.place, kind:"place" } : null,sideKeyFor(item));
+    onChange(item.stop,item.label,item.bldg||null,item.place ? { ...item.place, kind:"place", src:"osm" } : null,sideKeyFor(item));
   };
-  const pickPlace=p=>{ setQ(p.name); setOpen(false); onChange(p.stop,p.name,null,{ lat:p.lat, lon:p.lon, kind:"place" }); };
+  const pickPlace=p=>{ setQ(p.name); setOpen(false); onChange(p.stop,p.name,null,{ lat:p.lat, lon:p.lon, kind:"place", src:"mapbox" }); };
   const runAt=i=>{
     if (showQuick) { setOpen(false); quickItems[i]?.onPick(); }
     else if (i < filtered.length) pick(filtered[i]);
@@ -1017,7 +1020,8 @@ function WalkSteps({ steps: raw, dest = null, via = null, dur = null, alts = nul
       {routes.length > 1 && routes.every(r => r.via) && (
         <div className="mt-1.5 flex flex-wrap gap-1.5" role="radiogroup" aria-label={t.routeChoices}>
           {routes.map((r, i) => (
-            <button key={r.via} type="button" role="radio" aria-checked={i === pick} onClick={() => setPick(i)}
+            <button key={r.via} type="button" role="radio" aria-checked={i === pick}
+              onClick={() => { setPick(i); track("route_pick", { lang, p1: i === 0 ? "fastest" : "alternative" }); }}
               className={cn(HIT44, "rounded-md border px-2 py-1 text-[11.5px] leading-4 text-muted-foreground",
                 i === pick && "bg-seg-active font-semibold text-foreground shadow-[shadow:var(--seg-active-shadow)]")}>
               {r.min != null ? t.viaRoute(r.via, r.min) : r.via}
@@ -1209,7 +1213,8 @@ function SorryNote({ text, className }) {
   return (
     <div className={cn("pt-3 text-[12.5px] leading-[1.6] text-muted-foreground", className)}>
       {text}{" "}
-      <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">{t.sorryTellUs}</a>
+      <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
+        onClick={() => track("feedback", { p1: "sorry" })}>{t.sorryTellUs}</a>
     </div>
   );
 }
@@ -1573,7 +1578,8 @@ function OffPostTab() {
         ))}
       </Card>
       <div className="flex min-h-11 items-center justify-center text-center text-xs leading-[1.6] text-muted-foreground">
-        <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
+        <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
+          onClick={() => track("feedback", { p1: "community-links" })}>
           {t.communityLinksSubmit}
         </a>
       </div>
@@ -1666,6 +1672,12 @@ export default function App() {
       ?.setAttribute("content", dark ? "#0c0b0a" : "#faf9f7");
   }, [resolved]);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  // One "open" per page load. The ?dev= mark is applied first so the very
+  // first event from a developer device is already tagged.
+  useEffect(() => {
+    applyDevMark();
+    track("open", { lang });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Warm the date/time chunk once the page is idle. Tapping "Depart at" then
   // resolves from cache instead of showing the skeleton mid-interaction.
@@ -1802,6 +1814,17 @@ export default function App() {
     if (trips.walkOnly && trips.walkOnly.source !== "mapbox") {
       trips.walkOnly = null;
       trips.walkNoDirections = true;
+    }
+    // Usage: result kind, how each end was picked, and the bus stop pair
+    // (public stop names only: never coordinates, buildings or Mapbox places).
+    const endKind = (pt, bldg) => pt?.kind === "side" ? "side" : pt?.kind === "place" ? "place"
+      : pt ? "geo" : bldg ? "bldg" : "stop";
+    const resultKind = trips.sameStop ? "same" : trips.trips.length ? "trips" : trips.walkOnly ? "walk" : "none";
+    track("plan", { lang, p1: resultKind, p2: `${endKind(oPt, fBldg)}>${endKind(dPt, tBldg)}`, p3: `${fStop} > ${tStop}` });
+    const undirectedLeg = trips.trips.some(tr => tr.legs.some(l => l.k === "walk" && l.source !== "stop" && !l.steps?.length));
+    if ((resultKind === "none" && (trips.noPathEver || trips.walkNoDirections)) || undirectedLeg) {
+      track("sorry", { lang, p1: resultKind === "none" ? (trips.walkNoDirections ? "no-walk-directions" : "no-path") : "leg",
+        p3: `${fStop} > ${tStop}` });
     }
     setRes(trips);
     setSrch(true);
@@ -1967,7 +1990,7 @@ export default function App() {
         </DialogContent>
       </Dialog>
 
-      <Tabs value={tab} onValueChange={v=>{setTab(v);reset();}} className="gap-0">
+      <Tabs value={tab} onValueChange={v=>{setTab(v);reset();track("tab",{ lang, p1:v });}} className="gap-0">
       <header className="border-b bg-card px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-3.5">
         <div className="flex items-center gap-2.5">
           <BrandMark size={28} className="shrink-0"/>
@@ -2033,10 +2056,12 @@ export default function App() {
                 dot={<span title={fCoords ? (fCoords.kind==="place" ? t.usingPlace(fLbl) : t.usingLocation) : undefined}
                   className={cn("absolute top-1/2 left-3 z-10 size-2 -translate-y-1/2 rounded-full bg-origin-dot",
                     fCoords && "ring-3 ring-origin-dot/25")}/>}
-                onChange={(s,l,b,c,k)=>{setFS(s);setFL(l);setFB(b);setFC(c||null);setFSK(k||null);setFSide(null);reset();}}/>
+                onChange={(s,l,b,c,k)=>{setFS(s);setFL(l);setFB(b);setFC(c||null);setFSK(k||null);setFSide(null);reset();
+                  if (c?.kind==="place") track("place_pick",{ lang, p1:"from", p2:c.src });}}/>
               <SideChips sides={sidesFor(fSideKey)} label={t.startFrom}
                 selected={resolvedSide(fSideKey, fSide, fStop)}
-                onPick={i=>{ setFSide(i); if (searched) search({ fSide:i }); else reset(); }}/>
+                onPick={i=>{ setFSide(i); track("side_pick",{ lang, p1:"from", p2:fSideKey });
+                  if (searched) search({ fSide:i }); else reset(); }}/>
 
               <div className="flex justify-center">
                 <Button variant="ghost" size="icon" onClick={swap} aria-label={t.swapStops} title={t.swapStops}
@@ -2047,10 +2072,12 @@ export default function App() {
 
               <StopInput label={t.to} value={tLbl} placeSearch placeholder={t.toPh}
                 dot={<span aria-hidden="true" className="absolute top-1/2 left-3 z-10 size-2 -translate-y-1/2 rounded-[2px] bg-foreground"/>}
-                onChange={(s,l,b,c,k)=>{setTS(s);setTL(l);setTB(b);setTC(c||null);setTSK(k||null);setTSide(null);reset();}}/>
+                onChange={(s,l,b,c,k)=>{setTS(s);setTL(l);setTB(b);setTC(c||null);setTSK(k||null);setTSide(null);reset();
+                  if (c?.kind==="place") track("place_pick",{ lang, p1:"to", p2:c.src });}}/>
               <SideChips sides={sidesFor(tSideKey)} label={t.arriveAt}
                 selected={resolvedSide(tSideKey, tSide, tStop)}
-                onPick={i=>{ setTSide(i); if (searched) search({ tSide:i }); else reset(); }}/>
+                onPick={i=>{ setTSide(i); track("side_pick",{ lang, p1:"to", p2:tSideKey });
+                  if (searched) search({ tSide:i }); else reset(); }}/>
 
               <div ref={whenRef} className="mt-1.5"
                 onPointerEnter={loadWhenPicker} onFocus={loadWhenPicker} onTouchStart={loadWhenPicker}>
@@ -2111,12 +2138,13 @@ export default function App() {
                 {t.bldgsMappedTitle(Object.keys(BUILDINGS).length + OSM_BUILDING_SEARCH.length, OSM_PLACE_SEARCH.length)}
               </span>
               {t.bldgsMappedDesc}{" "}{t.bldgsMissing}{" "}
-              <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">{t.bldgsTellUs}</a>
+              <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
+                onClick={() => track("feedback", { p1: "directory" })}>{t.bldgsTellUs}</a>
             </div>
           )}
 
           {showForm && (
-            <button type="button" onClick={()=>{setTab("offpost");reset();}}
+            <button type="button" onClick={()=>{setTab("offpost");reset();track("tab",{ lang, p1:"offpost" });}}
               className="mt-3.5 w-full rounded-lg border border-dashed border-border bg-transparent px-3 py-2.5 text-left text-xs leading-[1.5] text-muted-foreground hover:bg-muted/50 hover:text-foreground focus-visible:bg-muted/50 focus-visible:outline-none">
               {t.communityLinksPointer}
             </button>
@@ -2211,7 +2239,10 @@ export default function App() {
                     const shouldShow = planCount >= 3 && (!nudgeSnoozedUntil || nudgeSnoozedUntil < Date.now());
                     if (!shouldShow) return null;
                     const handleDismiss = () => setNudgeSnoozedUntil(Date.now() + 60 * 24 * 60 * 60 * 1000);
-                    const handleFeedback = () => setNudgeSnoozedUntil(Date.now() + 21 * 24 * 60 * 60 * 1000);
+                    const handleFeedback = () => {
+                      setNudgeSnoozedUntil(Date.now() + 21 * 24 * 60 * 60 * 1000);
+                      track("feedback", { p1: "nudge" });
+                    };
                     return (
                       <div className="flex items-center gap-2.5 rounded-lg border bg-muted p-3 text-[13px]">
                         <div className="flex-1 leading-snug text-body">{t.feedbackNudgeQuestion}</div>
@@ -2281,10 +2312,12 @@ export default function App() {
           <a className={LINK_CLS} href={MAPA_LINKS.android} target="_blank" rel="noopener noreferrer">{t.mapaPlayStore}</a>
         </div>
         <div className="mt-2.5">
-          <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
+          <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
+            onClick={() => track("feedback", { p1: "footer" })}>
             {t.feedbackLink}
           </a>
         </div>
+        <div className="mt-2.5">{t.privacyNote}</div>
       </footer>
     </div>
     </LangContext.Provider>
