@@ -25,6 +25,10 @@
 //   → 200 { results: [{ id, name, full, lat, lon }], source: "mapbox-searchbox-v1" }
 //   → 502 on Mapbox failure  → 400 on malformed / off-post-bbox input
 //
+// POST /api/e   { e, lang, p1?, p2?, p3? }  → 204
+//   Anonymous usage event (Workers Analytics Engine, dataset htp_events).
+//   No cookies, no IPs, no user IDs. See recordEvent for the layout.
+//
 // Edge cache: keyed on the request URL (walk already coord-rounded by the
 // client to a ~30 m grid; search cached verbatim). 30-day TTL for walk
 // (sidewalks don't move); 1-day TTL for search (business names change).
@@ -96,9 +100,63 @@ function tooMany() {
   });
 }
 
+// ─── Usage analytics (Workers Analytics Engine) ──────────────────────────────
+// One data point per event, dataset htp_events (binding EVENTS):
+//   index1  event name
+//   blob1   event   blob2 audience   blob3 lang   blob4 country
+//   blob5   p1      blob6 p2         blob7 p3
+//   double1 1 (count; query with sum(_sample_interval))
+// audience: "dev" (the developer's devices, marked once via a private link),
+// "preview" (any *.workers.dev host), else "user". Country comes from
+// Cloudflare (a Korea visit is the best available stand-in for on-post).
+// Mapbox upstream calls are logged here too (event "mapbox", p1 = walk |
+// search, p2 = hit | billed | limited | error) so billed usage can be read
+// without Mapbox's statistics API.
+const EVENT_NAMES = new Set([
+  "open", "tab", "plan", "place_pick", "side_pick", "route_pick", "feedback", "sorry",
+]);
+const PROP_MAX = 64;
+
+function audienceOf(request) {
+  const host = new URL(request.url).hostname;
+  if (host.endsWith(".workers.dev") || host === "localhost" || host === "127.0.0.1") return "preview";
+  return request.headers.get("x-htp-aud") === "dev" ? "dev" : "user";
+}
+
+function clip(v) {
+  return typeof v === "string" ? v.slice(0, PROP_MAX) : "";
+}
+
+function recordEvent(env, request, event, { lang = "", p1 = "", p2 = "", p3 = "" } = {}) {
+  if (!env.EVENTS) return;
+  try {
+    env.EVENTS.writeDataPoint({
+      indexes: [event],
+      blobs: [event, audienceOf(request), clip(lang), request.cf?.country || "", clip(p1), clip(p2), clip(p3)],
+      doubles: [1],
+    });
+  } catch (e) {
+    console.error("analytics write failed:", e?.message || e);
+  }
+}
+
+async function handleEvent(request, env) {
+  let body;
+  try {
+    const text = await request.text();
+    if (text.length > 1024) return new Response(null, { status: 413 });
+    body = JSON.parse(text);
+  } catch {
+    return badRequest("invalid json");
+  }
+  if (!body || !EVENT_NAMES.has(body.e)) return badRequest("unknown event");
+  recordEvent(env, request, body.e, { lang: body.lang, p1: body.p1, p2: body.p2, p3: body.p3 });
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Max-Age": "86400",
 };
 
@@ -362,8 +420,12 @@ async function handleWalk(request, env, ctx) {
   keyUrl.searchParams.set("v", url.searchParams.get("v") || "");
   const cacheKey = new Request(keyUrl.toString(), { method: "GET" });
   const cached = await cache.match(cacheKey);
-  if (cached) return cached;
-  if (!(await underUpstreamLimit(request, env))) return tooMany();
+  if (cached) { recordEvent(env, request, "mapbox", { lang, p1: "walk", p2: "hit" }); return cached; }
+  if (!(await underUpstreamLimit(request, env))) {
+    recordEvent(env, request, "mapbox", { lang, p1: "walk", p2: "limited" });
+    return tooMany();
+  }
+  recordEvent(env, request, "mapbox", { lang, p1: "walk", p2: "billed" });
 
   try {
     const walk = await fetchMapboxWalk(
@@ -376,6 +438,7 @@ async function handleWalk(request, env, ctx) {
     // Log the real error server-side for `wrangler tail` diagnosis.
     // Client response stays canned so no stack trace leaks (CodeQL b95a6c5).
     console.error("mapbox walk failed:", e?.message || e);
+    recordEvent(env, request, "mapbox", { lang, p1: "walk", p2: "error" });
     return json({ error: "upstream routing failed" }, 502);
   }
 }
@@ -399,8 +462,12 @@ async function handleSearch(request, env, ctx) {
   keyUrl.searchParams.set("_src", "searchbox-v1-prox");
   const cacheKey = new Request(keyUrl.toString(), { method: "GET" });
   const cached = await cache.match(cacheKey);
-  if (cached) return cached;
-  if (!(await underUpstreamLimit(request, env))) return tooMany();
+  if (cached) { recordEvent(env, request, "mapbox", { lang, p1: "search", p2: "hit" }); return cached; }
+  if (!(await underUpstreamLimit(request, env))) {
+    recordEvent(env, request, "mapbox", { lang, p1: "search", p2: "limited" });
+    return tooMany();
+  }
+  recordEvent(env, request, "mapbox", { lang, p1: "search", p2: "billed" });
 
   // bbox hard-clamp keeps results on-post. Same rectangle handleWalk uses
   // as its coord gate — a hit here is a coord that also passes /api/walk.
@@ -449,6 +516,7 @@ async function handleSearch(request, env, ctx) {
     // Log real error server-side for `wrangler tail`; client sees a canned
     // message (same posture as handleWalk — no stack leak).
     console.error("mapbox search failed:", e?.message || e);
+    recordEvent(env, request, "mapbox", { lang, p1: "search", p2: "error" });
     return json({ error: "upstream search failed" }, 502);
   }
 }
@@ -462,6 +530,10 @@ export default {
     if (url.pathname === "/api/walk") {
       if (request.method !== "GET") return new Response("method not allowed", { status: 405 });
       return handleWalk(request, env, ctx);
+    }
+    if (url.pathname === "/api/e") {
+      if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
+      return handleEvent(request, env);
     }
     if (url.pathname === "/api/search") {
       if (request.method !== "GET") return new Response("method not allowed", { status: 405 });

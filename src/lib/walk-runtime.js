@@ -13,6 +13,7 @@
 
 import WALK_MATRIX_JSON from "../data/walk_matrix.json";
 import { haversineMeters, STOP_COORDS, BUILDING_COORDS } from "./routing.js";
+import { audienceHeaders } from "./telemetry.js";
 
 // ~30 m at Camp Humphreys latitude (37°N):
 //   lat: 30 m / 111_320 m/deg = 0.000269°
@@ -164,7 +165,7 @@ export async function fetchUserWalk(userCoords, stopName, opts = {}) {
   const url = opts.reverse ? walkUrl(stop, cell, lang) : walkUrl(cell, stop, lang);
   let body;
   try {
-    const r = await fetchImpl(url);
+    const r = await fetchImpl(url, { headers: audienceHeaders() });
     if (!r || !r.ok) return null;
     body = await r.json();
   } catch {
@@ -222,7 +223,7 @@ export async function fetchBuildingWalk(bldgNum, stopName, opts = {}) {
   const url = opts.reverse ? walkUrl(stop, b, lang) : walkUrl(b, stop, lang);
   let body;
   try {
-    const r = await fetchImpl(url);
+    const r = await fetchImpl(url, { headers: audienceHeaders() });
     if (!r || !r.ok) return null;
     body = await r.json();
   } catch {
@@ -278,7 +279,7 @@ export async function fetchDirectWalk(originCoords, destCoords, opts = {}) {
   const url = `/api/walk?flat=${oCell.lat}&flon=${oCell.lon}&tlat=${dCell.lat}&tlon=${dCell.lon}&lang=${lang}&v=${STEPS_SCHEMA_V}`;
   let body;
   try {
-    const r = await fetchImpl(url);
+    const r = await fetchImpl(url, { headers: audienceHeaders() });
     if (!r || !r.ok) return null;
     body = await r.json();
   } catch {

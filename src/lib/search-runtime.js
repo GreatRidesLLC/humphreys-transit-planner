@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { isOnPost } from "./walk-runtime.js";
+import { audienceHeaders } from "./telemetry.js";
 
 export const MIN_QUERY_LEN = 2;
 const MAX_QUERY_LEN = 100;
@@ -72,7 +73,7 @@ export async function searchPlaces(query, opts = {}) {
   let body;
   try {
     const r = await fetchImpl(`/api/search?q=${encodeURIComponent(q)}&lang=${lang}`,
-      opts.signal ? { signal: opts.signal } : undefined);
+      { headers: audienceHeaders(), ...(opts.signal ? { signal: opts.signal } : {}) });
     if (!r || !r.ok) return [];
     body = await r.json();
   } catch {
