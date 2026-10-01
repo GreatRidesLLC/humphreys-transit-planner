@@ -32,7 +32,9 @@ const VERSION = WALK_MATRIX_JSON?._meta?.source_hash || "unversioned";
 // v5: `via` (main street) + `alternatives` (other Mapbox routes).
 // v6: real left/right turns kept on unnamed paths; an unnamed start heads
 // "toward" the first named street.
-const STEPS_SCHEMA_V = 6;
+// v7: sidewalks named after their street (src/data/streets.json), turns
+// recomputed from headings, start/end crossings ("Cross 11th Street").
+const STEPS_SCHEMA_V = 7;
 const CACHE_PREFIX = `htp.walk.${VERSION}.v${STEPS_SCHEMA_V}`;
 // >2× haversine usually means the walk goes around a real barrier (the
 // airfield fence between Corps of Engineers and Airfield Operations is

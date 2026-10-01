@@ -35,7 +35,7 @@
 // A coord/hash refresh upstream rotates the client's cache-key prefix
 // and self-invalidates.
 
-import { extractSteps, mainRoad } from "./steps.js";
+import { walkSteps } from "./steps.js";
 
 const MAPBOX_DIRECTIONS = "https://api.mapbox.com/directions/v5/mapbox/walking";
 const MAPBOX_SEARCH = "https://api.mapbox.com/search/searchbox/v1/forward";
@@ -210,8 +210,7 @@ async function fetchMapboxWalk(fLat, fLon, tLat, tLon, token, publicOrigin, lang
   const shape = rt => ({
     seconds: Math.round(rt.duration),
     meters: Math.round(rt.distance),
-    steps: extractSteps(rt, langParam),
-    via: mainRoad(rt, langParam),
+    ...walkSteps(rt, langParam),
   });
   const primary = shape(route);
   // Drop alternatives that name the same main street as the primary: they
