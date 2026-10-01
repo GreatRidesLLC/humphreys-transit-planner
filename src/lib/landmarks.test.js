@@ -47,6 +47,33 @@ describe("withLandmarks", () => {
     expect(withLandmarks(lone)[0].instruction).toBe("Start walking");
   });
 
+  it("never heads toward, or turns by, the place the walk starts or ends at", () => {
+    // Family Mini Mall → Maude Hall: the first turn is a few metres from the start.
+    const flip = [
+      { instruction: "Start walking", location: at("Family Mini Mall / Gas Station"), toward: true },
+      { instruction: "Turn right onto 11th Street.", location: at("Family Mini Mall / Gas Station") },
+      { instruction: "Turn left onto 9th Street.", location: at("LTG Maude Hall (9th St)") },
+      { instruction: "Your destination is on the right.", location: at("LTG Maude Hall (9th St)") },
+    ];
+    const out = withLandmarks(flip);
+    // Not "toward Family Mini Mall": the heading falls through to the end.
+    expect(out[0].instruction).toBe("Start walking toward LTG Maude Hall (9th St)");
+    expect(out[1].instruction).toBe("Turn right onto 11th Street.");
+    expect(out[2].instruction).toBe("Turn left onto 9th Street.");
+  });
+
+  it("opens the first step with where the walk starts", () => {
+    const first = [
+      { instruction: "Walk toward 11th Street", location: NOWHERE },
+      { instruction: "Arrive", location: NOWHERE },
+    ];
+    expect(withLandmarks(first, { origin: "Family Mini Mall Express" })[0].instruction)
+      .toBe("From Family Mini Mall Express, walk toward 11th Street");
+    expect(withLandmarks([{ ...first[0], instruction: "11번가 방향으로 걸으세요" }, first[1]],
+      { lang: "ko", origin: "Family Mini Mall Express" })[0].instruction)
+      .toBe("Family Mini Mall Express에서 11번가 방향으로 걸으세요");
+  });
+
   it("leaves steps without a location untouched", () => {
     const old = [{ instruction: "Walk west." }, { instruction: "Turn left." }, { instruction: "Arrive." }];
     expect(withLandmarks(old)).toEqual(old);

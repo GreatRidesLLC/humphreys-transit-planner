@@ -10,6 +10,8 @@ import {
   BUILDING_COORDS, WALK_MATRIX,
   stopDistance,
   nearbyStopNames, EST_WALK_FACTOR,
+  dropNoWalkSavings,
+  WALK_SAVINGS_MAX_MIN,
 } from "./routing.js";
 
 // Reference dates: 2026-06-29 is a Monday, 2026-07-03 Friday, 2026-07-04 Saturday.
@@ -180,6 +182,26 @@ describe("findTrips — guards", () => {
     const r = findTrips("Bus Terminal", "Not A Real Stop", monAt(12, 0), "depart");
     expect(r.trips).toEqual([]);
     expect(r.sameStop).toBeUndefined();
+  });
+});
+
+describe("dropNoWalkSavings", () => {
+  // Maude Hall → Family Mini Mall on a weekday: every bus trip walks 9+ min.
+  const trip = (id, ...walks) => ({ id, legs: [
+    { k: "walk", dur: walks[0], source: "mapbox" },
+    { k: "bus", rid: "GREEN", t: 2 },
+    { k: "walk", dur: walks[1], source: walks[1] === 3 ? "stop" : "mapbox" },
+  ] });
+  const trips = [trip("a", 3, 11), trip("b", 6, 3), trip("c", 4, 4)];
+
+  it("keeps only trips that walk less than a short direct walk", () => {
+    // b's 3-min end leg is the picked-stop buffer, so it walks 6.
+    expect(dropNoWalkSavings(trips, 9).map(t => t.id)).toEqual(["b", "c"]);
+    expect(dropNoWalkSavings(trips, 6).map(t => t.id)).toEqual([]);
+  });
+
+  it(`keeps every trip once the direct walk is ${WALK_SAVINGS_MAX_MIN}+ min`, () => {
+    expect(dropNoWalkSavings(trips, WALK_SAVINGS_MAX_MIN)).toBe(trips);
   });
 });
 

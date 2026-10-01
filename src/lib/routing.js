@@ -209,6 +209,21 @@ export function walkableTrip(from, to, fBldg, tBldg, fCoords, tCoords) {
   return { meters: Math.round(meters), minutes };
 }
 
+// A trip-wide walk this short is the answer on its own, so a bus trip is
+// listed beside it only if it saves walking. Longer walks keep every trip:
+// the bus is then worth it for the walking it spares, even if slower.
+export const WALK_SAVINGS_MAX_MIN = 10;
+
+// Minutes on foot in a trip. A "stop" leg is the buffer at a picked stop,
+// not a walk.
+export const tripWalkMinutes = trip =>
+  trip.legs.reduce((sum, l) => sum + (l.k === "walk" && l.source !== "stop" ? l.dur : 0), 0);
+
+export function dropNoWalkSavings(trips, walkMin) {
+  if (walkMin >= WALK_SAVINGS_MAX_MIN) return trips;
+  return trips.filter(tr => tripWalkMinutes(tr) < walkMin);
+}
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 // `schedule` (optional) is the source of truth for routing logic when present.
 // Each window is `{ dow:[0..6], from:"HH:MM", to:"HH:MM", freq? }` where `to`
