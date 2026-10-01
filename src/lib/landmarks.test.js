@@ -74,6 +74,35 @@ describe("withLandmarks", () => {
       .toBe("Family Mini Mall Express에서 11번가 방향으로 걸으세요");
   });
 
+  it("names a bus stop as a stop at either end", () => {
+    const walk = [
+      { instruction: "Walk to 11th Street and follow it toward Marne Avenue", location: NOWHERE },
+      { instruction: "Cross Marne Avenue and continue straight", location: NOWHERE },
+      { instruction: "Your destination is on the right.", location: NOWHERE, arrive: true, side: "right", cross: null },
+    ];
+    const out = withLandmarks(walk, { origin: "Family Mini Mall / Gas Station", originStop: true,
+      dest: "Commissary", destStop: true });
+    expect(out[0].instruction).toBe("From the Family Mini Mall / Gas Station stop, walk to 11th Street and follow it toward Marne Avenue");
+    expect(out[2].instruction).toBe("The Commissary stop is on the right.");
+    const ko = withLandmarks(walk, { lang: "ko", origin: "Family Mini Mall / Gas Station", originStop: true,
+      dest: "Commissary", destStop: true });
+    expect(ko[0].instruction).toMatch(/^Family Mini Mall \/ Gas Station 정류장에서 /);
+    expect(ko[2].instruction).toBe("Commissary 정류장은(는) 오른쪽에 있습니다.");
+  });
+
+  it("names a place destination, keeping a closing crossing", () => {
+    const walk = [
+      { instruction: "Walk along 9th Street toward Marne Avenue", location: NOWHERE },
+      { instruction: "Cross 11th Street. Your destination is on the left.", location: NOWHERE,
+        arrive: true, side: "left", cross: "11th Street" },
+    ];
+    expect(withLandmarks(walk, { dest: "Family Mini Mall Express" })[1].instruction)
+      .toBe("Cross 11th Street. Family Mini Mall Express is on the left.");
+    const noSide = [walk[0], { instruction: "You have arrived at your destination.", location: NOWHERE, arrive: true, side: null }];
+    expect(withLandmarks(noSide, { dest: "Commissary", destStop: true })[1].instruction).toBe("Arrive at the Commissary stop.");
+    expect(withLandmarks(noSide)[1].instruction).toBe("You have arrived at your destination.");
+  });
+
   it("leaves steps without a location untouched", () => {
     const old = [{ instruction: "Walk west." }, { instruction: "Turn left." }, { instruction: "Arrive." }];
     expect(withLandmarks(old)).toEqual(old);
