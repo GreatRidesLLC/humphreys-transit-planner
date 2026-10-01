@@ -82,12 +82,12 @@ describe("withLandmarks", () => {
     ];
     const out = withLandmarks(walk, { origin: "Family Mini Mall / Gas Station", originStop: true,
       dest: "Commissary", destStop: true });
-    expect(out[0].instruction).toBe("From the Family Mini Mall / Gas Station stop, walk to 11th Street and follow it toward Marne Avenue");
-    expect(out[2].instruction).toBe("The Commissary stop is on the right.");
+    expect(out[0].instruction).toBe("From the Family Mini Mall / Gas Station Bus Stop, walk to 11th Street and follow it toward Marne Avenue");
+    expect(out[2].instruction).toBe("The Commissary Bus Stop is on the right.");
     const ko = withLandmarks(walk, { lang: "ko", origin: "Family Mini Mall / Gas Station", originStop: true,
       dest: "Commissary", destStop: true });
-    expect(ko[0].instruction).toMatch(/^Family Mini Mall \/ Gas Station 정류장에서 /);
-    expect(ko[2].instruction).toBe("Commissary 정류장은(는) 오른쪽에 있습니다.");
+    expect(ko[0].instruction).toMatch(/^Family Mini Mall \/ Gas Station 버스 정류장에서 /);
+    expect(ko[2].instruction).toBe("Commissary 버스 정류장은(는) 오른쪽에 있습니다.");
   });
 
   it("names a place destination, keeping a closing crossing", () => {
@@ -99,7 +99,7 @@ describe("withLandmarks", () => {
     expect(withLandmarks(walk, { dest: "Family Mini Mall Express" })[1].instruction)
       .toBe("Cross 11th Street. Family Mini Mall Express is on the left.");
     const noSide = [walk[0], { instruction: "You have arrived at your destination.", location: NOWHERE, arrive: true, side: null }];
-    expect(withLandmarks(noSide, { dest: "Commissary", destStop: true })[1].instruction).toBe("Arrive at the Commissary stop.");
+    expect(withLandmarks(noSide, { dest: "Commissary", destStop: true })[1].instruction).toBe("Arrive at the Commissary Bus Stop.");
     expect(withLandmarks(noSide)[1].instruction).toBe("You have arrived at your destination.");
   });
 
