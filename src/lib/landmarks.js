@@ -104,6 +104,10 @@ export function withLandmarks(steps, { lang = "en", dest = null, origin = null, 
       if (originName) instruction = txt.from(trimDot(instruction), originName);
       return instruction === s.instruction ? s : { ...s, instruction };
     }
+    if (s.toward && destName && i !== last) {
+      // A later footpath line with nowhere named to head: the destination.
+      return { ...s, instruction: txt.toward(trimDot(s.instruction), destName) };
+    }
     if (i === last) {
       // The Worker marks its arrival line; name the destination in it.
       if (!s.arrive || !destName) return s;

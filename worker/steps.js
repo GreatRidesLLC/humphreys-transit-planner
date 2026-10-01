@@ -85,10 +85,6 @@ function pointSegDist(p, a, b) {
   const t = len2 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2)) : 0;
   return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
 }
-function segmentsCross(p1, p2, q1, q2) {
-  const o = (a, b, c) => Math.sign((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]));
-  return o(p1, p2, q1) !== o(p1, p2, q2) && o(q1, q2, p1) !== o(q1, q2, p2);
-}
 
 // Every street as projected segments with their bearing, built once.
 const STREET_SEGS = (STREETS_JSON.streets || []).flatMap(s => s.coords.slice(1).map((c, i) => {
@@ -159,51 +155,60 @@ export function sidewalkOf(coords) {
   return top && top.n / pts.length >= SIDEWALK_SHARE ? top.road : null;
 }
 
-// The street a step's path crosses at a steep angle, or null.
-export function crossingOf(coords) {
-  if (!Array.isArray(coords) || coords.length < 2) return null;
-  const near = segsNear(coords, 0);
-  for (let i = 1; i < coords.length; i++) {
-    const p1 = xy(coords[i - 1]), p2 = xy(coords[i]);
-    const bearing = bearingOf(coords[i - 1], coords[i]);
-    for (const s of near) {
-      if (lineAngle(bearing, s.bearing) < 45) continue;
-      if (segmentsCross(p1, p2, s.a, s.b)) return s.road;
-    }
-  }
-  return null;
-}
-
-// Every named street a line crosses at a steep angle, in walking order:
+// Every named street a line crosses, in walking order:
 // [{ road, at (metres from the start), point ([lon, lat]) }]. `own` (the
 // street the line runs along) is never reported.
+//
+// A crossing is the path being clearly on one side of a street and then
+// clearly on the other, close to it and within a short walk. Merely touching
+// the centre line does not count: that is a path joining the street, or
+// walking down a road mapped without sidewalks.
+const CROSS_CLEAR_M = 3;      // "clearly" beside the centre line
+const CROSS_NEAR_M = 20;      // still at the street, not a block away
+const CROSS_SPAN_M = 40;      // the two sides are seen this close together
 export function crossingsAlong(coords, own = null) {
   if (!Array.isArray(coords) || coords.length < 2) return [];
-  const near = segsNear(coords, 0);
-  const out = [];
+  const byRoad = new Map();
+  for (const sg of segsNear(coords, CROSS_NEAR_M)) {
+    if (sg.road.en === own?.en) continue;
+    if (!byRoad.has(sg.road.en)) byRoad.set(sg.road.en, []);
+    byRoad.get(sg.road.en).push(sg);
+  }
+  if (!byRoad.size) return [];
+  // Points every 2 m with the distance walked to them.
+  const pts = [];
   let walked = 0;
   for (let i = 1; i < coords.length; i++) {
-    const p1 = xy(coords[i - 1]), p2 = xy(coords[i]);
-    const len = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
-    const bearing = bearingOf(coords[i - 1], coords[i]);
-    const hits = [];
-    for (const s of near) {
-      if (s.road.en === own?.en || lineAngle(bearing, s.bearing) < 45) continue;
-      if (!segmentsCross(p1, p2, s.a, s.b)) continue;
-      // Where along p1→p2 the street line is met.
-      const dx = p2[0] - p1[0], dy = p2[1] - p1[1], ex = s.b[0] - s.a[0], ey = s.b[1] - s.a[1];
-      const t = ((s.a[0] - p1[0]) * ey - (s.a[1] - p1[1]) * ex) / (dx * ey - dy * ex);
-      hits.push({ road: s.road, t });
-    }
-    hits.sort((a, b) => a.t - b.t);
-    for (const h of hits) {
-      if (out.some(o => o.road.en === h.road.en)) continue;
-      const [a, b] = [coords[i - 1], coords[i]];
-      out.push({ road: h.road, at: walked + h.t * len, point: [a[0] + (b[0] - a[0]) * h.t, a[1] + (b[1] - a[1]) * h.t] });
-    }
+    const a = xy(coords[i - 1]), b = xy(coords[i]);
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    for (let d = 0; d < len; d += 2) pts.push({ p: [a[0] + (b[0] - a[0]) * d / len, a[1] + (b[1] - a[1]) * d / len], at: walked + d });
     walked += len;
   }
-  return out;
+  pts.push({ p: xy(coords.at(-1)), at: walked });
+
+  const out = [];
+  for (const segs of byRoad.values()) {
+    let solid = null;          // last point clearly on one side: { side, at, p }
+    for (const { p, at } of pts) {
+      let best = null, bestD = Infinity;
+      for (const sg of segs) {
+        const d = pointSegDist(p, sg.a, sg.b);
+        if (d < bestD) { best = sg; bestD = d; }
+      }
+      if (bestD > CROSS_NEAR_M) { solid = null; continue; }
+      if (bestD < CROSS_CLEAR_M) continue;
+      const side = Math.sign((best.b[0] - best.a[0]) * (p[1] - best.a[1]) - (best.b[1] - best.a[1]) * (p[0] - best.a[0]));
+      // No angle test: a crossing often has a short walk down the roadway
+      // in the middle (Mapbox routes crosswalks via the centre line).
+      if (solid && side !== solid.side && at - solid.at <= CROSS_SPAN_M
+        && !out.some(o => o.road.en === best.road.en && Math.abs(o.at - at) < 60)) {
+        const mid = [(p[0] + solid.p[0]) / 2, (p[1] + solid.p[1]) / 2];
+        out.push({ road: best.road, at: (at + solid.at) / 2, point: [mid[0] / M_LON, mid[1] / M_LAT] });
+      }
+      solid = { side, at, p };
+    }
+  }
+  return out.sort((a, b) => a.at - b.at);
 }
 const lineLength = coords => {
   let m = 0;
@@ -225,6 +230,9 @@ const MAX_SILENT_M = 200;
 const BEND_DEG = 20;
 // Short steps before the arrival this long in total become one closing line.
 const TAIL_M = 30;
+// Unnamed stretches merge while the path is at most this much longer than
+// the straight line across them.
+const WIGGLE_RATIO = 1.3;
 
 function modifierFor(angle) {
   const a = Math.abs(angle), side = angle > 0 ? "right" : "left";
@@ -239,8 +247,15 @@ const TEXT = {
   en: {
     departRoadNext: (road, next) => `Walk along ${road} toward ${next}`,
     departRoad: road => `Walk along ${road}`,
-    departNext: next => `Walk toward ${next}`,
+    departNext: next => `Follow the path toward ${next}`,
     departNone: "Start walking",
+    // An unnamed stretch is a footpath (or a lot): say so, and where it leads.
+    turnPath: (mod, toward) => {
+      const verb = mod === "uturn" ? "Turn around" : mod === "straight" ? "Continue on the path"
+        : mod.startsWith("slight") ? `Bear ${mod.slice(7)} onto the path` : `Turn ${mod} onto the path`;
+      return toward ? `${verb} toward ${toward}` : verb;
+    },
+    and: names => names.length < 3 ? names.join(" and ") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`,
     departCross: road => `Cross ${road}`,
     // A short approach, then a street: say which street and which way along
     // it, never a left/right that depends on how you stood at the start.
@@ -248,7 +263,7 @@ const TEXT = {
     crossFollow: (road, toward) => toward ? `Cross ${road}, then follow it toward ${toward}` : `Cross ${road}, then follow it`,
     crossAlong: (cross, road, toward) => toward ? `Cross ${cross}, then walk along ${road} toward ${toward}`
       : `Cross ${cross}, then walk along ${road}`,
-    crossContinue: road => `Cross ${road} and continue straight`,
+    crossContinue: road => road.includes(" and ") ? `Cross ${road}, then continue straight` : `Cross ${road} and continue straight`,
     crossThen: (road, next) => `Cross ${road}, then ${lowerFirst(next)}`,
     // Crossing a street and then walking along its far side.
     crossAlongIt: (road, mod) => mod === "straight" ? `Cross ${road}, then continue along it`
@@ -267,8 +282,18 @@ const TEXT = {
   ko: {
     departRoadNext: (road, next) => `${road}을(를) 따라 ${next} 방향으로 걸으세요`,
     departRoad: road => `${road}을(를) 따라 걸으세요`,
-    departNext: next => `${next} 방향으로 걸으세요`,
+    departNext: next => `보행로를 따라 ${next} 방향으로 걸으세요`,
     departNone: "걷기 시작하세요",
+    turnPath: (mod, toward) => {
+      const verb = {
+        left: "좌회전하여 ", right: "우회전하여 ",
+        "slight left": "왼쪽으로 조금 꺾어 ", "slight right": "오른쪽으로 조금 꺾어 ",
+        "sharp left": "왼쪽으로 크게 꺾어 ", "sharp right": "오른쪽으로 크게 꺾어 ",
+        uturn: "되돌아가 ", straight: "",
+      }[mod];
+      return toward ? `${verb}보행로를 따라 ${toward} 방향으로 걸으세요` : `${verb}보행로를 따라 걸으세요`;
+    },
+    and: names => names.join(", "),
     departCross: road => `${road}을(를) 건너세요`,
     walkTo: (road, toward) => toward ? `${road}(으)로 가서 ${toward} 방향으로 걸으세요` : `${road}(으)로 가서 길을 따라 걸으세요`,
     crossFollow: (road, toward) => toward ? `${road}을(를) 건넌 뒤 ${toward} 방향으로 걸으세요` : `${road}을(를) 건넌 뒤 길을 따라 걸으세요`,
@@ -349,7 +374,10 @@ export function walkSteps(route, lang) {
   let closing = null;
   if (tail.length && arriveIdx < raw.length) {
     const lastLeg = body[body.length - 1];
-    const crossed = tail.map(s => crossingOf(s.coords)).find(Boolean);
+    const tailLine = [...lastLeg.coords.slice(-2), ...tail.flatMap(s => s.coords.slice(1))];
+    // No `own` street here: the walk often ends by crossing the very street
+    // it came along ("Turn right onto 11th Street … Cross 11th Street").
+    const crossed = crossingsAlong(tailLine).find(c => c.at > 0)?.road;
     const dest = raw[arriveIdx].location || tail[tail.length - 1].coords.at(-1);
     const from = lastLeg.coords.length >= 2 ? lastLeg.coords : null;
     let side = "straight";
@@ -384,7 +412,10 @@ export function walkSteps(route, lang) {
     const inHeading = incoming ?? s.before;
     const angle = typeof inHeading === "number" && typeof s.after === "number" ? turnAngle(inHeading, s.after) : 0;
     const roadChange = s.road && s.road.en !== lastRoad;
-    const big = s.distance >= MIN_STEP_M;
+    // An unnamed stretch under TAIL_M is a jog to a crosswalk or round a
+    // corner; folding it keeps the line count down without breaking the
+    // turn chain (headings carry across the fold).
+    const big = s.distance >= (s.road ? MIN_STEP_M : TAIL_M);
     const keep = KEEP_MAPBOX.has(s.type)
       || (big && (roadChange || Math.abs(angle) >= TURN_DEG
         || (prev.distance >= MAX_SILENT_M && Math.abs(angle) >= BEND_DEG)));
@@ -400,12 +431,49 @@ export function walkSteps(route, lang) {
     }
   }
 
+  // A run of unnamed stretches whose overall line is fairly direct is one
+  // footpath with wiggles, not a series of turns: say it once.
+  const straightM = coords => {
+    const a = xy(coords[0]), b = xy(coords.at(-1));
+    return Math.hypot(b[0] - a[0], b[1] - a[1]);
+  };
+  const unnamed = k => k && !k.road && !KEEP_MAPBOX.has(k.type);
+  for (let i = 0; i < kept.length - 1; i++) {
+    if (!unnamed(kept[i])) continue;
+    let coords = kept[i].coords, j = i + 1;
+    while (unnamed(kept[j])) {
+      const joined = coords.concat(kept[j].coords.slice(1));
+      const direct = straightM(joined);
+      if (direct < 30 || lineLength(joined) > WIGGLE_RATIO * direct) break;
+      coords = joined; j++;
+    }
+    if (j === i + 1) continue;
+    const run = kept.slice(i, j);
+    kept.splice(i, j - i, { ...kept[i], coords,
+      distance: run.reduce((n, k) => n + k.distance, 0), duration: run.reduce((n, k) => n + k.duration, 0) });
+  }
+
   // Streets crossed inside each kept stretch, as distances along it.
   const crossings = kept.map(k => {
     const len = lineLength(k.coords) || 1;
     return crossingsAlong(k.coords, k.road).map(c => ({ ...c, at: c.at * k.distance / len }));
   });
   const lbl = road => label(road, lang);
+  // A messy junction can show the same street crossed twice in a row, in
+  // neighbouring stretches: say it once.
+  {
+    let offset = 0;
+    const seen = [];
+    kept.forEach((k, i) => {
+      crossings[i] = crossings[i].filter(c => {
+        const at = offset + c.at;
+        if (seen.some(o => o.road === c.road.en && at - o.at < 60)) return false;
+        seen.push({ road: c.road.en, at });
+        return true;
+      });
+      offset += k.distance;
+    });
+  }
 
   // One kept stretch → its line, then a "Cross X and continue" line at each
   // street it crosses. `from` skips crossings already said in the opening.
@@ -418,7 +486,7 @@ export function walkSteps(route, lang) {
     cs.forEach((c, j) => {
       const m = cuts[j + 2] - cuts[j + 1];
       lines.push({ instruction: txt.crossContinue(lbl(c.road)), distance: m, duration: share(m),
-        location: c.point, cross: c.road });
+        location: c.point, cross: c.road, crossName: lbl(c.road) });
     });
   };
 
@@ -441,9 +509,21 @@ export function walkSteps(route, lang) {
       location: first.location };
     pushStretch(merged, text, cs.map(c => ({ ...c, at: c.at + first.distance })), toward ? {} : { toward: true });
     next = 2;
+  } else if (first.distance < TAIL_M && unnamed(first) && unnamed(second)) {
+    // A few metres to a footpath, then along it: one line with where the
+    // path leads, never a left/right off an unknown starting heading.
+    const cs = crossings[1];
+    const towardRoad = cs[0]?.road || kept.slice(2).find(k => k.road)?.road;
+    const toward = towardRoad ? lbl(towardRoad) : null;
+    const merged = { ...second, distance: first.distance + second.distance, duration: first.duration + second.duration,
+      location: first.location };
+    pushStretch(merged, toward ? txt.departNext(toward) : txt.departNone,
+      cs.map(c => ({ ...c, at: c.at + first.distance })), toward ? {} : { toward: true });
+    next = 2;
   } else {
     const road = first.road ? lbl(first.road) : null;
-    const nextRoad = kept.slice(1).find(k => k.road && k.road.en !== first.road?.en)?.road;
+    const nextRoad = (!first.road && crossings[0].find(c => c.at >= TAIL_M)?.road)
+      || kept.slice(1).find(k => k.road && k.road.en !== first.road?.en)?.road;
     const nextName = nextRoad ? lbl(nextRoad) : null;
     let text, toward = false;
     if (approach.length) text = txt.departCross(lbl(approach[0].road));
@@ -456,23 +536,45 @@ export function walkSteps(route, lang) {
   for (let i = next; i < kept.length; i++) {
     const k = kept[i];
     const mapbox = KEEP_MAPBOX.has(k.type);
+    const extra = {};
     const mod = mapbox ? null : modifierFor(k.angle);
-    const text = mapbox ? stripBilingualPairs(k.instruction, lang) : txt.turn(mod, k.road ? lbl(k.road) : null);
-    pushStretch(k, text, crossings[i], { road: k.road, mod });
+    let text;
+    if (mapbox) text = stripBilingualPairs(k.instruction, lang);
+    else if (k.road) text = txt.turn(mod, lbl(k.road));
+    else {
+      // Where the path leads: the first street it crosses, else the next
+      // street turned onto.
+      const towardRoad = crossings[i][0]?.road || kept.slice(i + 1, i + 3).find(n => n.road)?.road;
+      text = txt.turnPath(mod, towardRoad ? lbl(towardRoad) : null);
+      if (!towardRoad) extra.toward = true;      // the client heads it for the destination
+    }
+    pushStretch(k, text, crossings[i], { road: k.road, mod, ...extra });
   }
 
+  // Crossings a few steps apart are one junction: "Cross A and B".
+  for (let i = 0; i < lines.length - 1; i++) {
+    const c = lines[i], d = lines[i + 1];
+    if (!c.cross || !d.cross || c.distance >= TAIL_M) continue;
+    c.names = [...(c.names || [c.crossName]), d.crossName];
+    c.crossName = txt.and(c.names);
+    c.cross = d.cross;
+    c.instruction = txt.crossContinue(c.crossName);
+    c.distance += d.distance; c.duration += d.duration;
+    lines.splice(i + 1, 1);
+    i--;
+  }
   // A crossing a few metres from a turn reads as part of it.
   for (let i = 1; i < lines.length; i++) {
     const c = lines[i];
     if (!c.cross) continue;
     const prev = lines[i - 1], after = lines[i + 1];
-    if (c.distance < MIN_STEP_M && after && !after.cross) {
-      after.instruction = after.mod && after.road?.en === c.cross.en
-        ? txt.crossAlongIt(lbl(c.cross), after.mod)
-        : txt.crossThen(lbl(c.cross), after.instruction);
+    if (c.distance < TAIL_M && after && !after.cross) {
+      after.instruction = after.mod && after.road?.en === c.cross.en && !c.names
+        ? txt.crossAlongIt(c.crossName, after.mod)
+        : txt.crossThen(c.crossName, after.instruction);
       prev.distance += c.distance; prev.duration += c.duration;
-    } else if (prev.distance < MIN_STEP_M && i > 1) {
-      prev.instruction = txt.andCross(prev.instruction, lbl(c.cross));
+    } else if (prev.distance < MIN_STEP_M && i > 1 && !prev.cross) {
+      prev.instruction = txt.andCross(prev.instruction, c.crossName);
       prev.distance += c.distance; prev.duration += c.duration;
     } else continue;
     lines.splice(i, 1);

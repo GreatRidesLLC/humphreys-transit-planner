@@ -36,7 +36,9 @@ const VERSION = WALK_MATRIX_JSON?._meta?.source_hash || "unversioned";
 // recomputed from headings, start/end crossings ("Cross 11th Street").
 // v8: a short approach reads "Walk to X and follow it toward Y", crossings
 // along the way get a line, and the arrival step carries arrive/side/cross.
-const STEPS_SCHEMA_V = 8;
+// v9: crossings need the path on both sides of a street; footpaths say
+// "onto the path toward X"; wiggly footpaths and short jogs fold away.
+const STEPS_SCHEMA_V = 9;
 const CACHE_PREFIX = `htp.walk.${VERSION}.v${STEPS_SCHEMA_V}`;
 // >2× haversine usually means the walk goes around a real barrier (the
 // airfield fence between Corps of Engineers and Airfield Operations is

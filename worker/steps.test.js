@@ -76,7 +76,7 @@ describe("turn chain", () => {
   it("works out a turn from the heading before a hidden jog", () => {
     // North, an 8 m jog east, north again, then west: one left turn.
     const out = lines(synth([[0, 100], [90, 8], [0, 100], [270, 100]]));
-    expect(out).toEqual(["Start walking", "Turn left", "You have arrived at your destination."]);
+    expect(out).toEqual(["Start walking", "Turn left onto the path", "You have arrived at your destination."]);
   });
 
   it("drops a jog that leaves you going the same way", () => {
@@ -85,9 +85,14 @@ describe("turn chain", () => {
     expect(out[0].distance).toBe(256);
   });
 
-  it("names a slight bend only after a long silent stretch", () => {
-    expect(lines(synth([[0, 80], [30, 100]]))).toHaveLength(2);
-    expect(lines(synth([[0, 250], [30, 100]]))[1]).toBe("Bear right");
+  it("folds a gentle bend on a footpath into one line", () => {
+    const out = extractSteps(synth([[0, 250], [30, 100]]), "en");
+    expect(out.map(s => s.instruction)).toEqual(["Start walking", "You have arrived at your destination."]);
+    expect(out[0].distance).toBe(350);
+  });
+
+  it("keeps a real turn between footpaths", () => {
+    expect(lines(synth([[0, 100], [90, 100]]))[1]).toBe("Turn right onto the path");
   });
 
   it("says which side the destination is on when Mapbox knows", () => {
@@ -99,7 +104,7 @@ describe("turn chain", () => {
     const route = synth([[0, 100], [90, 100, "11th Street; 11번가"]]);
     expect(lines(route)[1]).toBe("Turn right onto 11th Street");
     expect(lines(route, "ko")[1]).toBe("11번가(으)로 우회전하세요");
-    expect(lines(route)[0]).toBe("Walk toward 11th Street");
+    expect(lines(route)[0]).toBe("Follow the path toward 11th Street");
   });
 });
 
@@ -162,5 +167,33 @@ describe("sidewalkOf", () => {
   });
   it("finds nothing in an empty corner", () => {
     expect(sidewalkOf([ORIGIN, go(ORIGIN, 0, 100)])).toBeNull();
+  });
+});
+
+// 24 real walks (12 pairs, both ways) fetched 2026-10-01 and read through by
+// hand. The snapshot is the reviewed wording: a rule change that alters any
+// of it shows up as a diff to read before accepting.
+describe("pair check", () => {
+  const files = import.meta.glob("./fixtures/pairs/*.json", { eager: true, import: "default" });
+  const walks = Object.entries(files).sort(([a], [b]) => a.localeCompare(b));
+
+  it("never says 'walkway', never opens with a bare turn, never repeats a line", () => {
+    for (const [, f] of walks) {
+      for (const lang of ["en", "ko"]) {
+        const out = extractSteps(f.routes[0], lang).map(s => s.instruction);
+        expect(out.join(" ")).not.toMatch(/walkway/i);
+        expect(out[0]).not.toMatch(/^(Turn|Bear|Keep)/);
+        out.forEach((l, i) => expect(l).not.toBe(out[i - 1]));
+      }
+    }
+  });
+
+  it("matches the reviewed wording", async () => {
+    const text = walks.map(([, f]) => {
+      const out = lang => extractSteps(f.routes[0], lang)
+        .map(s => `    ${s.instruction}${s.distance ? ` · ${s.distance} m` : ""}`).join("\n");
+      return `## ${f.origin.name} → ${f.dest.name} (${Math.round(f.routes[0].distance)} m)\n${out("en")}\n  ko:\n${out("ko")}`;
+    }).join("\n\n");
+    await expect(text + "\n").toMatchFileSnapshot("./fixtures/pairs.snap.md");
   });
 });
