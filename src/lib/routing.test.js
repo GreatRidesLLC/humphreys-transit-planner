@@ -9,7 +9,9 @@ import {
   STOP_COORDS, nearestStopTo,
   BUILDING_COORDS, WALK_MATRIX,
   stopDistance,
-  nearbyStopNames, EST_WALK_FACTOR,
+  nearbyStopNames, EST_WALK_FACTOR, NEAR_STOP_M,
+  dropNoWalkSavings,
+  WALK_SAVINGS_MAX_MIN,
 } from "./routing.js";
 
 // Reference dates: 2026-06-29 is a Monday, 2026-07-03 Friday, 2026-07-04 Saturday.
@@ -180,6 +182,26 @@ describe("findTrips — guards", () => {
     const r = findTrips("Bus Terminal", "Not A Real Stop", monAt(12, 0), "depart");
     expect(r.trips).toEqual([]);
     expect(r.sameStop).toBeUndefined();
+  });
+});
+
+describe("dropNoWalkSavings", () => {
+  // Maude Hall → Family Mini Mall on a weekday: every bus trip walks 9+ min.
+  const trip = (id, ...walks) => ({ id, legs: [
+    { k: "walk", dur: walks[0], source: "mapbox" },
+    { k: "bus", rid: "GREEN", t: 2 },
+    { k: "walk", dur: walks[1], source: walks[1] === 3 ? "stop" : "mapbox" },
+  ] });
+  const trips = [trip("a", 3, 11), trip("b", 6, 3), trip("c", 4, 4)];
+
+  it("keeps only trips that walk less than a short direct walk", () => {
+    // b's 3-min end leg is the picked-stop buffer, so it walks 6.
+    expect(dropNoWalkSavings(trips, 9).map(t => t.id)).toEqual(["b", "c"]);
+    expect(dropNoWalkSavings(trips, 6).map(t => t.id)).toEqual([]);
+  });
+
+  it(`keeps every trip once the direct walk is ${WALK_SAVINGS_MAX_MIN}+ min`, () => {
+    expect(dropNoWalkSavings(trips, WALK_SAVINGS_MAX_MIN)).toBe(trips);
   });
 });
 
@@ -671,6 +693,37 @@ describe("walkLegInfo — provenance + steps", () => {
       expect(info.source).toBe("mapbox");
       expect(info.steps).toBeNull();
     }
+  });
+});
+
+describe("walkLegInfo — a stop next door", () => {
+  // Bldg 111 (ROC Drill Center) sits ~54 m from the Lodging stop, so the
+  // runtime never asks Mapbox for that walk (2026-10-01: every trip from it
+  // showed "no walking directions" for a 50 m walk).
+  const lodging = STOP_COORDS["Lodging"];
+  const m = haversineMeters(BUILDING_COORDS["111"].lat, BUILDING_COORDS["111"].lon, lodging.lat, lodging.lon);
+
+  it("tags a building within NEAR_STOP_M as \"near\" with the 3-min buffer and its distance", () => {
+    expect(m).toBeLessThan(NEAR_STOP_M);
+    const info = walkLegInfo("111", "Lodging", null);
+    expect(info).toMatchObject({ dur: 3, steps: null, source: "near", meters: Math.round(m) });
+  });
+
+  it("tags a geolocation fix next to the stop as \"near\" too", () => {
+    const fix = { lat: lodging.lat + 0.0002, lon: lodging.lon };   // ~22 m north
+    expect(walkLegInfo(null, "Lodging", fix).source).toBe("near");
+  });
+
+  it("still prefers a fetched Mapbox walk over the near buffer", () => {
+    const steps = [{ instruction: "Cross the street", distance: 50, duration: 40 }];
+    const overrides = new Map([["Lodging", { seconds: 40, meters: 50, steps }]]);
+    expect(walkLegInfo("111", "Lodging", null, overrides).source).toBe("mapbox");
+  });
+
+  it("carries the near source and meters onto the trip's origin walk leg", () => {
+    const r = findTrips("Lodging", "Commissary", monAt(10, 0), "depart", "111", null);
+    const leg = r.trips.map(t => t.legs[0]).find(l => l.dest === "Lodging");
+    expect(leg).toMatchObject({ k: "walk", source: "near", meters: Math.round(m), steps: null });
   });
 });
 

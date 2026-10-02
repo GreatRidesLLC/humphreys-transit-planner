@@ -15,6 +15,7 @@ import {
   STOP_COORDS,
   nearbyStopNames,
   haversineMeters,
+  dropNoWalkSavings,
 } from "./lib/routing.js";
 import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
 import { usePlaceSearch } from "./lib/search-runtime.js";
@@ -248,6 +249,8 @@ const STRINGS = {
     sorryNoTrip: "Sorry, we don't have the data to help with this trip yet.",
     sorryTellUs: "Tell us about it so we can log it and find a fix",
     walkLegSorry: "Sorry, we don't have walking directions for this leg yet.",
+    nearStopNote: m => `The stop is about ${m} m away.`,
+    nearDestNote: m => `Your destination is about ${m} m from the stop.`,
     walkLegSorryEst: "Sorry, we don't have walking directions for this leg yet. The time is padded 1.5× to be safe.",
     noticeTitle: "Before you start",
     noticeBody: "This is an unofficial, community-built trip planner. It is not affiliated with, endorsed by, or operated by USAG Humphreys, the U.S. Army, or the Department of Defense. For official garrison information, use MAPA (My Army Post App), the official U.S. Army app — linked at the bottom of every page.",
@@ -402,6 +405,8 @@ const STRINGS = {
     sorryNoTrip: "죄송합니다. 이 여정을 안내할 데이터가 아직 없습니다.",
     sorryTellUs: "알려주시면 기록하고 해결 방법을 찾겠습니다",
     walkLegSorry: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다.",
+    nearStopNote: m => `정류장까지 약 ${m}m입니다.`,
+    nearDestNote: m => `목적지는 정류장에서 약 ${m}m 거리입니다.`,
     walkLegSorryEst: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다. 여유 있게 예상 시간을 1.5배로 잡았습니다.",
     noticeTitle: "시작하기 전에",
     noticeBody: "이 앱은 비공식 사용자 제작 교통 플래너입니다. USAG 험프리스, 미 육군 또는 미 국방부와 제휴되어 있거나 승인된 것이 아닙니다. 공식 기지 정보는 미 육군 공식 앱 MAPA(My Army Post App)를 이용하세요. 링크는 각 페이지 하단에 있습니다.",
@@ -971,13 +976,18 @@ function timelineRows(trip, t) {
       // A real walk with no directions still gets the trip (the rider can
       // find their own way to the stop), plus an apology. "stop" legs are the
       // buffer at a picked stop: nothing to walk, nothing to apologise for.
-      const sorry = steps || l.source === "stop" ? null
+      // "near" legs are the same buffer with the stop next door, said so.
+      const near = l.source === "near";
+      const sorry = steps || near || l.source === "stop" ? null
         : l.source === "heuristic" ? t.walkLegSorryEst : t.walkLegSorry;
+      const nearM = near ? Math.max(10, Math.round((l.meters ?? 0) / 10) * 10) : 0;
       rows.push(l.dest
         ? { kind:"walk", label:t.walkToStopMin(l.dur, l.dest), time:fmt(l.startAt), steps, sorry, dest:l.dest,
-            via:l.via, alts:l.alts, dur:l.dur }
-        : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true, steps, sorry,
-            via:l.via, alts:l.alts, dur:l.dur });
+            note: near ? t.nearStopNote(nearM) : null,
+            origin:l.origin, originStop:l.originStop, destStop:l.destStop, via:l.via, alts:l.alts, dur:l.dur }
+        : { kind:"walk", label:t.walkToDestMin(l.dur), time:fmt(l.endAt), last:true, steps, sorry, dest:l.destName,
+            note: near ? t.nearDestNote(nearM) : null,
+            origin:l.origin, originStop:l.originStop, destStop:l.destStop, via:l.via, alts:l.alts, dur:l.dur });
       continue;
     }
     const i = buses.indexOf(l);
@@ -1002,15 +1012,21 @@ function timelineRows(trip, t) {
 // `via` / `dur` describe the fastest route (the one the trip is timed on);
 // `alts` are Mapbox's other routes, offered as choices. Picking one only
 // changes the directions shown; the trip keeps the fastest route's timing.
-function WalkSteps({ steps: raw, dest = null, via = null, dur = null, alts = null }) {
+function WalkSteps({ steps: raw, dest = null, origin = null, originStop = false, destStop = false,
+                     via = null, dur = null, alts = null }) {
   const { lang, t } = useT();
-  const [pick, setPick] = useState(0);
   const routes = useMemo(() => [
     { via, min: dur, steps: raw },
     ...(alts || []).map(a => ({ via: a.via, min: Math.max(1, Math.ceil(a.seconds / 60)), steps: a.steps })),
   ], [raw, via, dur, alts]);
+  // The pick belongs to one walk: a new search (or a flipped trip) reuses
+  // this component, and must open on its own fastest route.
+  const [picked, setPicked] = useState({ routes, i: 0 });
+  const pick = picked.routes === routes ? picked.i : 0;
+  const setPick = i => setPicked({ routes, i });
   const current = routes[pick] || routes[0];
-  const steps = useMemo(() => withLandmarks(current.steps, { lang, dest }), [current, lang, dest]);
+  const steps = useMemo(() => withLandmarks(current.steps, { lang, dest, origin, originStop, destStop }),
+    [current, lang, dest, origin, originStop, destStop]);
   return (
     <details className="mt-1 group">
       <summary className="cursor-pointer text-[11.5px] leading-4 text-link underline underline-offset-2 marker:hidden [&::-webkit-details-marker]:hidden">
@@ -1078,7 +1094,9 @@ function TimelineRow({ row, prev, next }) {
         {walk ? (
           <div className="min-w-0 flex-1 text-xs leading-4 text-muted-foreground">
             {row.label}
-            {row.steps && <WalkSteps steps={row.steps} dest={row.dest} via={row.via} dur={row.dur} alts={row.alts}/>}
+            {row.steps && <WalkSteps steps={row.steps} dest={row.dest} origin={row.origin}
+              originStop={row.originStop} destStop={row.destStop} via={row.via} dur={row.dur} alts={row.alts}/>}
+            {row.note && <div className="pt-1 text-[11px] leading-4 text-muted-foreground">{row.note}</div>}
             {row.sorry && <SorryNote text={row.sorry} className="pt-1 text-[11.5px] leading-4"/>}
           </div>
         ) : row.big ? (
@@ -1220,7 +1238,10 @@ function SorryNote({ text, className }) {
 }
 
 // ─── Advisory cards (walk / same-stop) ────────────────────────────────────────
-function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null, walk = null }) {
+// The named ends of a whole-trip walk, as WalkSteps props.
+const walkEnds = r => ({ origin: r.originName, originStop: r.originStop, dest: r.destName, destStop: r.destStop });
+
+function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null, walk = null, ends = null }) {
   return (
     <Card className={cn(
       "shadow-[shadow:var(--card-shadow)] ring-0 [--card-spacing:--spacing(7)]",
@@ -1245,7 +1266,7 @@ function AdvisoryCard({ icon: Icon, title, body, emphasis = false, steps = null,
         )}>{body}</div>
         {steps && steps.length > 0 && (
           <div className="mt-3 w-full text-left">
-            <WalkSteps steps={steps} via={walk?.via} dur={walk?.minutes} alts={walk?.alternatives}/>
+            <WalkSteps steps={steps} {...ends} via={walk?.via} dur={walk?.minutes} alts={walk?.alternatives}/>
           </div>
         )}
       </CardContent>
@@ -1803,6 +1824,8 @@ export default function App() {
               minutes, meters: hit.meters, seconds: hit.seconds, steps: hit.steps, source: "mapbox",
               via: hit.via, alternatives: hit.alternatives,
             };
+            // A short walk beats any bus trip that walks as much.
+            if (trips.walkOnly) trips.trips = dropNoWalkSavings(trips.trips, minutes);
           }
         } catch { /* keep the haversine walkOnly */ }
       }
@@ -1815,13 +1838,30 @@ export default function App() {
       trips.walkOnly = null;
       trips.walkNoDirections = true;
     }
+    // Names for the walking directions: each walk opens "From X, …". A
+    // geolocation fix has no name (its label is the nearest stop, which is
+    // not where the walk starts); a building drops its "Bldg N –" prefix.
+    const placeName = (lbl, pt) => pt && !pt.kind ? null : (lbl || "").replace(/^Bldg\s+\S+\s+–\s+/, "") || null;
+    // A picked stop (no building, place or fix) is named as a stop.
+    trips.originName = placeName(fLbl, oPt);
+    trips.destName = placeName(tLbl, dPt);
+    trips.originStop = !fBldg && !oPt;
+    trips.destStop = !tBldg && !dPt;
+    for (const tr of trips.trips) {
+      const lastBus = tr.legs.filter(l => l.k === "bus").at(-1);
+      for (const l of tr.legs) {
+        if (l.k !== "walk") continue;
+        if (l.dest) Object.assign(l, { origin: trips.originName, originStop: trips.originStop, destStop: true });
+        else Object.assign(l, { origin: lastBus?.to ?? null, originStop: true, destName: trips.destName, destStop: trips.destStop });
+      }
+    }
     // Usage: result kind, how each end was picked, and the bus stop pair
     // (public stop names only: never coordinates, buildings or Mapbox places).
     const endKind = (pt, bldg) => pt?.kind === "side" ? "side" : pt?.kind === "place" ? "place"
       : pt ? "geo" : bldg ? "bldg" : "stop";
     const resultKind = trips.sameStop ? "same" : trips.trips.length ? "trips" : trips.walkOnly ? "walk" : "none";
     track("plan", { lang, p1: resultKind, p2: `${endKind(oPt, fBldg)}>${endKind(dPt, tBldg)}`, p3: `${fStop} > ${tStop}` });
-    const undirectedLeg = trips.trips.some(tr => tr.legs.some(l => l.k === "walk" && l.source !== "stop" && !l.steps?.length));
+    const undirectedLeg = trips.trips.some(tr => tr.legs.some(l => l.k === "walk" && l.source !== "stop" && l.source !== "near" && !l.steps?.length));
     if ((resultKind === "none" && (trips.noPathEver || trips.walkNoDirections)) || undirectedLeg) {
       track("sorry", { lang, p1: resultKind === "none" ? (trips.walkNoDirections ? "no-walk-directions" : "no-path") : "leg",
         p3: `${fStop} > ${tStop}` });
@@ -2168,7 +2208,7 @@ export default function App() {
                   const { minutes, meters, steps } = results.walkOnly;
                   return <AdvisoryCard icon={Footprints} title={t.walkInsteadTitle}
                     body={t.walkInsteadBody(minutes, meters)}
-                    steps={steps} walk={results.walkOnly}/>;
+                    steps={steps} walk={results.walkOnly} ends={walkEnds(results)}/>;
                 }
                 const overnight = results.overnight || [];
                 const overnightDirect = overnight.filter(o => o.type === "direct");
@@ -2230,7 +2270,7 @@ export default function App() {
                     <AdvisoryCard icon={Footprints} title={t.walkFasterTitle}
                       body={t.walkFasterBody(results.walkOnly.minutes, results.walkOnly.meters)}
                       steps={results.walkOnly.steps} walk={results.walkOnly}
-                      emphasis/>
+                      ends={walkEnds(results)} emphasis/>
                   )}
                   <FastestTrip trip={results.trips[0]}/>
                   {results.trips.length > 1 && <OtherTrips trips={results.trips.slice(1)}/>}

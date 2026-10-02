@@ -12,7 +12,7 @@
 // the matrix regenerates with a new hash and stale walks self-invalidate.
 
 import WALK_MATRIX_JSON from "../data/walk_matrix.json";
-import { haversineMeters, STOP_COORDS, BUILDING_COORDS } from "./routing.js";
+import { haversineMeters, STOP_COORDS, BUILDING_COORDS, NEAR_STOP_M } from "./routing.js";
 import { audienceHeaders } from "./telemetry.js";
 
 // ~30 m at Camp Humphreys latitude (37°N):
@@ -30,7 +30,15 @@ const VERSION = WALK_MATRIX_JSON?._meta?.source_hash || "unversioned";
 // v4: depart step rewritten around street names (no compass) + per-step
 // `location` / `toward` for client-side landmarks.
 // v5: `via` (main street) + `alternatives` (other Mapbox routes).
-const STEPS_SCHEMA_V = 5;
+// v6: real left/right turns kept on unnamed paths; an unnamed start heads
+// "toward" the first named street.
+// v7: sidewalks named after their street (src/data/streets.json), turns
+// recomputed from headings, start/end crossings ("Cross 11th Street").
+// v8: a short approach reads "Walk to X and follow it toward Y", crossings
+// along the way get a line, and the arrival step carries arrive/side/cross.
+// v9: crossings need the path on both sides of a street; footpaths say
+// "onto the path toward X"; wiggly footpaths and short jogs fold away.
+const STEPS_SCHEMA_V = 9;
 const CACHE_PREFIX = `htp.walk.${VERSION}.v${STEPS_SCHEMA_V}`;
 // >2× haversine usually means the walk goes around a real barrier (the
 // airfield fence between Corps of Engineers and Airfield Operations is
@@ -39,9 +47,9 @@ const CACHE_PREFIX = `htp.walk.${VERSION}.v${STEPS_SCHEMA_V}`;
 // discarded here, which left the user with a straight-line guess and no
 // directions (decided 2026-09-27).
 const DETOUR_RATIO = 2.0;
-// Very short user→stop pairs are dominated by GPS jitter; the Worker call
-// isn't worth it, and haversine is already inside the noise band.
-const MIN_METERS_FOR_MAPBOX = 60;
+// Very short pairs are dominated by GPS jitter; the Worker call isn't worth
+// it. routing.js treats a stop this close as next door ("near" legs).
+const MIN_METERS_FOR_MAPBOX = NEAR_STOP_M;
 
 // Tight bounding box around Camp Humphreys, derived from the real stop
 // coord range in `stop_coords.json` (36.9478–36.9773 lat, 126.9864–127.0432
