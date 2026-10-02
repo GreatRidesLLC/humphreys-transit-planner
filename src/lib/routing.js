@@ -48,6 +48,16 @@ function estimatedWalk(meters) {
   return { dur, rawDur, steps: null, source: "heuristic" };
 }
 
+// A stop this close to the building, place or fix is next door: there is no
+// route worth describing, so the leg is the WALK_FLOOR_MIN buffer, like a
+// picked stop, with no apology and no padding. walk-runtime.js skips Mapbox
+// below the same distance.
+export const NEAR_STOP_M = 60;
+
+function nearInfo(meters) {
+  return { dur: WALK_FLOOR_MIN, steps: null, source: "near", meters: Math.round(meters) };
+}
+
 // A runtime Mapbox walk as a leg: the fastest route drives timing; `via`
 // names its main street and `alts` are Mapbox's other routes, shown as
 // choices in the directions.
@@ -80,12 +90,19 @@ export function walkMinutes(bldgNum, stopName, userCoords, walkOverrides) {
 //   "heuristic" straight-line estimate, padded by EST_WALK_FACTOR, no steps
 //   "stop"      the trip starts/ends at this stop itself: no walk to
 //               describe, just the WALK_FLOOR_MIN buffer
+//   "near"      the origin is within NEAR_STOP_M of the stop: the same
+//               buffer, plus `meters` so the UI can say how close it is
 export function walkLegInfo(bldgNum, stopName, userCoords, walkOverrides) {
   const s = STOP_COORDS[stopName];
   // Runtime override wins over every static source — this is the freshly
   // fetched Mapbox walk for the current origin (geolocation OR building).
   const override = lookupOverride(walkOverrides, stopName);
   if (override && typeof override.seconds === "number") return overrideInfo(override);
+  const o = userCoords && userCoords.lat != null ? userCoords : bldgNum ? BUILDING_COORDS[bldgNum] : null;
+  if (s && s.lat != null && o && o.lat != null) {
+    const meters = haversineMeters(o.lat, o.lon, s.lat, s.lon);
+    if (meters < NEAR_STOP_M) return nearInfo(meters);
+  }
   if (s && userCoords && userCoords.lat != null) {
     return estimatedWalk(haversineMeters(userCoords.lat, userCoords.lon, s.lat, s.lon));
   }
@@ -169,7 +186,7 @@ function candidateStops(primary, bldg, coords, walkOverrides) {
   const primaryInfo = walkLegInfo(bldg, primary, coords, walkOverrides);
   const oc = resolveCoords(bldg, primary, coords);
   const out = [{ stop: primary, walkMin: primaryInfo.dur, steps: primaryInfo.steps, source: primaryInfo.source,
-                via: primaryInfo.via, alts: primaryInfo.alts }];
+                via: primaryInfo.via, alts: primaryInfo.alts, meters: primaryInfo.meters }];
   if (!oc) return out;
   const usingUserCoords = coords && coords.lat != null;
   for (const [name, s] of Object.entries(STOP_COORDS)) {
@@ -185,13 +202,15 @@ function candidateStops(primary, bldg, coords, walkOverrides) {
       if (override && typeof override.seconds === "number") {
         info = overrideInfo(override);
       } else {
-        info = estimatedWalk(haversineMeters(oc.lat, oc.lon, s.lat, s.lon));
+        const meters = haversineMeters(oc.lat, oc.lon, s.lat, s.lon);
+        info = meters < NEAR_STOP_M ? nearInfo(meters) : estimatedWalk(meters);
       }
     }
     // Cap on the unpadded minutes, so padding doesn't shrink the set of
     // stops the router is willing to consider.
     if ((info.rawDur ?? info.dur) <= NEARBY_STOP_WALK_CAP_MIN) {
-      out.push({ stop: name, walkMin: info.dur, steps: info.steps, source: info.source, via: info.via, alts: info.alts });
+      out.push({ stop: name, walkMin: info.dur, steps: info.steps, source: info.source, via: info.via, alts: info.alts,
+                 meters: info.meters });
     }
   }
   return out.sort((a, b) => a.walkMin - b.walkMin);
@@ -630,9 +649,9 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
     const tr = STOP_ROUTES[dStop] || [];
     const isPrimaryPair = oStop === from && dStop === to;
     const oWalkLeg = () => ({ k: "walk", dur: oInfo.dur, dest: oStop, steps: oInfo.steps, source: oInfo.source,
-                              via: oInfo.via || null, alts: oInfo.alts || null });
+                              via: oInfo.via || null, alts: oInfo.alts || null, meters: oInfo.meters ?? null });
     const dWalkLeg = () => ({ k: "walk", dur: dInfo.dur, dest: null, steps: dInfo.steps, source: dInfo.source,
-                              via: dInfo.via || null, alts: dInfo.alts || null });
+                              via: dInfo.via || null, alts: dInfo.alts || null, meters: dInfo.meters ?? null });
     for (const rid of fr.filter(r => tr.includes(r))) {
       const R = ROUTES[rid];
       if (!inService(R, checkTime)) {
@@ -697,8 +716,8 @@ export function findTrips(from, to, refTime, mode, fBldg, tBldg, fCoords, tCoord
       if (o.stop === from && d.stop === to) continue;
       if (o.stop === d.stop) continue;
       searchPair(
-        o.stop, { dur: o.walkMin, steps: o.steps, source: o.source, via: o.via, alts: o.alts },
-        d.stop, { dur: d.walkMin, steps: d.steps, source: d.source, via: d.via, alts: d.alts },
+        o.stop, { dur: o.walkMin, steps: o.steps, source: o.source, via: o.via, alts: o.alts, meters: o.meters },
+        d.stop, { dur: d.walkMin, steps: d.steps, source: d.source, via: d.via, alts: d.alts, meters: d.meters },
       );
     }
   }
