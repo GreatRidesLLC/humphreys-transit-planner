@@ -1,0 +1,260 @@
+{
+ "_source": "Mapbox Directions walking, LTG Maude Hall (9th St) stop -> Family Mini Mall / Gas Station stop, snapped cells, lang=en, 2026-10-01",
+ "routes": [
+  {
+   "distance": 723.365,
+   "duration": 519.228,
+   "legs": [
+    {
+     "steps": [
+      {
+       "name": "",
+       "distance": 115.489,
+       "duration": 86.055,
+       "geometry": {
+        "type": "LineString",
+        "coordinates": [
+         [
+          127.00492,
+          36.967333
+         ],
+         [
+          127.004555,
+          36.966622
+         ],
+         [
+          127.004428,
+          36.966373
+         ]
+        ]
+       },
+       "maneuver": {
+        "type": "depart",
+        "bearing_before": 0,
+        "bearing_after": 202,
+        "location": [
+         127.00492,
+         36.967333
+        ],
+        "instruction": "Walk south on the walkway."
+       }
+      },
+      {
+       "name": "",
+       "distance": 456.554,
+       "duration": 318.551,
+       "geometry": {
+        "type": "LineString",
+        "coordinates": [
+         [
+          127.004428,
+          36.966373
+         ],
+         [
+          127.005551,
+          36.965993
+         ],
+         [
+          127.007265,
+          36.965339
+         ],
+         [
+          127.007386,
+          36.965298
+         ],
+         [
+          127.007567,
+          36.965238
+         ],
+         [
+          127.007888,
+          36.96513
+         ],
+         [
+          127.008075,
+          36.965067
+         ],
+         [
+          127.008647,
+          36.964875
+         ],
+         [
+          127.009122,
+          36.964716
+         ]
+        ]
+       },
+       "maneuver": {
+        "type": "turn",
+        "modifier": "left",
+        "bearing_before": 202,
+        "bearing_after": 113,
+        "location": [
+         127.004428,
+         36.966373
+        ],
+        "instruction": "Turn left onto the walkway."
+       }
+      },
+      {
+       "name": "",
+       "distance": 125.548,
+       "duration": 94.232,
+       "geometry": {
+        "type": "LineString",
+        "coordinates": [
+         [
+          127.009122,
+          36.964716
+         ],
+         [
+          127.00908,
+          36.964635
+         ],
+         [
+          127.009047,
+          36.964569
+         ],
+         [
+          127.008716,
+          36.963946
+         ],
+         [
+          127.008576,
+          36.963676
+         ]
+        ]
+       },
+       "maneuver": {
+        "type": "turn",
+        "modifier": "right",
+        "bearing_before": 113,
+        "bearing_after": 203,
+        "location": [
+         127.009122,
+         36.964716
+        ],
+        "instruction": "Turn right onto the walkway."
+       }
+      },
+      {
+       "name": "",
+       "distance": 10.542,
+       "duration": 8.983,
+       "geometry": {
+        "type": "LineString",
+        "coordinates": [
+         [
+          127.008576,
+          36.963676
+         ],
+         [
+          127.008684,
+          36.963637
+         ]
+        ]
+       },
+       "maneuver": {
+        "type": "turn",
+        "modifier": "left",
+        "bearing_before": 203,
+        "bearing_after": 114,
+        "location": [
+         127.008576,
+         36.963676
+        ],
+        "instruction": "Turn left."
+       }
+      },
+      {
+       "name": "11th Street; 11번가",
+       "distance": 9.692,
+       "duration": 7.235,
+       "geometry": {
+        "type": "LineString",
+        "coordinates": [
+         [
+          127.008684,
+          36.963637
+         ],
+         [
+          127.008641,
+          36.963557
+         ]
+        ]
+       },
+       "maneuver": {
+        "type": "turn",
+        "modifier": "right",
+        "bearing_before": 114,
+        "bearing_after": 203,
+        "location": [
+         127.008684,
+         36.963637
+        ],
+        "instruction": "Turn right onto 11th Street/11번가."
+       }
+      },
+      {
+       "name": "",
+       "distance": 5.54,
+       "duration": 4.173,
+       "geometry": {
+        "type": "LineString",
+        "coordinates": [
+         [
+          127.008641,
+          36.963557
+         ],
+         [
+          127.008697,
+          36.963535
+         ]
+        ]
+       },
+       "maneuver": {
+        "type": "turn",
+        "modifier": "left",
+        "bearing_before": 203,
+        "bearing_after": 117,
+        "location": [
+         127.008641,
+         36.963557
+        ],
+        "instruction": "Turn left onto the walkway."
+       }
+      },
+      {
+       "name": "",
+       "distance": 0,
+       "duration": 0,
+       "geometry": {
+        "type": "LineString",
+        "coordinates": [
+         [
+          127.008697,
+          36.963535
+         ],
+         [
+          127.008697,
+          36.963535
+         ]
+        ]
+       },
+       "maneuver": {
+        "type": "arrive",
+        "bearing_before": 117,
+        "bearing_after": 0,
+        "location": [
+         127.008697,
+         36.963535
+        ],
+        "instruction": "You have arrived at your destination."
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

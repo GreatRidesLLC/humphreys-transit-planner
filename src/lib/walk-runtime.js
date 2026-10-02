@@ -30,7 +30,15 @@ const VERSION = WALK_MATRIX_JSON?._meta?.source_hash || "unversioned";
 // v4: depart step rewritten around street names (no compass) + per-step
 // `location` / `toward` for client-side landmarks.
 // v5: `via` (main street) + `alternatives` (other Mapbox routes).
-const STEPS_SCHEMA_V = 5;
+// v6: real left/right turns kept on unnamed paths; an unnamed start heads
+// "toward" the first named street.
+// v7: sidewalks named after their street (src/data/streets.json), turns
+// recomputed from headings, start/end crossings ("Cross 11th Street").
+// v8: a short approach reads "Walk to X and follow it toward Y", crossings
+// along the way get a line, and the arrival step carries arrive/side/cross.
+// v9: crossings need the path on both sides of a street; footpaths say
+// "onto the path toward X"; wiggly footpaths and short jogs fold away.
+const STEPS_SCHEMA_V = 9;
 const CACHE_PREFIX = `htp.walk.${VERSION}.v${STEPS_SCHEMA_V}`;
 // >2× haversine usually means the walk goes around a real barrier (the
 // airfield fence between Corps of Engineers and Airfield Operations is
