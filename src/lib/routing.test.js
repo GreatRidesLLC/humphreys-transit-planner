@@ -9,7 +9,7 @@ import {
   STOP_COORDS, nearestStopTo,
   BUILDING_COORDS, WALK_MATRIX,
   stopDistance,
-  nearbyStopNames, EST_WALK_FACTOR,
+  nearbyStopNames, EST_WALK_FACTOR, NEAR_STOP_M,
   dropNoWalkSavings,
   WALK_SAVINGS_MAX_MIN,
 } from "./routing.js";
@@ -693,6 +693,37 @@ describe("walkLegInfo — provenance + steps", () => {
       expect(info.source).toBe("mapbox");
       expect(info.steps).toBeNull();
     }
+  });
+});
+
+describe("walkLegInfo — a stop next door", () => {
+  // Bldg 111 (ROC Drill Center) sits ~54 m from the Lodging stop, so the
+  // runtime never asks Mapbox for that walk (2026-10-01: every trip from it
+  // showed "no walking directions" for a 50 m walk).
+  const lodging = STOP_COORDS["Lodging"];
+  const m = haversineMeters(BUILDING_COORDS["111"].lat, BUILDING_COORDS["111"].lon, lodging.lat, lodging.lon);
+
+  it("tags a building within NEAR_STOP_M as \"near\" with the 3-min buffer and its distance", () => {
+    expect(m).toBeLessThan(NEAR_STOP_M);
+    const info = walkLegInfo("111", "Lodging", null);
+    expect(info).toMatchObject({ dur: 3, steps: null, source: "near", meters: Math.round(m) });
+  });
+
+  it("tags a geolocation fix next to the stop as \"near\" too", () => {
+    const fix = { lat: lodging.lat + 0.0002, lon: lodging.lon };   // ~22 m north
+    expect(walkLegInfo(null, "Lodging", fix).source).toBe("near");
+  });
+
+  it("still prefers a fetched Mapbox walk over the near buffer", () => {
+    const steps = [{ instruction: "Cross the street", distance: 50, duration: 40 }];
+    const overrides = new Map([["Lodging", { seconds: 40, meters: 50, steps }]]);
+    expect(walkLegInfo("111", "Lodging", null, overrides).source).toBe("mapbox");
+  });
+
+  it("carries the near source and meters onto the trip's origin walk leg", () => {
+    const r = findTrips("Lodging", "Commissary", monAt(10, 0), "depart", "111", null);
+    const leg = r.trips.map(t => t.legs[0]).find(l => l.dest === "Lodging");
+    expect(leg).toMatchObject({ k: "walk", source: "near", meters: Math.round(m), steps: null });
   });
 });
 
