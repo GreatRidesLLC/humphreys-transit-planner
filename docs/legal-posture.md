@@ -20,6 +20,7 @@ Anonymous usage counts go to our own Cloudflare account (Workers Analytics Engin
 
 - **Recorded:** the event name ("open", "tab", "plan", "place_pick", "side_pick", "route_pick", "feedback", "sorry"), UI language, Cloudflare's country code, and up to three short labels: a result kind, how each trip end was picked, and the **public bus stop names** of a planned trip. Mapbox upstream calls are logged as outcome counts (hit / billed / limited / error).
 - **Never recorded:** IP addresses, device or user IDs, coordinates, building numbers, Mapbox place names, or free-text search queries.
+- **Feedback form:** the "Report this trip" button on an apology note opens the Tally form with the trip's public stop names and the UI language in the URL (`?trip=From+>+To&lang=en`). Nothing else is passed. Tally only receives it if the user opens the form.
 - **Developer traffic** is tagged "dev" via an unlisted one-time link (`?dev=<mark>`, stored in `localStorage`, `?dev=off` clears it). Any `*.workers.dev` preview host is tagged "preview". Both are left out of user numbers.
 - **Disclosure:** a footer line on every page (`STRINGS.{en,ko}.privacyNote`). It is app-level, like the non-affiliation footer, not a per-feature notice.
 - **Reading:** `scripts/usage_report.py`, using a read-only "Account Analytics: Read" token kept outside the repo.

@@ -247,7 +247,7 @@ const STRINGS = {
     privacyNote: "We count anonymous usage (trips planned, features used) to improve the app. No cookies, no accounts, no personal data.",
     sorryNoDirections: "Sorry, we don't have walking directions for this trip yet.",
     sorryNoTrip: "Sorry, we don't have the data to help with this trip yet.",
-    sorryTellUs: "Tell us about it so we can log it and find a fix",
+    sorryReport: "Report this trip",
     walkLegSorry: "Sorry, we don't have walking directions for this leg yet.",
     nearStopNote: m => `The stop is about ${m} m away.`,
     nearDestNote: m => `Your destination is about ${m} m from the stop.`,
@@ -403,7 +403,7 @@ const STRINGS = {
     privacyNote: "앱 개선을 위해 익명 이용 통계(여정 검색, 기능 사용)를 집계합니다. 쿠키, 계정, 개인정보는 사용하지 않습니다.",
     sorryNoDirections: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다.",
     sorryNoTrip: "죄송합니다. 이 여정을 안내할 데이터가 아직 없습니다.",
-    sorryTellUs: "알려주시면 기록하고 해결 방법을 찾겠습니다",
+    sorryReport: "이 경로 문제 알리기",
     walkLegSorry: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다.",
     nearStopNote: m => `정류장까지 약 ${m}m입니다.`,
     nearDestNote: m => `목적지는 정류장에서 약 ${m}m 거리입니다.`,
@@ -421,6 +421,9 @@ const STRINGS = {
   },
 };
 const LangContext = createContext({ lang: "en", t: STRINGS.en });
+// The trip on screen ("From > To", public stop names only) for the
+// "Report this trip" button, so SorryNote needs no props threaded through.
+const TripContext = createContext("");
 const useT = () => useContext(LangContext);
 // Building-number → nearest-stop directory. Hand-curated entries first
 // established the dataset; OSM-sourced entries (via scripts/fetch_osm_buildings.py
@@ -1226,13 +1229,23 @@ function OtherTrips({ trips }) {
 // Shown when we leave the user without actionable help (no walking
 // directions, or no way to connect the trip): apologise and point at the
 // feedback form so the gap gets logged.
+// Nobody followed the old inline "Tell us" link (0 clicks against 29 sorry
+// notes, Oct 6-13), so the apology now ends in a button. It opens the
+// feedback form with the trip and language filled in through Tally hidden
+// fields (`trip`, `lang`); the form only keeps them if those fields exist.
 function SorryNote({ text, className }) {
-  const { t } = useT();
+  const { lang, t } = useT();
+  const trip = useContext(TripContext);
+  const href = `${FEEDBACK_URL}?${new URLSearchParams({ ...(trip ? { trip } : {}), lang })}`;
   return (
     <div className={cn("pt-3 text-[12.5px] leading-[1.6] text-muted-foreground", className)}>
-      {text}{" "}
-      <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
-        onClick={() => track("feedback", { p1: "sorry" })}>{t.sorryTellUs}</a>
+      {text}
+      <div className="pt-2">
+        <Button asChild variant="outline" size="sm" className="h-8 text-[12.5px]">
+          <a href={href} target="_blank" rel="noopener noreferrer"
+            onClick={() => track("feedback", { lang, p1: "sorry", p3: trip })}>{t.sorryReport}</a>
+        </Button>
+      </div>
     </div>
   );
 }
@@ -1991,6 +2004,7 @@ export default function App() {
 
   return (
     <LangContext.Provider value={{ lang, t }}>
+    <TripContext.Provider value={fStop && tStop ? `${fStop} > ${tStop}` : ""}>
     <div className="mx-auto min-h-dvh max-w-[480px] bg-background pb-[max(0px,env(safe-area-inset-bottom))] text-left text-body">
 
       {!noticeSeen && <FirstRunNotice onAck={()=>setNoticeSeen(true)}/>}
@@ -2360,6 +2374,7 @@ export default function App() {
         <div className="mt-2.5">{t.privacyNote}</div>
       </footer>
     </div>
+    </TripContext.Provider>
     </LangContext.Provider>
   );
 }
