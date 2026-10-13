@@ -18,7 +18,7 @@ import {
   dropNoWalkSavings,
 } from "./lib/routing.js";
 import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
-import { usePlaceSearch } from "./lib/search-runtime.js";
+import { usePlaceSearch, normalizeQuery, MIN_QUERY_LEN } from "./lib/search-runtime.js";
 import { withLandmarks } from "./lib/landmarks.js";
 import { sideKeyFor, sidesFor, resolvedSide, sidePoint } from "./lib/sides.js";
 import { applyDevMark, track } from "./lib/telemetry.js";
@@ -207,6 +207,8 @@ const STRINGS = {
     noMatch: "No matching stop or building",
     placesHeading: "Places",
     placesSearching: "Searching places…",
+    placesMore: "Search more places",
+    placesNone: "No other places found",
     placeNearest: (stop, m) => `Nearest stop: ${stop} (~${m} m)`,
     whereAreYou: "Where are you?",
     asOf: time => `as of ${time}`,
@@ -363,6 +365,8 @@ const STRINGS = {
     noMatch: "일치하는 정류장 또는 건물 없음",
     placesHeading: "장소",
     placesSearching: "장소 검색 중…",
+    placesMore: "장소 더 검색",
+    placesNone: "다른 장소를 찾지 못했습니다",
     placeNearest: (stop, m) => `가장 가까운 정류장: ${stop} (약 ${m}m)`,
     whereAreYou: "어디에 계세요?",
     asOf: time => `${time} 기준`,
@@ -723,7 +727,7 @@ const sideKind = key => (key || "").split(":")[0];
 // place (Mapbox or an OSM place from the local index) calls
 // onChange(nearestStop, name, null, { lat, lon, kind: "place" }); the walk
 // leg starts or ends at the place itself.
-function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeSearch = false, placeholder }) {
+function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeSearch = false, placeholder, field }) {
   const { lang, t } = useT();
   const [q, setQ] = useState(value||"");
   const [open, setOpen] = useState(false);
@@ -762,7 +766,17 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
     }).slice(0,9);
   },[q]);
 
-  const { results: placeHits, loading: placesLoading } = usePlaceSearch(q, lang, placeSearch && open);
+  // Every Mapbox search is billed, and most queries already match a stop,
+  // building or OSM place locally. So Mapbox is asked only when nothing local
+  // matches, or when the user taps "Search more places" under local results.
+  // `moreFor` remembers which query that tap was for, so editing the text
+  // goes back to local-first without an effect.
+  const [moreFor, setMoreFor] = useState(null);
+  const askMapbox = placeSearch && open && (filtered.length === 0 || moreFor === q);
+  const { results: placeHits, loading: placesLoading } = usePlaceSearch(q, lang, askMapbox);
+  const offerMore = placeSearch && !askMapbox && filtered.length > 0 && normalizeQuery(q).length >= MIN_QUERY_LEN;
+  // Tracked as place_pick p2 "more" so reports show whether people find it.
+  const askMore = () => { setMoreFor(q); track("place_pick", { lang, p1: field, p2: "more" }); };
   const places = useMemo(() => placeHits.flatMap(p => {
     const hit = nearestStopTo(p);
     return hit ? [{ ...p, stop: hit.stop, meters: Math.round(hit.meters) }] : [];
@@ -774,7 +788,7 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
     () => q.trim() ? [] : quickPicks.flatMap(sec => sec.items),
     [q, quickPicks]);
   const showQuick = quickItems.length > 0;
-  const navItems = showQuick ? quickItems : [...filtered, ...places];
+  const navItems = showQuick ? quickItems : [...filtered, ...places, ...(offerMore ? ["more"] : [])];
 
   // Keep the highlighted row visible by nudging the list's own scrollTop.
   // scrollIntoView would also scroll the page behind the dropdown. Rows are
@@ -821,6 +835,7 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
     if (showQuick) { setOpen(false); quickItems[i]?.onPick(); }
     else if (i < filtered.length) pick(filtered[i]);
     else if (places[i - filtered.length]) pickPlace(places[i - filtered.length]);
+    else if (offerMore) askMore();
   };
   const onKey=e=>{
     if (!open || !navItems.length) {
@@ -892,10 +907,22 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
                     ); })}
                   </div>
                 )}
-                {placeSearch && placesLoading && places.length===0 && (
+                {/* Sticky: with 6+ local matches the list scrolls, and the
+                    row used to sit below the fold. */}
+                {offerMore && (() => { const i = filtered.length; return (
+                  <div data-i={i} role="option" aria-selected={i===hi}
+                    onMouseDown={e=>{ e.preventDefault(); askMore(); }} onMouseEnter={()=>setHi(i)}
+                    className={cn("sticky bottom-0 flex cursor-pointer items-center gap-1.5 border-t bg-card px-3.5 py-2.5 text-[12.5px] text-muted-foreground", i===hi && "bg-muted")}>
+                    <MapPin className="size-3.5" aria-hidden="true"/>{t.placesMore}
+                  </div>
+                ); })()}
+                {moreFor === q && filtered.length>0 && !placesLoading && places.length===0 && (
+                  <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.placesNone}</div>
+                )}
+                {askMapbox && placesLoading && places.length===0 && (
                   <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.placesSearching}</div>
                 )}
-                {filtered.length===0 && places.length===0 && !(placeSearch && placesLoading) && (
+                {filtered.length===0 && places.length===0 && !(askMapbox && placesLoading) && (
                   <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.noMatch}</div>
                 )}
               </>}
@@ -2096,7 +2123,7 @@ export default function App() {
             </CardHeader>
 
             <CardContent className="gap-2">
-              <StopInput label={t.from} value={fLbl} quickPicks={quickPicks} placeSearch placeholder={t.fromPh}
+              <StopInput label={t.from} value={fLbl} quickPicks={quickPicks} placeSearch placeholder={t.fromPh} field="from"
                 dot={<span title={fCoords ? (fCoords.kind==="place" ? t.usingPlace(fLbl) : t.usingLocation) : undefined}
                   className={cn("absolute top-1/2 left-3 z-10 size-2 -translate-y-1/2 rounded-full bg-origin-dot",
                     fCoords && "ring-3 ring-origin-dot/25")}/>}
@@ -2114,7 +2141,7 @@ export default function App() {
                 </Button>
               </div>
 
-              <StopInput label={t.to} value={tLbl} placeSearch placeholder={t.toPh}
+              <StopInput label={t.to} value={tLbl} placeSearch placeholder={t.toPh} field="to"
                 dot={<span aria-hidden="true" className="absolute top-1/2 left-3 z-10 size-2 -translate-y-1/2 rounded-[2px] bg-foreground"/>}
                 onChange={(s,l,b,c,k)=>{setTS(s);setTL(l);setTB(b);setTC(c||null);setTSK(k||null);setTSide(null);reset();
                   if (c?.kind==="place") track("place_pick",{ lang, p1:"to", p2:c.src });}}/>
