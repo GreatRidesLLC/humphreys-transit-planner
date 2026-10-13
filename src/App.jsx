@@ -18,7 +18,7 @@ import {
   dropNoWalkSavings,
 } from "./lib/routing.js";
 import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
-import { usePlaceSearch } from "./lib/search-runtime.js";
+import { usePlaceSearch, normalizeQuery, MIN_QUERY_LEN } from "./lib/search-runtime.js";
 import { withLandmarks } from "./lib/landmarks.js";
 import { sideKeyFor, sidesFor, resolvedSide, sidePoint } from "./lib/sides.js";
 import { applyDevMark, track } from "./lib/telemetry.js";
@@ -207,6 +207,7 @@ const STRINGS = {
     noMatch: "No matching stop or building",
     placesHeading: "Places",
     placesSearching: "Searching places…",
+    placesMore: "Search more places",
     placeNearest: (stop, m) => `Nearest stop: ${stop} (~${m} m)`,
     whereAreYou: "Where are you?",
     asOf: time => `as of ${time}`,
@@ -363,6 +364,7 @@ const STRINGS = {
     noMatch: "일치하는 정류장 또는 건물 없음",
     placesHeading: "장소",
     placesSearching: "장소 검색 중…",
+    placesMore: "장소 더 검색",
     placeNearest: (stop, m) => `가장 가까운 정류장: ${stop} (약 ${m}m)`,
     whereAreYou: "어디에 계세요?",
     asOf: time => `${time} 기준`,
@@ -758,7 +760,15 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
     }).slice(0,9);
   },[q]);
 
-  const { results: placeHits, loading: placesLoading } = usePlaceSearch(q, lang, placeSearch && open);
+  // Every Mapbox search is billed, and most queries already match a stop,
+  // building or OSM place locally. So Mapbox is asked only when nothing local
+  // matches, or when the user taps "Search more places" under local results.
+  // `moreFor` remembers which query that tap was for, so editing the text
+  // goes back to local-first without an effect.
+  const [moreFor, setMoreFor] = useState(null);
+  const askMapbox = placeSearch && open && (filtered.length === 0 || moreFor === q);
+  const { results: placeHits, loading: placesLoading } = usePlaceSearch(q, lang, askMapbox);
+  const offerMore = placeSearch && !askMapbox && filtered.length > 0 && normalizeQuery(q).length >= MIN_QUERY_LEN;
   const places = useMemo(() => placeHits.flatMap(p => {
     const hit = nearestStopTo(p);
     return hit ? [{ ...p, stop: hit.stop, meters: Math.round(hit.meters) }] : [];
@@ -770,7 +780,7 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
     () => q.trim() ? [] : quickPicks.flatMap(sec => sec.items),
     [q, quickPicks]);
   const showQuick = quickItems.length > 0;
-  const navItems = showQuick ? quickItems : [...filtered, ...places];
+  const navItems = showQuick ? quickItems : [...filtered, ...places, ...(offerMore ? ["more"] : [])];
 
   // Keep the highlighted row visible by nudging the list's own scrollTop.
   // scrollIntoView would also scroll the page behind the dropdown. Rows are
@@ -817,6 +827,7 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
     if (showQuick) { setOpen(false); quickItems[i]?.onPick(); }
     else if (i < filtered.length) pick(filtered[i]);
     else if (places[i - filtered.length]) pickPlace(places[i - filtered.length]);
+    else if (offerMore) setMoreFor(q);
   };
   const onKey=e=>{
     if (!open || !navItems.length) {
@@ -888,10 +899,17 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
                     ); })}
                   </div>
                 )}
-                {placeSearch && placesLoading && places.length===0 && (
+                {offerMore && (() => { const i = filtered.length; return (
+                  <div data-i={i} role="option" aria-selected={i===hi}
+                    onMouseDown={e=>{ e.preventDefault(); setMoreFor(q); }} onMouseEnter={()=>setHi(i)}
+                    className={cn("flex cursor-pointer items-center gap-1.5 px-3.5 py-2.5 text-[12.5px] text-muted-foreground", i===hi && "bg-muted")}>
+                    <MapPin className="size-3.5" aria-hidden="true"/>{t.placesMore}
+                  </div>
+                ); })()}
+                {askMapbox && placesLoading && places.length===0 && (
                   <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.placesSearching}</div>
                 )}
-                {filtered.length===0 && places.length===0 && !(placeSearch && placesLoading) && (
+                {filtered.length===0 && places.length===0 && !(askMapbox && placesLoading) && (
                   <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.noMatch}</div>
                 )}
               </>}
