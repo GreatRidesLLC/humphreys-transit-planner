@@ -21,7 +21,7 @@ import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib
 import { usePlaceSearch, normalizeQuery, MIN_QUERY_LEN } from "./lib/search-runtime.js";
 import { withLandmarks } from "./lib/landmarks.js";
 import { sideKeyFor, sidesFor, resolvedSide, sidePoint } from "./lib/sides.js";
-import { applyDevMark, track } from "./lib/telemetry.js";
+import { applyDevMark, track, readVisit, noteVisit, displayMode } from "./lib/telemetry.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
@@ -1726,9 +1726,13 @@ export default function App() {
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   // One "open" per page load. The ?dev= mark is applied first so the very
   // first event from a developer device is already tagged.
+  // The visit is read during the first render, before useLocalStorage's
+  // effects write humphreys.lang (readVisit uses it to spot older devices).
+  const [visit] = useState(() => readVisit());
   useEffect(() => {
     applyDevMark();
-    track("open", { lang });
+    track("open", { lang, p1: visit.kind, p2: displayMode(), p3: visit.gap });
+    noteVisit(visit);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Warm the date/time chunk once the page is idle. Tapping "Depart at" then

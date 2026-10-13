@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { applyDevMark, isDev, audienceHeaders, track, DEV_MARK } from "./telemetry.js";
+import { applyDevMark, isDev, audienceHeaders, track, DEV_MARK, readVisit, noteVisit, displayMode } from "./telemetry.js";
 
 function makeLocalStorage() {
   const store = new Map();
@@ -68,5 +68,36 @@ describe("track", () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error("offline"));
     expect(() => track("open")).not.toThrow();
     globalThis.fetch = prev;
+  });
+});
+
+describe("visit kind", () => {
+  const day = s => new Date(`${s}T12:00:00`);
+
+  it("first open on a fresh device", () => {
+    expect(readVisit(day("2026-10-13"))).toEqual({ kind: "first", gap: "", today: "2026-10-13" });
+  });
+
+  it("older devices with the app's language key count as returning", () => {
+    localStorage.setItem("humphreys.lang", '"en"');
+    expect(readVisit(day("2026-10-13"))).toMatchObject({ kind: "day", gap: "unknown" });
+  });
+
+  it("same-day reopen is 'again'; later days carry a gap bucket", () => {
+    noteVisit(readVisit(day("2026-10-13")));
+    expect(readVisit(day("2026-10-13")).kind).toBe("again");
+    expect(readVisit(day("2026-10-14"))).toMatchObject({ kind: "day", gap: "1d" });
+    expect(readVisit(day("2026-10-20")).gap).toBe("2-7d");
+    expect(readVisit(day("2026-11-12")).gap).toBe("8-30d");
+    expect(readVisit(day("2027-01-01")).gap).toBe("31d+");
+  });
+
+  it("stores only the date", () => {
+    noteVisit(readVisit(day("2026-10-13")));
+    expect(localStorage.getItem("htp.lastOpen")).toBe("2026-10-13");
+  });
+
+  it("display mode falls back to browser", () => {
+    expect(displayMode()).toBe("browser");
   });
 });
