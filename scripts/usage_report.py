@@ -77,6 +77,21 @@ def main() -> int:
         SELECT toDate(timestamp) AS day, blob1 AS event, {n} FROM htp_events
         WHERE {since} {users} AND blob1 IN ('open', 'plan') GROUP BY day, event ORDER BY day"""),
         ["day", "event", "n"])
+    # Opens carry p1 = first | day | again, p2 = app | browser, p3 = gap
+    # bucket (telemetry.js readVisit). first + day is one per device per day,
+    # so it is daily active devices; opens from before 2026-10-13 have none.
+    table("Daily devices (first + day = active devices; first = new)", sql(env, f"""
+        SELECT toDate(timestamp) AS day, blob5 AS visit, {n} FROM htp_events
+        WHERE {since} {users} AND blob1 = 'open' AND blob5 != '' GROUP BY day, visit ORDER BY day, visit"""),
+        ["day", "visit", "n"])
+    table("Returning devices by gap since last open", sql(env, f"""
+        SELECT blob7 AS gap, {n} FROM htp_events
+        WHERE {since} {users} AND blob1 = 'open' AND blob5 = 'day' GROUP BY gap ORDER BY n DESC"""),
+        ["gap", "n"])
+    table("Opens by launch mode (app = home screen)", sql(env, f"""
+        SELECT blob6 AS mode, {n} FROM htp_events
+        WHERE {since} {users} AND blob1 = 'open' AND blob6 != '' GROUP BY mode ORDER BY n DESC"""),
+        ["mode", "n"])
     table("Mapbox calls (billed = sent upstream)", sql(env, f"""
         SELECT blob5 AS api, blob6 AS outcome, blob2 AS audience, {n} FROM htp_events
         WHERE {since} AND blob1 = 'mapbox' GROUP BY api, outcome, audience ORDER BY api, outcome"""),
