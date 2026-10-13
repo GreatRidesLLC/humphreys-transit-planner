@@ -710,6 +710,10 @@ function SideChips({ sides, label, selected, onPick }) {
   );
 }
 
+// Usage label for a side pick: the key's kind ("bldg" / "place") only.
+// The key itself carries a building number, which analytics never records.
+const sideKind = key => (key || "").split(":")[0];
+
 // ─── Searchable Input ─────────────────────────────────────────────────────────
 // `quickPicks` are the shortcuts shown when the field is focused but empty:
 // [{ key, label, Icon, items: [{ id, content, onPick, onRemove, removeLabel }] }].
@@ -2100,7 +2104,7 @@ export default function App() {
                   if (c?.kind==="place") track("place_pick",{ lang, p1:"from", p2:c.src });}}/>
               <SideChips sides={sidesFor(fSideKey)} label={t.startFrom}
                 selected={resolvedSide(fSideKey, fSide, fStop)}
-                onPick={i=>{ setFSide(i); track("side_pick",{ lang, p1:"from", p2:fSideKey });
+                onPick={i=>{ setFSide(i); track("side_pick",{ lang, p1:"from", p2:sideKind(fSideKey) });
                   if (searched) search({ fSide:i }); else reset(); }}/>
 
               <div className="flex justify-center">
@@ -2116,7 +2120,7 @@ export default function App() {
                   if (c?.kind==="place") track("place_pick",{ lang, p1:"to", p2:c.src });}}/>
               <SideChips sides={sidesFor(tSideKey)} label={t.arriveAt}
                 selected={resolvedSide(tSideKey, tSide, tStop)}
-                onPick={i=>{ setTSide(i); track("side_pick",{ lang, p1:"to", p2:tSideKey });
+                onPick={i=>{ setTSide(i); track("side_pick",{ lang, p1:"to", p2:sideKind(tSideKey) });
                   if (searched) search({ tSide:i }); else reset(); }}/>
 
               <div ref={whenRef} className="mt-1.5"
