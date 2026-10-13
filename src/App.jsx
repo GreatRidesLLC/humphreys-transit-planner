@@ -652,6 +652,9 @@ const PILL_HALF = HIT44 + " h-full rounded-none px-1.5 text-muted-foreground hov
 // top-K. The router still considers every stop within a 10-min walk; ones
 // past the 5 nearest use the haversine estimate.
 const WALK_PREFETCH_K = 5;
+// Extra walks per trip end fetched after planning, for stops the planned
+// trips use that the distance ring above missed.
+const WALK_TOPUP_K = 3;
 // Mirrors the Worker's MAX_WALK_M: longer direct walks are refused there,
 // so the client doesn't ask.
 const DIRECT_WALK_MAX_M = 2500;
@@ -1844,7 +1847,39 @@ export default function App() {
         catch { destWalkOverrides = null; }
       }
     }
-    const trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, oPt, dPt, walkOverrides, destWalkOverrides);
+    let trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, oPt, dPt, walkOverrides, destWalkOverrides);
+    // The prefetch above guesses the nearest stops by distance, but the
+    // planner often boards or alights further out, wherever a route is
+    // running: USO Sentry Village is 173 m from Lodging yet 7th nearest,
+    // because Sentry Village packs its stops close. Those legs had no
+    // directions (most "sorry" events, Oct 2026). So fetch the walks the
+    // planned trips actually use and plan again. Capped per end: each miss
+    // is a billed Mapbox call.
+    const needsSteps = l => l?.k === "walk" && l.source !== "stop" && l.source !== "near" && !l.steps?.length;
+    const oMissing = new Set(), dMissing = new Set();
+    for (const tr of trips.trips) {
+      const first = tr.legs[0], last = tr.legs.at(-1);
+      if (needsSteps(first) && first.dest && !walkOverrides?.has(first.dest)) oMissing.add(first.dest);
+      const alight = tr.legs.filter(l => l.k === "bus").at(-1)?.to;
+      if (needsSteps(last) && alight && !destWalkOverrides?.has(alight)) dMissing.add(alight);
+    }
+    if (oMissing.size || dMissing.size) {
+      const fromStop = STOP_COORDS[fStop]?.lat != null ? STOP_COORDS[fStop] : null;
+      const toStop = STOP_COORDS[tStop]?.lat != null ? STOP_COORDS[tStop] : null;
+      const more = (pt, bldg, stopPt, stops, reverse) => !stops.length ? new Map()
+        : pt ? prefetchUserWalks(pt, stops, { lang, reverse })
+        : bldg ? prefetchBuildingWalks(bldg, stops, { lang, reverse })
+        : stopPt ? prefetchUserWalks(stopPt, stops, { lang, reverse }) : new Map();
+      const [oMore, dMore] = await Promise.all([
+        more(oPt, fBldg, fromStop, [...oMissing].slice(0, WALK_TOPUP_K), false),
+        more(dPt, tBldg, toStop, [...dMissing].slice(0, WALK_TOPUP_K), true),
+      ].map(p => Promise.resolve(p).catch(() => new Map())));
+      if (oMore.size || dMore.size) {
+        walkOverrides = new Map([...(walkOverrides || []), ...oMore]);
+        destWalkOverrides = new Map([...(destWalkOverrides || []), ...dMore]);
+        trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, oPt, dPt, walkOverrides, destWalkOverrides);
+      }
+    }
     // Fetch turn-by-turn for the direct pair when the planner recommends
     // walking, or when no shuttle path exists at all. In the second case
     // Mapbox is the only help left, so it is offered even past the planner's
