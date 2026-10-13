@@ -51,7 +51,7 @@ jobs:
         run: npm test
 
       - name: npm audit (high)
-        run: npm audit --audit-level=high
+        run: node scripts/audit-gate.mjs
 
       - name: Build
         run: npm run build
