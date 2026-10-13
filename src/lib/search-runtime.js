@@ -11,7 +11,8 @@ import { audienceHeaders } from "./telemetry.js";
 
 export const MIN_QUERY_LEN = 2;
 const MAX_QUERY_LEN = 100;
-const DEBOUNCE_MS = 300;
+// Phones type a character every ~200-350 ms; 300 fired mid-word.
+const DEBOUNCE_MS = 500;
 const TTL_MS = 24 * 60 * 60 * 1000;
 // Bump when the Worker's provider or row shape changes.
 const CACHE_PREFIX = "htp.search.v1";

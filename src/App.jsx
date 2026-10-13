@@ -18,10 +18,10 @@ import {
   dropNoWalkSavings,
 } from "./lib/routing.js";
 import { prefetchUserWalks, prefetchBuildingWalks, fetchDirectWalk } from "./lib/walk-runtime.js";
-import { usePlaceSearch } from "./lib/search-runtime.js";
+import { usePlaceSearch, normalizeQuery, MIN_QUERY_LEN } from "./lib/search-runtime.js";
 import { withLandmarks } from "./lib/landmarks.js";
 import { sideKeyFor, sidesFor, resolvedSide, sidePoint } from "./lib/sides.js";
-import { applyDevMark, track } from "./lib/telemetry.js";
+import { applyDevMark, track, readVisit, noteVisit, displayMode } from "./lib/telemetry.js";
 import { ROUTE_BADGE } from "./lib/palette.js";
 import { ArrowDownUp, ChevronDown, ClockAlert, FileText, Footprints, History, Languages, MapPin, Monitor, Moon, Star, Sun } from "lucide-react";
 import { formatDay, todayYMD, ymd } from "@/lib/datetime.js";
@@ -148,6 +148,7 @@ const STRINGS = {
     leaveNow: "Leave now", departAt: "Depart at", arriveBy: "Arrive by",
     today: "Today", tomorrow: "Tmrw", dow: DOW,
     findRoutes: "Find Routes →",
+    findingRoutes: "Finding routes…",
     bldgsMappedTitle: (n, p) => `${n} buildings and ${p} places searchable`,
     bldgsMappedDesc: " by number or name (e.g. 6400 → Maude Hall, Central Elementary). Other spots on post appear under Places as you type.",
     bldgsMissing: "Missing one?",
@@ -207,6 +208,8 @@ const STRINGS = {
     noMatch: "No matching stop or building",
     placesHeading: "Places",
     placesSearching: "Searching places…",
+    placesMore: "Search more places",
+    placesNone: "No other places found",
     placeNearest: (stop, m) => `Nearest stop: ${stop} (~${m} m)`,
     whereAreYou: "Where are you?",
     asOf: time => `as of ${time}`,
@@ -247,7 +250,7 @@ const STRINGS = {
     privacyNote: "We count anonymous usage (trips planned, features used) to improve the app. No cookies, no accounts, no personal data.",
     sorryNoDirections: "Sorry, we don't have walking directions for this trip yet.",
     sorryNoTrip: "Sorry, we don't have the data to help with this trip yet.",
-    sorryTellUs: "Tell us about it so we can log it and find a fix",
+    sorryReport: "Report this trip",
     walkLegSorry: "Sorry, we don't have walking directions for this leg yet.",
     nearStopNote: m => `The stop is about ${m} m away.`,
     nearDestNote: m => `Your destination is about ${m} m from the stop.`,
@@ -304,6 +307,7 @@ const STRINGS = {
     leaveNow: "지금 출발", departAt: "출발 시간", arriveBy: "도착 시간",
     today: "오늘", tomorrow: "내일", dow: DOW_KO,
     findRoutes: "노선 찾기 →",
+    findingRoutes: "노선 찾는 중…",
     bldgsMappedTitle: (n, p) => `건물 ${n}곳·장소 ${p}곳 검색 가능`,
     bldgsMappedDesc: " 번호나 이름으로 찾으세요 (예: 6400 → Maude Hall, Central Elementary). 그 밖의 기지 내 장소는 입력하면 '장소'에 나타납니다.",
     bldgsMissing: "빠진 곳이 있나요?",
@@ -363,6 +367,8 @@ const STRINGS = {
     noMatch: "일치하는 정류장 또는 건물 없음",
     placesHeading: "장소",
     placesSearching: "장소 검색 중…",
+    placesMore: "장소 더 검색",
+    placesNone: "다른 장소를 찾지 못했습니다",
     placeNearest: (stop, m) => `가장 가까운 정류장: ${stop} (약 ${m}m)`,
     whereAreYou: "어디에 계세요?",
     asOf: time => `${time} 기준`,
@@ -403,7 +409,7 @@ const STRINGS = {
     privacyNote: "앱 개선을 위해 익명 이용 통계(여정 검색, 기능 사용)를 집계합니다. 쿠키, 계정, 개인정보는 사용하지 않습니다.",
     sorryNoDirections: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다.",
     sorryNoTrip: "죄송합니다. 이 여정을 안내할 데이터가 아직 없습니다.",
-    sorryTellUs: "알려주시면 기록하고 해결 방법을 찾겠습니다",
+    sorryReport: "이 경로 문제 알리기",
     walkLegSorry: "죄송합니다. 이 구간의 도보 경로 안내가 아직 없습니다.",
     nearStopNote: m => `정류장까지 약 ${m}m입니다.`,
     nearDestNote: m => `목적지는 정류장에서 약 ${m}m 거리입니다.`,
@@ -421,6 +427,9 @@ const STRINGS = {
   },
 };
 const LangContext = createContext({ lang: "en", t: STRINGS.en });
+// The trip on screen ("From > To", public stop names only) for the
+// "Report this trip" button, so SorryNote needs no props threaded through.
+const TripContext = createContext("");
 const useT = () => useContext(LangContext);
 // Building-number → nearest-stop directory. Hand-curated entries first
 // established the dataset; OSM-sourced entries (via scripts/fetch_osm_buildings.py
@@ -646,6 +655,9 @@ const PILL_HALF = HIT44 + " h-full rounded-none px-1.5 text-muted-foreground hov
 // top-K. The router still considers every stop within a 10-min walk; ones
 // past the 5 nearest use the haversine estimate.
 const WALK_PREFETCH_K = 5;
+// Extra walks per trip end fetched after planning, for stops the planned
+// trips use that the distance ring above missed.
+const WALK_TOPUP_K = 3;
 // Mirrors the Worker's MAX_WALK_M: longer direct walks are refused there,
 // so the client doesn't ask.
 const DIRECT_WALK_MAX_M = 2500;
@@ -710,6 +722,10 @@ function SideChips({ sides, label, selected, onPick }) {
   );
 }
 
+// Usage label for a side pick: the key's kind ("bldg" / "place") only.
+// The key itself carries a building number, which analytics never records.
+const sideKind = key => (key || "").split(":")[0];
+
 // ─── Searchable Input ─────────────────────────────────────────────────────────
 // `quickPicks` are the shortcuts shown when the field is focused but empty:
 // [{ key, label, Icon, items: [{ id, content, onPick, onRemove, removeLabel }] }].
@@ -719,7 +735,7 @@ function SideChips({ sides, label, selected, onPick }) {
 // place (Mapbox or an OSM place from the local index) calls
 // onChange(nearestStop, name, null, { lat, lon, kind: "place" }); the walk
 // leg starts or ends at the place itself.
-function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeSearch = false, placeholder }) {
+function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeSearch = false, placeholder, field }) {
   const { lang, t } = useT();
   const [q, setQ] = useState(value||"");
   const [open, setOpen] = useState(false);
@@ -758,7 +774,17 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
     }).slice(0,9);
   },[q]);
 
-  const { results: placeHits, loading: placesLoading } = usePlaceSearch(q, lang, placeSearch && open);
+  // Every Mapbox search is billed, and most queries already match a stop,
+  // building or OSM place locally. So Mapbox is asked only when nothing local
+  // matches, or when the user taps "Search more places" under local results.
+  // `moreFor` remembers which query that tap was for, so editing the text
+  // goes back to local-first without an effect.
+  const [moreFor, setMoreFor] = useState(null);
+  const askMapbox = placeSearch && open && (filtered.length === 0 || moreFor === q);
+  const { results: placeHits, loading: placesLoading } = usePlaceSearch(q, lang, askMapbox);
+  const offerMore = placeSearch && !askMapbox && filtered.length > 0 && normalizeQuery(q).length >= MIN_QUERY_LEN;
+  // Tracked as place_pick p2 "more" so reports show whether people find it.
+  const askMore = () => { setMoreFor(q); track("place_pick", { lang, p1: field, p2: "more" }); };
   const places = useMemo(() => placeHits.flatMap(p => {
     const hit = nearestStopTo(p);
     return hit ? [{ ...p, stop: hit.stop, meters: Math.round(hit.meters) }] : [];
@@ -770,7 +796,7 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
     () => q.trim() ? [] : quickPicks.flatMap(sec => sec.items),
     [q, quickPicks]);
   const showQuick = quickItems.length > 0;
-  const navItems = showQuick ? quickItems : [...filtered, ...places];
+  const navItems = showQuick ? quickItems : [...filtered, ...places, ...(offerMore ? ["more"] : [])];
 
   // Keep the highlighted row visible by nudging the list's own scrollTop.
   // scrollIntoView would also scroll the page behind the dropdown. Rows are
@@ -817,6 +843,7 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
     if (showQuick) { setOpen(false); quickItems[i]?.onPick(); }
     else if (i < filtered.length) pick(filtered[i]);
     else if (places[i - filtered.length]) pickPlace(places[i - filtered.length]);
+    else if (offerMore) askMore();
   };
   const onKey=e=>{
     if (!open || !navItems.length) {
@@ -888,10 +915,22 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
                     ); })}
                   </div>
                 )}
-                {placeSearch && placesLoading && places.length===0 && (
+                {/* Sticky: with 6+ local matches the list scrolls, and the
+                    row used to sit below the fold. */}
+                {offerMore && (() => { const i = filtered.length; return (
+                  <div data-i={i} role="option" aria-selected={i===hi}
+                    onMouseDown={e=>{ e.preventDefault(); askMore(); }} onMouseEnter={()=>setHi(i)}
+                    className={cn("sticky bottom-0 flex cursor-pointer items-center gap-1.5 border-t bg-card px-3.5 py-2.5 text-[12.5px] text-muted-foreground", i===hi && "bg-muted")}>
+                    <MapPin className="size-3.5" aria-hidden="true"/>{t.placesMore}
+                  </div>
+                ); })()}
+                {moreFor === q && filtered.length>0 && !placesLoading && places.length===0 && (
+                  <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.placesNone}</div>
+                )}
+                {askMapbox && placesLoading && places.length===0 && (
                   <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.placesSearching}</div>
                 )}
-                {filtered.length===0 && places.length===0 && !(placeSearch && placesLoading) && (
+                {filtered.length===0 && places.length===0 && !(askMapbox && placesLoading) && (
                   <div className="px-3.5 py-2.5 text-[12.5px] text-muted-foreground">{t.noMatch}</div>
                 )}
               </>}
@@ -1226,13 +1265,23 @@ function OtherTrips({ trips }) {
 // Shown when we leave the user without actionable help (no walking
 // directions, or no way to connect the trip): apologise and point at the
 // feedback form so the gap gets logged.
+// Nobody followed the old inline "Tell us" link (0 clicks against 29 sorry
+// notes, Oct 6-13), so the apology now ends in a button. It opens the
+// feedback form with the trip and language filled in through Tally hidden
+// fields (`trip`, `lang`); the form only keeps them if those fields exist.
 function SorryNote({ text, className }) {
-  const { t } = useT();
+  const { lang, t } = useT();
+  const trip = useContext(TripContext);
+  const href = `${FEEDBACK_URL}?${new URLSearchParams({ ...(trip ? { trip } : {}), lang })}`;
   return (
     <div className={cn("pt-3 text-[12.5px] leading-[1.6] text-muted-foreground", className)}>
-      {text}{" "}
-      <a className={LINK_CLS} href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
-        onClick={() => track("feedback", { p1: "sorry" })}>{t.sorryTellUs}</a>
+      {text}
+      <div className="pt-2">
+        <Button asChild variant="outline" size="sm" className="h-8 text-[12.5px]">
+          <a href={href} target="_blank" rel="noopener noreferrer"
+            onClick={() => track("feedback", { lang, p1: "sorry", p3: trip })}>{t.sorryReport}</a>
+        </Button>
+      </div>
     </div>
   );
 }
@@ -1695,9 +1744,13 @@ export default function App() {
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   // One "open" per page load. The ?dev= mark is applied first so the very
   // first event from a developer device is already tagged.
+  // The visit is read during the first render, before useLocalStorage's
+  // effects write humphreys.lang (readVisit uses it to spot older devices).
+  const [visit] = useState(() => readVisit());
   useEffect(() => {
     applyDevMark();
-    track("open", { lang });
+    track("open", { lang, p1: visit.kind, p2: displayMode(), p3: visit.gap });
+    noteVisit(visit);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Warm the date/time chunk once the page is idle. Tapping "Depart at" then
@@ -1723,7 +1776,20 @@ export default function App() {
     }
   }, [searched, results, setPlanCount]);
 
+  // One search at a time from the button: walk prefetches can take seconds
+  // on a geolocation origin, and repeat taps used to re-run every billed
+  // Mapbox call and log another plan (6 in one second, 2026-10-11). A newer
+  // search (a side chip) still wins; an older one that finishes late is
+  // dropped.
+  const planSeq = useRef(0);
+  const [planBusy, setPlanBusy] = useState(false);
   const search = async (opts = {}) => {
+    const my = ++planSeq.current;
+    setPlanBusy(true);
+    try { await runSearch(opts, my); }
+    finally { if (planSeq.current === my) setPlanBusy(false); }
+  };
+  const runSearch = async (opts, my) => {
     // A big place's walk starts/ends on the chosen street side (until one is
     // chosen, the side nearest its bus stop), not at its centre. Only that
     // one side is fetched.
@@ -1794,7 +1860,39 @@ export default function App() {
         catch { destWalkOverrides = null; }
       }
     }
-    const trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, oPt, dPt, walkOverrides, destWalkOverrides);
+    let trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, oPt, dPt, walkOverrides, destWalkOverrides);
+    // The prefetch above guesses the nearest stops by distance, but the
+    // planner often boards or alights further out, wherever a route is
+    // running: USO Sentry Village is 173 m from Lodging yet 7th nearest,
+    // because Sentry Village packs its stops close. Those legs had no
+    // directions (most "sorry" events, Oct 2026). So fetch the walks the
+    // planned trips actually use and plan again. Capped per end: each miss
+    // is a billed Mapbox call.
+    const needsSteps = l => l?.k === "walk" && l.source !== "stop" && l.source !== "near" && !l.steps?.length;
+    const oMissing = new Set(), dMissing = new Set();
+    for (const tr of trips.trips) {
+      const first = tr.legs[0], last = tr.legs.at(-1);
+      if (needsSteps(first) && first.dest && !walkOverrides?.has(first.dest)) oMissing.add(first.dest);
+      const alight = tr.legs.filter(l => l.k === "bus").at(-1)?.to;
+      if (needsSteps(last) && alight && !destWalkOverrides?.has(alight)) dMissing.add(alight);
+    }
+    if (oMissing.size || dMissing.size) {
+      const fromStop = STOP_COORDS[fStop]?.lat != null ? STOP_COORDS[fStop] : null;
+      const toStop = STOP_COORDS[tStop]?.lat != null ? STOP_COORDS[tStop] : null;
+      const more = (pt, bldg, stopPt, stops, reverse) => !stops.length ? new Map()
+        : pt ? prefetchUserWalks(pt, stops, { lang, reverse })
+        : bldg ? prefetchBuildingWalks(bldg, stops, { lang, reverse })
+        : stopPt ? prefetchUserWalks(stopPt, stops, { lang, reverse }) : new Map();
+      const [oMore, dMore] = await Promise.all([
+        more(oPt, fBldg, fromStop, [...oMissing].slice(0, WALK_TOPUP_K), false),
+        more(dPt, tBldg, toStop, [...dMissing].slice(0, WALK_TOPUP_K), true),
+      ].map(p => Promise.resolve(p).catch(() => new Map())));
+      if (oMore.size || dMore.size) {
+        walkOverrides = new Map([...(walkOverrides || []), ...oMore]);
+        destWalkOverrides = new Map([...(destWalkOverrides || []), ...dMore]);
+        trips = findTrips(fStop, tStop, ref, mode, fBldg, tBldg, oPt, dPt, walkOverrides, destWalkOverrides);
+      }
+    }
     // Fetch turn-by-turn for the direct pair when the planner recommends
     // walking, or when no shuttle path exists at all. In the second case
     // Mapbox is the only help left, so it is offered even past the planner's
@@ -1859,6 +1957,7 @@ export default function App() {
     // (public stop names only: never coordinates, buildings or Mapbox places).
     const endKind = (pt, bldg) => pt?.kind === "side" ? "side" : pt?.kind === "place" ? "place"
       : pt ? "geo" : bldg ? "bldg" : "stop";
+    if (my !== planSeq.current) return;
     const resultKind = trips.sameStop ? "same" : trips.trips.length ? "trips" : trips.walkOnly ? "walk" : "none";
     track("plan", { lang, p1: resultKind, p2: `${endKind(oPt, fBldg)}>${endKind(dPt, tBldg)}`, p3: `${fStop} > ${tStop}` });
     const undirectedLeg = trips.trips.some(tr => tr.legs.some(l => l.k === "walk" && l.source !== "stop" && l.source !== "near" && !l.steps?.length));
@@ -1991,6 +2090,7 @@ export default function App() {
 
   return (
     <LangContext.Provider value={{ lang, t }}>
+    <TripContext.Provider value={fStop && tStop ? `${fStop} > ${tStop}` : ""}>
     <div className="mx-auto min-h-dvh max-w-[480px] bg-background pb-[max(0px,env(safe-area-inset-bottom))] text-left text-body">
 
       {!noticeSeen && <FirstRunNotice onAck={()=>setNoticeSeen(true)}/>}
@@ -2092,7 +2192,7 @@ export default function App() {
             </CardHeader>
 
             <CardContent className="gap-2">
-              <StopInput label={t.from} value={fLbl} quickPicks={quickPicks} placeSearch placeholder={t.fromPh}
+              <StopInput label={t.from} value={fLbl} quickPicks={quickPicks} placeSearch placeholder={t.fromPh} field="from"
                 dot={<span title={fCoords ? (fCoords.kind==="place" ? t.usingPlace(fLbl) : t.usingLocation) : undefined}
                   className={cn("absolute top-1/2 left-3 z-10 size-2 -translate-y-1/2 rounded-full bg-origin-dot",
                     fCoords && "ring-3 ring-origin-dot/25")}/>}
@@ -2100,7 +2200,7 @@ export default function App() {
                   if (c?.kind==="place") track("place_pick",{ lang, p1:"from", p2:c.src });}}/>
               <SideChips sides={sidesFor(fSideKey)} label={t.startFrom}
                 selected={resolvedSide(fSideKey, fSide, fStop)}
-                onPick={i=>{ setFSide(i); track("side_pick",{ lang, p1:"from", p2:fSideKey });
+                onPick={i=>{ setFSide(i); track("side_pick",{ lang, p1:"from", p2:sideKind(fSideKey) });
                   if (searched) search({ fSide:i }); else reset(); }}/>
 
               <div className="flex justify-center">
@@ -2110,13 +2210,13 @@ export default function App() {
                 </Button>
               </div>
 
-              <StopInput label={t.to} value={tLbl} placeSearch placeholder={t.toPh}
+              <StopInput label={t.to} value={tLbl} placeSearch placeholder={t.toPh} field="to"
                 dot={<span aria-hidden="true" className="absolute top-1/2 left-3 z-10 size-2 -translate-y-1/2 rounded-[2px] bg-foreground"/>}
                 onChange={(s,l,b,c,k)=>{setTS(s);setTL(l);setTB(b);setTC(c||null);setTSK(k||null);setTSide(null);reset();
                   if (c?.kind==="place") track("place_pick",{ lang, p1:"to", p2:c.src });}}/>
               <SideChips sides={sidesFor(tSideKey)} label={t.arriveAt}
                 selected={resolvedSide(tSideKey, tSide, tStop)}
-                onPick={i=>{ setTSide(i); track("side_pick",{ lang, p1:"to", p2:tSideKey });
+                onPick={i=>{ setTSide(i); track("side_pick",{ lang, p1:"to", p2:sideKind(tSideKey) });
                   if (searched) search({ tSide:i }); else reset(); }}/>
 
               <div ref={whenRef} className="mt-1.5"
@@ -2153,8 +2253,8 @@ export default function App() {
                 </div>
               )}
               <Button className={cn(CTA_BTN,"mt-1.5")}
-                disabled={!fStop||!tStop||fStop===tStop} onClick={search}>
-                {t.findRoutes}
+                disabled={planBusy||!fStop||!tStop||fStop===tStop} onClick={search}>
+                {planBusy ? t.findingRoutes : t.findRoutes}
               </Button>
             </CardContent>
           </Card>
@@ -2360,6 +2460,7 @@ export default function App() {
         <div className="mt-2.5">{t.privacyNote}</div>
       </footer>
     </div>
+    </TripContext.Provider>
     </LangContext.Provider>
   );
 }
