@@ -148,6 +148,7 @@ const STRINGS = {
     leaveNow: "Leave now", departAt: "Depart at", arriveBy: "Arrive by",
     today: "Today", tomorrow: "Tmrw", dow: DOW,
     findRoutes: "Find Routes →",
+    findingRoutes: "Finding routes…",
     bldgsMappedTitle: (n, p) => `${n} buildings and ${p} places searchable`,
     bldgsMappedDesc: " by number or name (e.g. 6400 → Maude Hall, Central Elementary). Other spots on post appear under Places as you type.",
     bldgsMissing: "Missing one?",
@@ -306,6 +307,7 @@ const STRINGS = {
     leaveNow: "지금 출발", departAt: "출발 시간", arriveBy: "도착 시간",
     today: "오늘", tomorrow: "내일", dow: DOW_KO,
     findRoutes: "노선 찾기 →",
+    findingRoutes: "노선 찾는 중…",
     bldgsMappedTitle: (n, p) => `건물 ${n}곳·장소 ${p}곳 검색 가능`,
     bldgsMappedDesc: " 번호나 이름으로 찾으세요 (예: 6400 → Maude Hall, Central Elementary). 그 밖의 기지 내 장소는 입력하면 '장소'에 나타납니다.",
     bldgsMissing: "빠진 곳이 있나요?",
@@ -1758,7 +1760,20 @@ export default function App() {
     }
   }, [searched, results, setPlanCount]);
 
+  // One search at a time from the button: walk prefetches can take seconds
+  // on a geolocation origin, and repeat taps used to re-run every billed
+  // Mapbox call and log another plan (6 in one second, 2026-10-11). A newer
+  // search (a side chip) still wins; an older one that finishes late is
+  // dropped.
+  const planSeq = useRef(0);
+  const [planBusy, setPlanBusy] = useState(false);
   const search = async (opts = {}) => {
+    const my = ++planSeq.current;
+    setPlanBusy(true);
+    try { await runSearch(opts, my); }
+    finally { if (planSeq.current === my) setPlanBusy(false); }
+  };
+  const runSearch = async (opts, my) => {
     // A big place's walk starts/ends on the chosen street side (until one is
     // chosen, the side nearest its bus stop), not at its centre. Only that
     // one side is fetched.
@@ -1894,6 +1909,7 @@ export default function App() {
     // (public stop names only: never coordinates, buildings or Mapbox places).
     const endKind = (pt, bldg) => pt?.kind === "side" ? "side" : pt?.kind === "place" ? "place"
       : pt ? "geo" : bldg ? "bldg" : "stop";
+    if (my !== planSeq.current) return;
     const resultKind = trips.sameStop ? "same" : trips.trips.length ? "trips" : trips.walkOnly ? "walk" : "none";
     track("plan", { lang, p1: resultKind, p2: `${endKind(oPt, fBldg)}>${endKind(dPt, tBldg)}`, p3: `${fStop} > ${tStop}` });
     const undirectedLeg = trips.trips.some(tr => tr.legs.some(l => l.k === "walk" && l.source !== "stop" && l.source !== "near" && !l.steps?.length));
@@ -2188,8 +2204,8 @@ export default function App() {
                 </div>
               )}
               <Button className={cn(CTA_BTN,"mt-1.5")}
-                disabled={!fStop||!tStop||fStop===tStop} onClick={search}>
-                {t.findRoutes}
+                disabled={planBusy||!fStop||!tStop||fStop===tStop} onClick={search}>
+                {planBusy ? t.findingRoutes : t.findRoutes}
               </Button>
             </CardContent>
           </Card>
