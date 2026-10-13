@@ -98,10 +98,10 @@ def main() -> int:
         WHERE {since} {users} AND blob1 = 'open' GROUP BY lang, country ORDER BY n DESC"""),
         ["lang", "country", "n"])
     table("Feature use", sql(env, f"""
-        SELECT blob1 AS event, blob5 AS detail, {n} FROM htp_events
+        SELECT blob1 AS event, blob5 AS detail, blob6 AS source, {n} FROM htp_events
         WHERE {since} {users} AND blob1 IN ('tab', 'place_pick', 'side_pick', 'route_pick', 'feedback')
-        GROUP BY event, detail ORDER BY event, n DESC"""),
-        ["event", "detail", "n"])
+        GROUP BY event, detail, source ORDER BY event, n DESC"""),
+        ["event", "detail", "source", "n"])
     return 0
 
 
