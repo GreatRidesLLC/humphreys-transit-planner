@@ -211,6 +211,9 @@ const STRINGS = {
     placesMore: "Search more places",
     placesNone: "No other places found",
     placeNearest: (stop, m) => `Nearest stop: ${stop} (~${m} m)`,
+    subBusStop: "Bus stop",
+    subNearest: stop => `Nearest stop: ${stop}`,
+    subAlias: name => `Also known as ${name}`,
     whereAreYou: "Where are you?",
     asOf: time => `as of ${time}`,
     updatesEveryMinute: "Updates every minute",
@@ -370,6 +373,9 @@ const STRINGS = {
     placesMore: "장소 더 검색",
     placesNone: "다른 장소를 찾지 못했습니다",
     placeNearest: (stop, m) => `가장 가까운 정류장: ${stop} (약 ${m}m)`,
+    subBusStop: "버스 정류장",
+    subNearest: stop => `가장 가까운 정류장: ${stop}`,
+    subAlias: name => `다른 이름: ${name}`,
     whereAreYou: "어디에 계세요?",
     asOf: time => `${time} 기준`,
     updatesEveryMinute: "1분마다 갱신",
@@ -527,7 +533,7 @@ const OSM_BUILDING_SEARCH = Object.entries(BUILDING_COORDS)
     return {
       label: `Bldg ${num} – ${b.name}`,
       stop: hit.stop,
-      sub: `Nearest stop: ${hit.stop} (~${Math.round(hit.meters)} m)`,
+      sub: t => t.placeNearest(hit.stop, Math.round(hit.meters)),
       isBuilding: true,
       bldg: num,
     };
@@ -546,20 +552,21 @@ const OSM_PLACE_SEARCH = (PLACES_OSM.places || [])
       label: p.name,
       alt: p.name_ko || "",
       stop: hit.stop,
-      sub: `Nearest stop: ${hit.stop} (~${Math.round(hit.meters)} m)`,
+      sub: t => t.placeNearest(hit.stop, Math.round(hit.meters)),
       place: { lat: p.lat, lon: p.lon },
       osmId: p.osm_id,
     };
   })
   .filter(Boolean);
 
+// `sub` takes the locale table, so the dropdown subtitle follows the language.
 const SEARCH_INDEX = [
-  ...ALL_STOPS.map(s => ({ label:s, stop:s, sub:"Bus stop" })),
+  ...ALL_STOPS.map(s => ({ label:s, stop:s, sub:t => t.subBusStop })),
   ...Object.entries(STOP_ALIASES).flatMap(([canonical, aliases]) =>
-    aliases.map(a => ({ label:a, stop:canonical, sub:`Also known as ${canonical}` }))
+    aliases.map(a => ({ label:a, stop:canonical, sub:t => t.subAlias(canonical) }))
   ),
   ...Object.entries(BUILDINGS).map(([num,b]) => ({
-    label:`Bldg ${num} – ${b.name}`, stop:b.stop, sub:`Nearest stop: ${b.stop}`, isBuilding:true, bldg:num
+    label:`Bldg ${num} – ${b.name}`, stop:b.stop, sub:t => t.subNearest(b.stop), isBuilding:true, bldg:num
   })),
   ...OSM_BUILDING_SEARCH,
   ...OSM_PLACE_SEARCH,
@@ -896,7 +903,7 @@ function StopInput({ label, value, onChange, dot = null, quickPicks = [], placeS
                     onMouseDown={()=>pick(x)} onMouseEnter={()=>setHi(i)}
                     className={cn("cursor-pointer border-b px-3.5 py-2.5 last:border-b-0", i===hi && "bg-muted")}>
                     <div className={cn("text-[13px] text-foreground", i===hi ? "font-semibold" : "font-medium")}>{x.label}</div>
-                    <div className="mt-px text-[11.5px] text-muted-foreground">{x.sub}</div>
+                    <div className="mt-px text-[11.5px] text-muted-foreground">{x.sub(t)}</div>
                   </div>
                 ))}
                 {places.length>0 && (
